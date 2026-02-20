@@ -1,0 +1,698 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:indogrip/core/responsive/responsive.dart';
+import 'package:indogrip/core/service/connectivity/internate%20connectivity-checker.dart';
+import 'package:indogrip/core/service/connectivity/not_connected.dart';
+import 'package:indogrip/core/utils/appbar/desktop_appbar.dart';
+import 'package:indogrip/core/utils/appbar/mobile_appbar.dart';
+import 'package:indogrip/core/utils/sidebar.dart';
+import 'package:indogrip/core/utils/widgets/textfield_label.dart';
+import 'package:indogrip/core/utils/widgets/toast_service.dart';
+import 'package:indogrip/features/global/data/model/change_status_param.dart';
+import 'package:indogrip/features/global/data/repositories/global_manager_repo.dart';
+import 'package:indogrip/features/global/presentation/bloc/global_bloc.dart';
+import 'package:indogrip/features/global/presentation/widget/data_filtration.dart';
+import 'package:indogrip/features/global/presentation/widget/pagination_widget.dart';
+import 'package:indogrip/features/staff/data/models/view_staff_api_param.dart';
+import 'package:indogrip/features/wastage/data/model/edit_wastage_api_param.dart';
+import 'package:indogrip/features/wastage/data/model/view_wastage_table_column.dart';
+import 'package:indogrip/features/wastage/domain/repositories/add_wastage_main_repo.dart';
+import 'package:indogrip/features/wastage/presentation/bloc/wastage_bloc.dart';
+import 'package:indogrip/features/wastage/presentation/pages/edit/edit_wastage.dart';
+import 'package:indogrip/features/wastage/presentation/pages/profile/wastage_profile.dart';
+import 'package:indogrip/features/wastage/presentation/pages/view/view_wastage_builder.dart';
+import 'package:indogrip/features/wastage/data/wastage_data_source.dart';
+import 'package:syncfusion_flutter_datagrid/datagrid.dart';
+
+class ViewWastagePanel extends StatefulWidget {
+  const ViewWastagePanel({super.key});
+  static const String routeName = '/viewWastage';
+
+  @override
+  State<ViewWastagePanel> createState() => _ViewWastagePanelState();
+}
+
+class _ViewWastagePanelState extends ViewWastageBuilder {
+  final GlobalKey<ScaffoldState> _stateKey = GlobalKey<ScaffoldState>();
+  final fromDateController = TextEditingController();
+  final toDateController = TextEditingController();
+  late final GlobalBloc globalBloc;
+  final GlobalKey _key = GlobalKey();
+  late Map<String, double> columnWidths = {};
+  bool isChecked = false;
+  WastageDataSource? _dataSource;
+  List<DataGridRow> selectedRows = [];
+
+  @override
+  void dispose() {
+    selectedRows.clear();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    wastageBloc = WastageBloc(addWastageRepository: AddWastageRepository());
+    globalBloc = GlobalBloc(globalRepository: GlobalManagerRepository());
+    wastageBloc.add(
+      ViewWastageFromRecords(
+        param: ViewRecordApiParam(
+          keyword: searchController.text,
+          filterBy: recordValue ?? '',
+          orderBy: filterValue.toString(),
+          pageNo: currentPage.toString(),
+          sortBy: entryValue.toString(),
+        ),
+      ),
+    );
+  }
+
+  List<GridColumn> buildGridColumns() {
+    return [
+      GridColumn(
+        columnName: WTableColumn.SrNo,
+        columnWidthMode: ColumnWidthMode.fill,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Text(
+            'Sr No',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+      ),
+      GridColumn(
+        columnName: WTableColumn.consigneeName,
+        width: 300,
+        label: Container(
+          color: Colors.grey[100],
+          child: const Center(child: TextFieldlabelText("Consignee Name")),
+        ),
+      ),
+      GridColumn(
+        columnName: WTableColumn.wastageDate,
+        width: 180,
+        label: Container(
+          color: Colors.grey[100],
+          child: const Center(child: TextFieldlabelText("Wastage Date")),
+        ),
+      ),
+      GridColumn(
+        columnName: WTableColumn.billNumber,
+        width: 180,
+        label: Container(
+          color: Colors.grey[100],
+          child: const Center(child: TextFieldlabelText("Bill No")),
+        ),
+      ),
+      GridColumn(
+        columnName: WTableColumn.Weight,
+        width: 150,
+        label: Container(
+          color: Colors.grey[100],
+          child: const Center(child: TextFieldlabelText("Weight")),
+        ),
+      ),
+      GridColumn(
+        columnName: WTableColumn.pricePerKG,
+        width: 200,
+        label: Container(
+          color: Colors.grey[100],
+          child: const Center(child: TextFieldlabelText("Price/kg")),
+        ),
+      ),
+      GridColumn(
+        columnName: WTableColumn.price,
+        width: 200,
+        label: Container(
+          color: Colors.grey[100],
+          child: const Center(child: TextFieldlabelText("Price")),
+        ),
+      ),
+      GridColumn(
+        columnName: WTableColumn.Remark,
+        width: 130,
+        label: Container(
+          color: Colors.grey[100],
+          child: const Center(child: TextFieldlabelText("Remark")),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Status',
+        width: 130,
+        label: Container(
+          color: Colors.grey[100],
+          child: const Center(child: TextFieldlabelText("Status")),
+        ),
+      ),
+      GridColumn(
+        columnName: 'actions',
+        width: 120,
+        label: Container(
+          color: Colors.grey[100],
+          child: const Center(child: TextFieldlabelText("Actions")),
+        ),
+      ),
+    ];
+  }
+
+  Widget _buildDesktopView() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // if (Responsive.isDesktop(context)) const SideMenuWidget(),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              DesktopAppBar(context, _stateKey, 'View Wastage', false),
+
+              BlocListener<GlobalBloc, GlobalState>(
+                bloc: globalBloc,
+                listener: (context, state) {
+                  if (state is GlobalChangeUserStatusSuccessStatus) {
+                    // Handle status change success (for approved, rejected, blocked, etc.)
+                    if (state.changeStatusEntity.status == 1) {
+                      ToastService.instance.showSuccess(
+                        context,
+                        state.changeStatusEntity.message.toString(),
+                      );
+
+                      // Refresh list after status change
+                      wastageBloc.add(
+                        ViewWastageFromRecords(
+                          param: ViewRecordApiParam(
+                            keyword: searchController.text,
+                            filterBy: recordValue ?? '',
+                            orderBy: filterValue.toString(),
+                            pageNo: currentPage.toString(),
+                            sortBy: entryValue.toString(),
+                          ),
+                        ),
+                      );
+                    } else {
+                      ToastService.instance.showError(
+                        context,
+                        state.changeStatusEntity.message.toString(),
+                      );
+                    }
+                  } else if (state is GlobalChangeUserStatusErrorStatus) {
+                    ToastService.instance.showError(
+                      context,
+                      state.message.toString(),
+                    );
+                  } else if (state is GlobalDeleteRecordSuccessStatus) {
+                    ToastService.instance.showSuccess(
+                      context,
+                      state.deleteRecordEntity.message.toString(),
+                    );
+                    // Refresh list after single delete
+                    wastageBloc.add(
+                      ViewWastageFromRecords(
+                        param: ViewRecordApiParam(
+                          keyword: searchController.text,
+                          filterBy: recordValue ?? '',
+                          orderBy: filterValue.toString(),
+                          pageNo: currentPage.toString(),
+                          sortBy: entryValue.toString(),
+                        ),
+                      ),
+                    );
+                  } else if (state is GlobalDeleteRecordErrorStatus) {
+                    ToastService.instance.showError(
+                      context,
+                      state.message.toString(),
+                    );
+                  } else if (state
+                      is GlobalDeleteMultipleRecordsSuccessStatus) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          state.deleteRecordEntity.message ?? 'Records deleted',
+                        ),
+                      ),
+                    );
+                    // Refresh list after bulk delete
+                    wastageBloc.add(
+                      ViewWastageFromRecords(
+                        param: ViewRecordApiParam(
+                          keyword: searchController.text,
+                          filterBy: recordValue ?? '',
+                          orderBy: filterValue.toString(),
+                          pageNo: currentPage.toString(),
+                          sortBy: entryValue.toString(),
+                        ),
+                      ),
+                    );
+                    // Clear selection
+                    setState(() {
+                      selectedRows.clear();
+                      selectedItems.clear();
+                      isMultipleSelection = false;
+                    });
+                  } else if (state is GlobalDeleteMultipleRecordsErrorStatus) {
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text(state.message)));
+                  }
+                },
+                child: Column(
+                  children: [
+                    DateFiltration(
+                      fromDateController: fromDateController,
+                      toDateController: toDateController,
+                    ),
+                    searchFields,
+                  ],
+                ),
+              ),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // buildFilterFieldsDesktop,
+                    refreshButton,
+                    SizedBox(height: 15),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [_buildPaginationWidget],
+                    ),
+
+                    // SizedBox(height: 20),
+                    BlocConsumer(
+                      bloc: wastageBloc,
+                      listener: (context, state) {
+                        if (state is ViewWastageFromRecordsSuccessStatus) {
+                          _dataSource = null;
+                        }
+                      },
+                      buildWhen: (previous, current) {
+                        // Always rebuild to handle state changes
+                        return true;
+                      },
+                      builder: (context, state) {
+                        if (state is WastageLoadingStatus) {
+                          return const Center(
+                            child: CircularProgressIndicator.adaptive(),
+                          );
+                        } else if (state
+                            is ViewWastageFromRecordsSuccessStatus) {
+                          final successData = state.viewWastageModel;
+                          // Lazy initialization - create data source only once
+                          _dataSource ??= WastageDataSource(
+                            wastageData: successData.record ?? [],
+                            isAllChecked: isChecked,
+                            onStatusChanged: (value) {
+                              setState(() {
+                                isChecked = value;
+                                if (value) {
+                                  selectedRows = List.from(
+                                    _dataSource?.rows ?? [],
+                                  );
+                                } else {
+                                  selectedRows.clear();
+                                }
+                                handleSelectionChanged(
+                                  value ? List.from(successData.record!) : [],
+                                );
+                              });
+                            },
+                            onCheckboxChanged: (checked, index) {
+                              if (_dataSource == null) return;
+                              setState(() {
+                                if (checked) {
+                                  selectedRows.add(_dataSource!.rows[index]);
+                                } else {
+                                  selectedRows.remove(_dataSource!.rows[index]);
+                                }
+                                final selectedRecords = selectedRows
+                                    .map((row) {
+                                      final idx = _dataSource!.rows.indexOf(
+                                        row,
+                                      );
+                                      if (idx != -1 &&
+                                          idx <
+                                              (state
+                                                      .viewWastageModel
+                                                      .record
+                                                      ?.length ??
+                                                  0)) {
+                                        final record =
+                                            state.viewWastageModel.record![idx];
+                                        return record.toJson();
+                                      }
+                                      return null;
+                                    })
+                                    .where((record) => record != null)
+                                    .cast<Map<String, dynamic>>()
+                                    .toList();
+                                handleSelectionChanged(selectedRecords);
+                              });
+                            },
+                            onEdit: (value) {
+                              final editWastageParam = EditWastageApiParam(
+                                wastageDate: value.wastageDate.toString(),
+                                wastageClient: value.wastageClient.toString(),
+                                billNumber: value.billNumber.toString(),
+                                width: value.weight.toString(),
+                                price_kg: value.pricePerKG.toString(),
+                                rKey: value.rKey.toString(),
+                                remark: value.remark.toString(),
+                              );
+
+                              context.pushNamed(
+                                EditWastagePanel.routeName,
+                                extra: editWastageParam,
+                              );
+                            },
+                            onDelete: (value) {
+                              wastageBloc.add(
+                                ViewWastageFromRecords(
+                                  param: ViewRecordApiParam(
+                                    keyword: searchController.text,
+                                    filterBy: recordValue ?? '',
+                                    orderBy: filterValue.toString(),
+                                    pageNo: currentPage.toString(),
+                                    sortBy: entryValue.toString(),
+                                  ),
+                                ),
+                              );
+                            },
+                            onProfile: (value) {
+                              context.pushNamed(
+                                WastageProfile.routeName,
+                                extra: value,
+                              );
+                            },
+                            onChanged: (statusValue, WastageRecord) {
+                              globalBloc.add(
+                                GlobalChangeUserStatusEvent(
+                                  param: ChangeStaffParam(
+                                    rKey: WastageRecord.rKey.toString(),
+                                    rPanel: 'view-wastage',
+                                    rStatus: statusValue.toString(),
+                                    statusReason: '',
+                                  ),
+                                ),
+                              );
+                              wastageBloc.add(
+                                ViewWastageFromRecords(
+                                  param: ViewRecordApiParam(
+                                    keyword: searchController.text,
+                                    filterBy: recordValue ?? '',
+                                    orderBy: filterValue.toString(),
+                                    pageNo: currentPage.toString(),
+                                    sortBy: entryValue.toString(),
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            setState(() {
+                              pageQty = successData.pageQty ?? 1;
+                            });
+                          });
+                          return successData.status == 1
+                              ? Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                    ),
+                                    child: SfDataGrid(
+                                      showHorizontalScrollbar: true,
+                                      key: _key,
+                                      rowsPerPage: 4,
+                                      allowPullToRefresh: true,
+                                      allowColumnsResizing: true,
+                                      columnResizeMode:
+                                          ColumnResizeMode.onResizeEnd,
+                                      isScrollbarAlwaysShown: true,
+                                      showVerticalScrollbar: true,
+                                      showCheckboxColumn: isMultipleSelection,
+                                      selectionMode: isMultipleSelection
+                                          ? SelectionMode.multiple
+                                          : SelectionMode.single,
+                                      onSelectionChanged: (addedRows, removedRows) {
+                                        if (_dataSource == null) return;
+                                        setState(() {
+                                          selectedRows.addAll(addedRows);
+                                          selectedRows.removeWhere(
+                                            (row) => removedRows.contains(row),
+                                          );
+
+                                          final selectedRecords = selectedRows
+                                              .map((row) {
+                                                final index = _dataSource!.rows
+                                                    .indexOf(row);
+                                                if (index >= 0 &&
+                                                    index <
+                                                        state
+                                                            .viewWastageModel
+                                                            .record!
+                                                            .length) {
+                                                  return state
+                                                      .viewWastageModel
+                                                      .record?[index]
+                                                      .toJson();
+                                                }
+                                                return null;
+                                              })
+                                              .where((record) => record != null)
+                                              .cast<Map<String, dynamic>>()
+                                              .toList();
+                                          handleSelectionChanged(
+                                            selectedRecords,
+                                          );
+
+                                          print(
+                                            'DEBUG: Selected ${selectedRows.length} rows',
+                                          );
+                                          print(
+                                            'DEBUG: Added: ${addedRows.length}, Removed: ${removedRows.length}',
+                                          );
+                                        });
+                                      },
+                                      onColumnResizeUpdate:
+                                          (ColumnResizeUpdateDetails details) {
+                                            setState(() {
+                                              columnWidths[details
+                                                      .column
+                                                      .columnName] =
+                                                  details.width;
+                                            });
+                                            return true;
+                                          },
+                                      source: _dataSource!,
+                                      columns: buildGridColumns(),
+                                    ),
+                                  ),
+                                )
+                              : Expanded(
+                                  child: Center(
+                                    child: Text(
+                                      successData.message ??
+                                          'Refresh to load data',
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                  ),
+                                );
+                        } else if (state
+                            is ViewWastageFromRecordsFailureStatus) {
+                          return SizedBox.shrink();
+                        } else {
+                          return SizedBox.shrink();
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Widget _buildTabletView() {
+  //   return Padding(
+  //     padding: const EdgeInsets.all(16.0),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.stretch,
+  //       children: [
+  //         buildFilterFieldsTablet,
+  //         buildSelectionActions(),
+  //         Expanded(
+  //           child: SfDataGrid(
+  //             showHorizontalScrollbar: true,
+  //             key: _key,
+  //             rowsPerPage: 4,
+  //             allowPullToRefresh: true,
+  //             allowColumnsResizing: true,
+  //             columnResizeMode: ColumnResizeMode.onResizeEnd,
+  //             isScrollbarAlwaysShown: true,
+  //             showVerticalScrollbar: true,
+  //             showCheckboxColumn: isMultipleSelection,
+  //             selectionMode:
+  //                 isMultipleSelection
+  //                     ? SelectionMode.multiple
+  //                     : SelectionMode.single,
+  //             onSelectionChanged: (addedRows, removedRows) {
+  //               setState(() {
+  //                 selectedRows.addAll(addedRows);
+  //                 selectedRows.removeWhere((row) => removedRows.contains(row));
+
+  //                 final selectedData =
+  //                     selectedRows.map((row) {
+  //                       final index = _dataSource.rows.indexOf(row);
+  //                       return wastageData[index];
+  //                     }).toList();
+  //                 handleSelectionChanged(selectedData);
+  //               });
+  //             },
+  //             onColumnResizeUpdate: (details) {
+  //               setState(() {
+  //                 columnWidths[details.column.columnName] = details.width;
+  //               });
+  //               return true;
+  //             },
+  //             source: _dataSource,
+  //             columnWidthMode: ColumnWidthMode.fill,
+  //             columns: buildGridColumns(),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: InternetConnectionService().connectionStream,
+      initialData: true, // Assume connected initially
+      builder: (context, snapshot) {
+        // Handle error state
+        if (snapshot.hasError) {
+          return const NoInternetConnection();
+        }
+
+        // Handle disconnected state
+        if (snapshot.data == false) {
+          return const NoInternetConnection();
+        }
+
+        // Handle loading state
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return Scaffold(
+          key: _stateKey,
+          appBar: !Responsive.isDesktop(context)
+              ? MobileAppBar(context, _stateKey, 'View Wastage')
+              : null,
+          drawer: !Responsive.isDesktop(context)
+              ? const SideMenuWidget()
+              : null,
+          body: _buildDesktopView(),
+        );
+      },
+    );
+  }
+
+  Widget get _buildPaginationWidget => TableBottomWidget(
+    currentPage: currentPage,
+    pageQty: pageQty,
+    onPagePressed: (pageNumber) {
+      setState(() {
+        currentPage = pageNumber;
+      });
+      wastageBloc.add(
+        ViewWastageFromRecords(
+          param: ViewRecordApiParam(
+            keyword: searchController.text,
+            filterBy: recordValue ?? '',
+            orderBy: filterValue.toString(),
+            pageNo: currentPage.toString(),
+            sortBy: entryValue.toString(),
+          ),
+        ),
+      );
+      // Page number button clicked
+    },
+    onFirstPressed: () {
+      setState(() {
+        currentPage = 1;
+        wastageBloc.add(
+          ViewWastageFromRecords(
+            param: ViewRecordApiParam(
+              keyword: searchController.text,
+              filterBy: recordValue ?? '',
+              orderBy: filterValue.toString(),
+              pageNo: currentPage.toString(),
+              sortBy: entryValue.toString(),
+            ),
+          ),
+        );
+      });
+    },
+    onPreviousPressed: () {
+      if (currentPage != null && pageQty != null && currentPage! <= pageQty!) {
+        setState(() {
+          currentPage = currentPage! - 1;
+          wastageBloc.add(
+            ViewWastageFromRecords(
+              param: ViewRecordApiParam(
+                keyword: searchController.text,
+                filterBy: recordValue ?? '',
+                orderBy: filterValue.toString(),
+                pageNo: currentPage.toString(),
+                sortBy: entryValue.toString(),
+              ),
+            ),
+          );
+        });
+      }
+    },
+    onNextPressed: () {
+      if (currentPage != null && currentPage! >= 1) {
+        setState(() {
+          currentPage = currentPage! + 1;
+          wastageBloc.add(
+            ViewWastageFromRecords(
+              param: ViewRecordApiParam(
+                keyword: searchController.text,
+                filterBy: recordValue ?? '',
+                orderBy: filterValue.toString(),
+                pageNo: currentPage.toString(),
+                sortBy: entryValue.toString(),
+              ),
+            ),
+          );
+        });
+      }
+    },
+    onLastPressed: () {
+      setState(() {
+        currentPage = pageQty!;
+        wastageBloc.add(
+          ViewWastageFromRecords(
+            param: ViewRecordApiParam(
+              keyword: searchController.text,
+              filterBy: recordValue ?? '',
+              orderBy: filterValue.toString(),
+              pageNo: currentPage.toString(),
+              sortBy: entryValue.toString(),
+            ),
+          ),
+        );
+      });
+    },
+  );
+}

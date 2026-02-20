@@ -1,0 +1,219 @@
+ pdf.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat(
+            PdfPageFormat.inch * 4.9, // width = 4 inches
+            PdfPageFormat.inch * 3.4, // height = 6 inches
+            marginTop: PdfPageFormat.inch * 0.6,
+            marginLeft:
+                PdfPageFormat.inch * 0.2, // equal margins for centered sticker
+          ),
+          build: (pw.Context context) {
+            return pw.Container(
+              alignment: pw.Alignment.center,
+              padding: pw.EdgeInsets.all(10),
+              decoration: pw.BoxDecoration(
+                border: pw.Border.all(color: PdfColors.black, width: 1.2),
+                borderRadius: pw.BorderRadius.circular(4),
+              ),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.center,
+                mainAxisAlignment: pw.MainAxisAlignment.center,
+                children: [
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      if (indogripStickerImage != null)
+                        pw.Image(
+                          indogripStickerImage,
+                          width: 100,
+                          height: 30,
+                          fit: pw.BoxFit.contain,
+                        ),
+                      pw.Column(
+                        children: [
+                          if (tapFactoryImage != null)
+                            pw.Image(
+                              tapFactoryImage,
+                              width: 80,
+                              height: 30,
+                              fit: pw.BoxFit.contain,
+                            ),
+                          pw.Text(
+                            '08AAYPS5383A2Z4',
+                            style: pw.TextStyle(fontSize: 10),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  pw.SizedBox(height: 3),
+
+                  pw.Align(
+                    alignment: pw.Alignment.center,
+                    child: pw.BarcodeWidget(
+                      textStyle: pw.TextStyle(
+                        fontSize: 10,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                      data: jumboRollData.jRollNumber?.toString() ?? '',
+                      barcode: pw.Barcode.code128(),
+                      width: PdfPageFormat.inch * 2.8, // 2.0 inches wide
+                      height: PdfPageFormat.inch * 0.5, // 0.8 inches tall
+                    ),
+                  ),
+                  pw.SizedBox(height: 20),
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Text(
+                        'Bill Number: ${jumboRollData.jBillNumber ?? ''}',
+                      ),
+                      pw.Text(
+                        'Roll Number: ${jumboRollData.jRollNumber ?? ''}',
+                      ),
+                    ],
+                  ),
+                  pw.SizedBox(height: 5),
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Text('Width: ${jumboRollData.jWidth ?? ''}'),
+                      pw.Text('Base: ${jumboRollData.jBase ?? ''}'),
+                    ],
+                  ),
+                  pw.SizedBox(height: 5),
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Text('Mic: ${jumboRollData.jMic ?? ''}'),
+                      pw.Text('Length: ${jumboRollData.jLength ?? ''}'),
+                    ],
+                  ),
+                  pw.SizedBox(height: 5),
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Text('Weight: ${jumboRollData.jWeight ?? ''}'),
+
+                      pw.Text('Remark: ${jumboRollData.jRemark}'),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      );
+
+
+      Big Size ---------------------------------------------------
+
+
+        pdf.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat(
+            PdfPageFormat.inch * 6, // width = 4 inches
+            PdfPageFormat.inch * 4, // height = 6 inches
+
+            marginAll: PdfPageFormat.inch * 0.2,
+          ),
+          build: (pw.Context context) {
+            return pw.Container(
+              alignment: pw.Alignment.center,
+              padding: pw.EdgeInsets.all(10),
+              decoration: pw.BoxDecoration(
+                border: pw.Border.all(color: PdfColors.black, width: 1.2),
+                borderRadius: pw.BorderRadius.circular(4),
+              ),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.center,
+                mainAxisAlignment: pw.MainAxisAlignment.center,
+                children: [
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      if (indogripStickerImage != null)
+                        pw.Image(
+                          indogripStickerImage,
+                          width: 200,
+                          height: 60,
+                          fit: pw.BoxFit.contain,
+                        ),
+                      pw.Column(
+                        children: [
+                          if (tapFactoryImage != null)
+                            pw.Image(
+                              tapFactoryImage,
+                              width: 150,
+                              height: 50,
+                              fit: pw.BoxFit.contain,
+                            ),
+                          pw.Text(
+                            'GSTIN: 08AAYPS5383A2Z4',
+                            style: pw.TextStyle(fontSize: 10),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  pw.SizedBox(height: 10),
+
+                  pw.Align(
+                    alignment: pw.Alignment.center,
+                    child: pw.BarcodeWidget(
+                      textStyle: pw.TextStyle(
+                        fontSize: 10,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                      data: jumboRollData.jRollNumber?.toString() ?? '',
+                      barcode: pw.Barcode.code128(),
+                      width: PdfPageFormat.inch * 2.8, // 2.0 inches wide
+                      height: PdfPageFormat.inch * 0.5, // 0.8 inches tall
+                    ),
+                  ),
+                  pw.SizedBox(height: 20),
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Text(
+                        'Bill Number: ${jumboRollData.jBillNumber ?? ''}',
+                      ),
+                      pw.Text(
+                        'Roll Number: ${jumboRollData.jRollNumber ?? ''}',
+                      ),
+                    ],
+                  ),
+                  pw.SizedBox(height: 5),
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Text('Width: ${jumboRollData.jWidth ?? ''}'),
+                      pw.Text('Base: ${jumboRollData.jBase ?? ''}'),
+                    ],
+                  ),
+                  pw.SizedBox(height: 5),
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Text('Mic: ${jumboRollData.jMic ?? ''}'),
+                      pw.Text('Length: ${jumboRollData.jLength ?? ''}'),
+                    ],
+                  ),
+                  pw.SizedBox(height: 5),
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.start,
+                    children: [
+                      pw.Text('Weight: ${jumboRollData.jWeight ?? ''}'),
+                    ],
+                  ),
+                  pw.SizedBox(height: 5),
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.start,
+                    children: [pw.Text('Remark: ${jumboRollData.jRemark}')],
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      );

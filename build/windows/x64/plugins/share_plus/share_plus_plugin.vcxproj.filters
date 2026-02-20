@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="D:\CodeWithMax\PC Projects\indogrip\windows\flutter\ephemeral\.plugin_symlinks\share_plus\windows\share_plus_plugin_c_api.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\CodeWithMax\PC Projects\indogrip\windows\flutter\ephemeral\.plugin_symlinks\share_plus\windows\share_plus_plugin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="D:\CodeWithMax\PC Projects\indogrip\windows\flutter\ephemeral\.plugin_symlinks\share_plus\windows\include\share_plus\share_plus_windows_plugin_c_api.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\CodeWithMax\PC Projects\indogrip\windows\flutter\ephemeral\.plugin_symlinks\share_plus\windows\share_plus_windows_plugin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\CodeWithMax\PC Projects\indogrip\windows\flutter\ephemeral\.plugin_symlinks\share_plus\windows\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{C4B16D71-898E-3795-B576-0BBA7BCA48BC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{76A265B8-B998-381F-9AD1-683CDD32D099}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

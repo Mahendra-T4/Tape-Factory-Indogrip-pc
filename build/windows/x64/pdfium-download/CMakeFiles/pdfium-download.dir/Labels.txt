@@ -1,0 +1,14 @@
+# Target labels
+ pdfium-download
+# Source files and their labels
+D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/pdfium-download/CMakeFiles/pdfium-download
+D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/pdfium-download/CMakeFiles/7727759a261051e70810a34992d22314/pdfium-download.rule
+D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/pdfium-download/CMakeFiles/1e2d4c3e8804bc21ba1c907236c64ba9/pdfium-download-complete.rule
+D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/pdfium-download/CMakeFiles/f71caba751a93601786fa2655d15ff31/pdfium-download-build.rule
+D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/pdfium-download/CMakeFiles/f71caba751a93601786fa2655d15ff31/pdfium-download-configure.rule
+D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/pdfium-download/CMakeFiles/f71caba751a93601786fa2655d15ff31/pdfium-download-download.rule
+D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/pdfium-download/CMakeFiles/f71caba751a93601786fa2655d15ff31/pdfium-download-install.rule
+D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/pdfium-download/CMakeFiles/f71caba751a93601786fa2655d15ff31/pdfium-download-mkdir.rule
+D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/pdfium-download/CMakeFiles/f71caba751a93601786fa2655d15ff31/pdfium-download-patch.rule
+D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/pdfium-download/CMakeFiles/f71caba751a93601786fa2655d15ff31/pdfium-download-test.rule
+D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/pdfium-download/CMakeFiles/f71caba751a93601786fa2655d15ff31/pdfium-download-update.rule

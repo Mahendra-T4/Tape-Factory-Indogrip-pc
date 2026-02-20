@@ -1,0 +1,31 @@
+class RoundTableColumn {
+  static final String srNo = 'SrNO';
+  static final String rollNumber = 'rollNumber';
+  static final String width = 'Width';
+  static final String base = 'Base';
+  static final String mic = 'Mic';
+  static final String length = 'Length';
+  static final String totalWeight = 'Total Weight';
+  static final String amountPerKG = 'Amount Per KG';
+  static final String cutMMMeter = 'Cut MM Meter';
+  static final String roundCount = 'Round Count';
+  static final String totalCarton = 'Total Carton';
+  static final String tapeLength = 'Tape Length';
+  static final String damagePieces = 'Damage Pieces';
+  static final String wastagePercentage = 'Wastage Percentage';
+  static final String conversionRate = 'Conversion Rate';
+  static final String usedLength = 'Used Length';
+  static final String piecesPerCarton = 'Pieces Per Carton';
+  static final String usedSquareMeter = 'Used Square Meter';
+  static final String rollCost = 'Roll Cost';
+  static final String totalSquareMtr = 'Total Square Mtr';
+  static final String ratePerSquareMeter = 'Rate Per Square Meter';
+  static final String cartonMaterialCost = 'Carton Material Cost';
+  // static final String piecesPerCarton = 'Pieces Per Carton';
+  static final String cartonRate = 'Carton Rate';
+  static final String marginWithTenPercentage = '10% Margin';
+  static final String marginWithTwelvePercentage = '12% Margin';
+  static final String marginWithFifteenPercentage = '15% Margin';
+  static final String rKey = 'rKey';
+  static final String roundStatusLabel = 'Round Status';
+}
