@@ -125,9 +125,7 @@ class GlobalBloc extends Bloc<GlobalEvent, GlobalState> {
   ) async {
     emit(GlobalLoadingStatus());
     try {
-      final notifications = await NotificationRepository.fetchNotifications(
-        event.filterBy,
-      );
+      final notifications = await NotificationRepository.fetchNotifications();
       emit(LoadNotificationsSuccessStatus(notifications: notifications));
     } catch (e) {
       emit(LoadNotificationsErrorStatus(message: e.toString()));

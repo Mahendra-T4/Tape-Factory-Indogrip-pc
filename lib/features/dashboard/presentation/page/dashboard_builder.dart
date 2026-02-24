@@ -3,6 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:indogrip/core/responsive/responsive.dart';
 import 'package:indogrip/core/utils/widgets/button.dart';
 import 'package:indogrip/core/utils/widgets/custom_textfield.dart';
+import 'package:indogrip/core/utils/widgets/cutom_tf_extra.dart';
+import 'package:indogrip/core/utils/widgets/toast_service.dart';
+import 'package:indogrip/features/dashboard/data/model/predict_cal_param.dart';
 import 'package:indogrip/features/dashboard/data/model/show_static_model.dart';
 import 'package:indogrip/features/dashboard/presentation/bloc/home_bloc.dart';
 import 'package:indogrip/features/dashboard/presentation/page/deshboard.dart';
@@ -13,23 +16,76 @@ import 'package:indogrip/features/dashboard/presentation/widget/filmsize_dashboa
 import 'package:indogrip/features/dashboard/presentation/widget/master_carton_type_db.dart';
 import 'package:indogrip/features/dashboard/presentation/widget/master_core_db_widget.dart';
 import 'package:indogrip/features/dashboard/presentation/widget/master_cuttmmmeter_db_widget.dart';
+import 'package:indogrip/features/dashboard/presentation/widget/micron_dashboard.dart';
 import 'package:indogrip/features/dashboard/presentation/widget/width_db_widget.dart';
+import 'package:indogrip/features/global/data/repositories/global_manager_repo.dart';
+import 'package:indogrip/features/global/presentation/bloc/global_bloc.dart';
 import 'package:indogrip/features/global/presentation/widget/refresh_button.dart';
 import 'package:indogrip/features/outsource/presentation/widget/master_product_type_model.dart';
+import 'package:indogrip/features/round/presentation/widgets/master_roll_size_widget.dart';
 
 abstract class DashboardBuilder extends State<IndoGripDashboard> {
   late final HomeBloc homeBloc;
+  late final GlobalBloc _globalBloc;
   String? selectedProduct;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController amountPerKg = TextEditingController();
   final TextEditingController wastagePercentage = TextEditingController();
   final TextEditingController conversionRate = TextEditingController();
+  final TextEditingController wastagePercentage2 = TextEditingController();
+  final TextEditingController conversionRate2 = TextEditingController();
+  TextEditingController tapeLengthController = TextEditingController();
+  TextEditingController ratePerSquareMeterController = TextEditingController();
+  // TextEditingController  wastagePercentage = TextEditingController();
+  // TextEditingController  conversionRate = TextEditingController();
+  TextEditingController marginController = TextEditingController();
+  String? selectedRoundSize;
+  ShowStaticModel? dashboardData;
 
   @override
   void initState() {
     homeBloc = HomeBloc();
+    _globalBloc = GlobalBloc(globalRepository: GlobalManagerRepository());
     homeBloc.add(FetchDashboardStaticsEvent());
+    // Fetch default settings to populate form fields
+    _globalBloc.add(FetchUserSettingsEvent());
+    buildDefaultSettingInit();
     super.initState();
   }
+
+  Widget buildDefaultSettingInit() => BlocBuilder(
+    bloc: _globalBloc,
+    builder: (context, state) {
+      if (state is GlobalLoadingStatus) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      if (state is FetchUserSettingsSuccessStatus) {
+        final data = state.model;
+        // amountPerKg.text = data.toString();
+        wastagePercentage2.text = data.record!.first.wastagePercentage
+            .toString();
+        conversionRate2.text = data.record!.first.conversionRate.toString();
+        // marginController.text = data.margin.toString();
+        return SizedBox();
+      }
+
+      if (state is FetchUserSettingsErrorStatus) {
+        return Center(child: Text(state.message.toString()));
+      }
+
+      // Keep the form visible during update success/error states so the
+      // whole widget doesn't disappear while the bloc emits update states.
+      if (state is UpdateDefaultSettingSuccessStatus ||
+          state is UpdateDefaultSettingErrorStatus) {
+        return SizedBox();
+      }
+
+      return const SizedBox.shrink();
+    },
+  );
+
+  double? widgetHeight;
 
   Widget buildJumboRollStatics({
     required int? totalRolls,
@@ -256,83 +312,368 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
     );
   }
 
-  // Widget get defaultSettings => Container(
-  //   margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-  //   padding: const EdgeInsets.all(24),
-  //   decoration: BoxDecoration(
-  //     color: Colors.white,
-  //     borderRadius: BorderRadius.circular(16),
-  //     border: Border.all(color: Colors.grey[200]!, width: 1),
-  //     boxShadow: [
-  //       BoxShadow(
-  //         color: Colors.black.withOpacity(0.04),
-  //         blurRadius: 12,
-  //         offset: const Offset(0, 4),
-  //       ),
-  //     ],
-  //   ),
-  //   child: Column(
-  //     crossAxisAlignment: CrossAxisAlignment.start,
-  //     children: [
-  //       Text(
-  //         'Default Settings',
-  //         style: const TextStyle(
-  //           fontSize: 18,
-  //           fontWeight: FontWeight.bold,
-  //           color: Color(0xFF2C3E50),
-  //           letterSpacing: -0.5,
-  //         ),
-  //       ),
-  //       const SizedBox(height: 4),
-  //       Text(
-  //         'Configure default values for inventory calculations',
-  //         style: TextStyle(
-  //           fontSize: 13,
-  //           color: Colors.grey[600],
-  //           fontWeight: FontWeight.w400,
-  //         ),
-  //       ),
-  //       const SizedBox(height: 24),
-  //       Row(
-  //         spacing: 24,
-  //         children: [
-  //           Expanded(
-  //             child: _buildSettingField(
-  //               label: 'Amount Per KG',
-  //               controller: amountPerKg,
-  //               icon: Icons.currency_rupee,
-  //             ),
-  //           ),
-  //           Expanded(
-  //             child: _buildSettingField(
-  //               label: 'Wastage Percentage',
-  //               controller: wastagePercentage,
-  //               icon: Icons.percent,
-  //             ),
-  //           ),
-  //           Expanded(
-  //             child: _buildSettingField(
-  //               label: 'Conversion Rate',
-  //               controller: conversionRate,
-  //               icon: Icons.trending_up,
-  //             ),
-  //           ),
-  //         ],
-  //       ),
-  //       Row(
-  //         spacing: 20,
-  //         children: [
-  //           Expanded(child: SizedBox()),
-  //           Expanded(child: SizedBox()),
-  //           Expanded(child: SizedBox()),
-  //           Expanded(
-  //             child: CustomButton(label: 'Submit', onPressed: () {}),
-  //           ),
-  //         ],
-  //       ),
-  //     ],
-  //   ),
-  // );
+  Widget
+  get buildPredictCalculationFormWidget => BlocListener<GlobalBloc, GlobalState>(
+    bloc: _globalBloc,
+    listener: (context, state) {
+      if (state is FetchUserSettingsSuccessStatus) {
+        // Auto-populate form fields with default settings
+        final data = state.model;
+        if (data.record != null && data.record!.isNotEmpty) {
+          wastagePercentage2.text = data.record!.first.wastagePercentage
+              .toString();
+          conversionRate2.text = data.record!.first.conversionRate.toString();
+        }
+      }
+    },
+    child: Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey[200]!, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 16,
+          children: [
+            Text(
+              'Predict Calculation',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF2C3E50),
+                letterSpacing: -0.5,
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: Responsive.kHZRowPadding,
+              ),
+              child: Row(
+                spacing: 16,
+                children: [
+                  Expanded(
+                    child: MasterRoleSizeSelector(
+                      selectedRole: selectedRoundSize,
+                      onChanged: (String? value) {
+                        setState(() {
+                          selectedRoundSize = value;
+                        });
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        SizedBox(height: 10),
+                        CustomTextFieldExtra(
+                          controller: tapeLengthController,
+                          labelText: 'Tape Length',
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter tape length';
+                            }
+                            if (double.tryParse(value) == null) {
+                              return 'Please enter a valid number';
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        SizedBox(height: 10),
+                        CustomTextFieldExtra(
+                          controller: ratePerSquareMeterController,
+                          labelText: 'Rate Per Square Meter',
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter rate per square meter';
+                            }
+                            if (double.tryParse(value) == null) {
+                              return 'Please enter a valid number';
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: Responsive.kHZRowPadding,
+              ),
+              child: Row(
+                spacing: 16,
+                children: [
+                  Expanded(
+                    child: CustomTextFieldExtra(
+                      controller: wastagePercentage2,
+                      labelText: 'Wastage Percentage',
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter wastage percentage';
+                        }
+                        if (double.tryParse(value) == null) {
+                          return 'Please enter a valid number';
+                        }
+                        if (double.parse(value) < 0 ||
+                            double.parse(value) > 100) {
+                          return 'Wastage percentage must be between 0 and 100';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: CustomTextFieldExtra(
+                      controller: conversionRate2,
+                      labelText: 'Conversion Rate',
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter conversion rate';
+                        }
+                        if (double.tryParse(value) == null) {
+                          return 'Please enter a valid number';
+                        }
+                        // if (double.parse(value) < 0 ||
+                        //     double.parse(value) > 100) {
+                        //   return 'Conversion rate must be between 0 and 100';
+                        // }
+                        return null;
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: CustomTextFieldExtra(
+                      controller: marginController,
+                      labelText: 'Margin',
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter margin';
+                        }
+                        if (double.tryParse(value) == null) {
+                          return 'Please enter a valid number';
+                        }
+                        if (double.parse(value) < 0 ||
+                            double.parse(value) > 100) {
+                          return 'Margin must be between 0 and 100';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: Responsive.kHZRowPadding,
+              ),
+              child: Row(
+                spacing: 16,
+                children: [
+                  Expanded(child: SizedBox()),
+                  Expanded(child: SizedBox()),
+                  Expanded(child: SizedBox()),
+                  Expanded(child: predictCalculationButton),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+
+  Widget get predictCalculationButton => BlocConsumer(
+    bloc: homeBloc,
+    listener: (context, state) {
+      if (state is PredictCalculationSuccessStatus) {
+        if (state.predictCalculationModel.status == 1) {
+          ToastService.instance.showSuccess(
+            context,
+            state.predictCalculationModel.message.toString(),
+          );
+          // open a dialog to display returned values
+          showPredictResultDialog(
+            context: context,
+            cartonRate: state.predictCalculationModel.cartonRate,
+            cartonWithMargin: state.predictCalculationModel.cartonWithMargin,
+          );
+        } else {
+          ToastService.instance.showError(
+            context,
+            state.predictCalculationModel.message.toString(),
+          );
+        }
+      }
+      if (state is PredictCalculationErrorStatus) {
+        ToastService.instance.showError(context, state.message.toString());
+      }
+    },
+    builder: (context, state) {
+      if (state is HomeLoadingStatus) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      return CustomButton(
+        label: 'Submit',
+        onPressed: () {
+          if (_formKey.currentState!.validate()) {
+            homeBloc.add(
+              PredictCalculationEvent(
+                param: PredictCalParam(
+                  rollSize: selectedRoundSize.toString(),
+                  tapeLength: tapeLengthController.text,
+                  ratePerSquareMeter: ratePerSquareMeterController.text,
+                  wastagePercentage: wastagePercentage2.text,
+                  conversionRate: conversionRate2.text,
+                  margin: marginController.text,
+                ),
+              ),
+            );
+          }
+        },
+      );
+    },
+  );
+
+  void showPredictResultDialog({
+    required BuildContext context,
+    required dynamic cartonRate,
+    required dynamic cartonWithMargin,
+  }) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 8,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            width: 520,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: Colors.white,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Prediction Result',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.grey[200],
+                        ),
+                        padding: const EdgeInsets.all(6),
+                        child: Icon(Icons.close, size: 18),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Divider(height: 1, color: Colors.grey[300]),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Carton Rate',
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            cartonRate?.toString() ?? '-',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Carton With Margin',
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            cartonWithMargin?.toString() ?? '-',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text('Close'),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text('OK'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   Widget _buildSettingField({
     required String label,
@@ -586,7 +927,8 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
       if (state is HomeLoadingStatus) {
         return const Center(child: CircularProgressIndicator());
       } else if (state is HomeDashboardStaticsSuccessStatus) {
-        final data = state.showStaticModel;
+        dashboardData = state.showStaticModel;
+        final data = dashboardData!;
         return SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -648,6 +990,63 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
             onPressed: () {
               homeBloc.add(FetchDashboardStaticsEvent());
             },
+          ),
+        );
+      } else if (dashboardData != null) {
+        final data = dashboardData!;
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // KPI Metrics Section
+              // if (Responsive.isDesktop(context)) _buildKPIMetrics(data),
+              // SizedBox(height: Responsive.isDesktop(context) ? 32 : 20),
+
+              // Configuration Section
+              // defaultSettings,
+              SizedBox(height: Responsive.isDesktop(context) ? 32 : 20),
+
+              // Stock Overview Section
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: DashboardSectionHeader(
+                  title: 'Stock Management',
+                  subtitle: 'Real-time stock status across categories',
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _buildInventoryOverview(data),
+              ),
+              SizedBox(height: Responsive.isDesktop(context) ? 32 : 20),
+
+              // Master Data Section
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: DashboardSectionHeader(
+                  title: 'Master Data Management',
+                  subtitle: 'Manage and monitor all product configurations',
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _buildMasterDataGrid(data),
+              ),
+              SizedBox(height: Responsive.isDesktop(context) ? 32 : 20),
+
+              // Analytics Section
+              // Padding(
+              //   padding: const EdgeInsets.symmetric(horizontal: 20),
+              //   child: DashboardSectionHeader(
+              //     title: 'Detailed Analytics',
+              //     subtitle: 'In-depth analysis of batch and micron information',
+              //   ),
+              // ),
+              // Padding(
+              //   padding: const EdgeInsets.symmetric(horizontal: 20),
+              //   child: _buildAnalyticsSection(data),
+              // ),
+            ],
           ),
         );
       }
@@ -726,10 +1125,35 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
       spacing: 20,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Flexible(child: MasterCartonTypeDropDownDB()),
-        Flexible(child: CoreDropdownDB()),
+        Expanded(
+          child: _buildMasterDataCard(
+            480,
+            title: 'Carton Stock',
+            icon: Icons.category,
+            color: const Color(0xFF27AE60),
+            child: MasterCartonTypeDropDownDB(),
+          ),
+        ),
+        Expanded(
+          child: _buildMasterDataCard(
+            480,
+            title: 'Core Stock',
+            icon: Icons.center_focus_strong,
+            color: const Color(0xFF27AE60),
+            child: CoreDropdownDB(),
+          ),
+        ),
+        Expanded(
+          child: _buildMasterDataCard(
+            480,
+            title: 'Jumbo Width',
+            icon: Icons.width_full,
+            color: const Color(0xFF27AE60),
+            child: WidthDropdownDBWidget(),
+          ),
+        ),
 
-        Expanded(child: WidthDropdownDBWidget()),
+        // Flexible(child: CoreDropdownDB()),
       ],
     );
   }
@@ -774,77 +1198,58 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
   }
 
   Widget _buildMasterDataGrid(ShowStaticModel data) {
-    return Column(
+    return Row(
       spacing: 20,
       children: [
-        Row(
-          spacing: 20,
-          children: [
-            Expanded(
-              child: _buildMasterDataCard(
-                title: 'Roll Sizes',
-                icon: Icons.aspect_ratio,
-                color: const Color(0xFF3498DB),
-                child: MasterRoleSizeDBSelector(),
-              ),
-            ),
-            Expanded(
-              child: _buildMasterDataCard(
-                title: 'Micron Details',
-                icon: Icons.category,
-                color: const Color(0xFF27AE60),
-                child: _buildMicronDetailsTable(data),
-              ),
-            ),
-            Expanded(
-              child: _buildMasterDataCard(
-                title: 'Base Type',
-                icon: Icons.donut_large_rounded,
-                color: const Color(0xFF16A085),
-                child: BaseDashboardWidget(),
-              ),
-            ),
-            // _buildMasterDataCard(
-            //   title: 'Width Options',
-            //   icon: Icons.width_full,
-            //   color: const Color(0xFF9B59B6),
-            //   child: WidthDropdownDBWidget(),
-            // ),
-          ],
+        Expanded(
+          child: _buildMasterDataCard(
+            480,
+            title: 'Roll Sizes',
+            icon: Icons.aspect_ratio,
+            color: const Color(0xFF3498DB),
+            child: MasterRoleSizeDBSelector(),
+          ),
         ),
-        Row(
-          spacing: 20,
-          children: [
-            Expanded(
-              child: _buildMasterDataCard(
-                title: 'Film Sizes',
-                icon: Icons.aspect_ratio,
-                color: const Color(0xFF3498DB),
-                child: MasterStretchFilmDashboardWidget(),
-              ),
-            ),
-            Expanded(child: SizedBox()),
-            Expanded(child: SizedBox()),
-            // _buildMasterDataCard(
-            //   title: 'Width Options',
-            //   icon: Icons.width_full,
-            //   color: const Color(0xFF9B59B6),
-            //   child: WidthDropdownDBWidget(),
-            // ),
-          ],
+        Expanded(
+          child: _buildMasterDataCard(
+            480,
+            title: 'Micron Details',
+            icon: Icons.category,
+            color: const Color(0xFF27AE60),
+            child: MicronDashboard(),
+          ),
+        ),
+        Expanded(
+          child: _buildMasterDataCard(
+            480,
+            title: 'Base Type',
+            icon: Icons.donut_large_rounded,
+            color: const Color(0xFF16A085),
+            child: BaseDashboardWidget(),
+          ),
+        ),
+        Expanded(
+          child: _buildMasterDataCard(
+            480,
+            title: 'Film Sizes',
+            icon: Icons.aspect_ratio,
+            color: const Color(0xFFE67E22),
+            child: MasterStretchFilmDashboardWidget(),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildMasterDataCard({
+  Widget _buildMasterDataCard(
+    double height, {
     required String title,
     required IconData icon,
     required Color color,
     required Widget child,
   }) {
     return Container(
-      height: 550,
+      height: height,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -944,118 +1349,118 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
             ],
           ),
           const SizedBox(height: 20),
-          SizedBox(height: 450, child: _buildMicronDetailsTable(data)),
+          SizedBox(height: 450, child: MicronDashboard()),
         ],
       ),
     );
   }
 
-  Widget _buildMicronDetailsTable(ShowStaticModel data) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: const Color(0xFF9B59B6).withOpacity(0.05),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Micron',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF9B59B6),
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Text(
-                  'Tape',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF9B59B6),
-                    letterSpacing: 0.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              Expanded(
-                child: Text(
-                  'Stretch',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF9B59B6),
-                    letterSpacing: 0.5,
-                  ),
-                  textAlign: TextAlign.end,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: data.micBatchInformation?.length ?? 0,
-          itemBuilder: (context, index) {
-            final item = data.micBatchInformation![index];
-            return Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: index.isEven
-                    ? const Color(0xFF9B59B6).withOpacity(0.03)
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey[200]!, width: 0.5),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      item.mic.toString(),
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF2C3E50),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      item.batch.toString(),
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF2C3E50),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      item.piece.toString(),
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF2C3E50),
-                      ),
-                      textAlign: TextAlign.end,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-      ],
-    );
-  }
+  // Widget _buildMicronDetailsTable(ShowStaticModel data) {
+  //   return Column(
+  //     children: [
+  //       Container(
+  //         padding: const EdgeInsets.all(12),
+  //         decoration: BoxDecoration(
+  //           color: const Color(0xFF9B59B6).withOpacity(0.05),
+  //           borderRadius: BorderRadius.circular(10),
+  //         ),
+  //         child: Row(
+  //           children: [
+  //             Expanded(
+  //               child: Text(
+  //                 'Micron',
+  //                 style: TextStyle(
+  //                   fontSize: 12,
+  //                   fontWeight: FontWeight.w600,
+  //                   color: const Color(0xFF9B59B6),
+  //                   letterSpacing: 0.5,
+  //                 ),
+  //               ),
+  //             ),
+  //             Expanded(
+  //               child: Text(
+  //                 'Tape',
+  //                 style: TextStyle(
+  //                   fontSize: 12,
+  //                   fontWeight: FontWeight.w600,
+  //                   color: const Color(0xFF9B59B6),
+  //                   letterSpacing: 0.5,
+  //                 ),
+  //                 textAlign: TextAlign.center,
+  //               ),
+  //             ),
+  //             Expanded(
+  //               child: Text(
+  //                 'Stretch',
+  //                 style: TextStyle(
+  //                   fontSize: 12,
+  //                   fontWeight: FontWeight.w600,
+  //                   color: const Color(0xFF9B59B6),
+  //                   letterSpacing: 0.5,
+  //                 ),
+  //                 textAlign: TextAlign.end,
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //       const SizedBox(height: 12),
+  //       ListView.builder(
+  //         shrinkWrap: true,
+  //         physics: const NeverScrollableScrollPhysics(),
+  //         itemCount: data.micBatchInformation?.length ?? 0,
+  //         itemBuilder: (context, index) {
+  //           final item = data.micBatchInformation![index];
+  //           return Container(
+  //             margin: const EdgeInsets.only(bottom: 8),
+  //             padding: const EdgeInsets.all(12),
+  //             decoration: BoxDecoration(
+  //               color: index.isEven
+  //                   ? const Color(0xFF9B59B6).withOpacity(0.03)
+  //                   : Colors.transparent,
+  //               borderRadius: BorderRadius.circular(8),
+  //               border: Border.all(color: Colors.grey[200]!, width: 0.5),
+  //             ),
+  //             child: Row(
+  //               children: [
+  //                 Expanded(
+  //                   child: Text(
+  //                     item.mic.toString(),
+  //                     style: const TextStyle(
+  //                       fontSize: 13,
+  //                       fontWeight: FontWeight.w500,
+  //                       color: Color(0xFF2C3E50),
+  //                     ),
+  //                   ),
+  //                 ),
+  //                 Expanded(
+  //                   child: Text(
+  //                     item.batch.toString(),
+  //                     style: const TextStyle(
+  //                       fontSize: 13,
+  //                       fontWeight: FontWeight.w500,
+  //                       color: Color(0xFF2C3E50),
+  //                     ),
+  //                     textAlign: TextAlign.center,
+  //                   ),
+  //                 ),
+  //                 Expanded(
+  //                   child: Text(
+  //                     item.piece.toString(),
+  //                     style: const TextStyle(
+  //                       fontSize: 13,
+  //                       fontWeight: FontWeight.w500,
+  //                       color: Color(0xFF2C3E50),
+  //                     ),
+  //                     textAlign: TextAlign.end,
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           );
+  //         },
+  //       ),
+  //     ],
+  //   );
+  // }
 }

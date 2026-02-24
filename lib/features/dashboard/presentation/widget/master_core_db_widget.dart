@@ -1,184 +1,168 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:indogrip/core/utils/widgets/toast_service.dart';
+import 'package:indogrip/features/dashboard/presentation/bloc/home_bloc.dart';
 import 'package:indogrip/features/round/data/models/core_list_model.dart';
 import 'package:indogrip/features/round/domain/repositories/add_round_repo.dart';
 
-final coreListProvider = FutureProvider<CoreListModel>(
-  (ref) => AddRoundRepository().fetchCoreList(),
-);
-
-class CoreDropdownDB extends ConsumerWidget {
+class CoreDropdownDB extends StatefulWidget {
   const CoreDropdownDB({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final masterRollSizePro = ref.watch(coreListProvider);
-    return masterRollSizePro.when(
-      data: (data) => data.status != 1
-          ? Center(
+  State<CoreDropdownDB> createState() => _CoreDropdownDBState();
+}
+
+class _CoreDropdownDBState extends State<CoreDropdownDB> {
+  late final HomeBloc homeBloc;
+  @override
+  void initState() {
+    super.initState();
+    homeBloc = HomeBloc();
+    homeBloc.add(FetchCoreListEvent());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<HomeBloc, HomeState>(
+      bloc: homeBloc,
+      builder: (context, state) {
+        switch (state.runtimeType) {
+          case HomeLoadingStatus:
+            return const Center(child: CircularProgressIndicator());
+          case CoreListSuccessStatus:
+            final data = (state as CoreListSuccessStatus).coreListModel;
+            return data.status != 1
+                ? Center(
+                    child: Text(
+                      data.message ?? 'No response from server',
+                      style: const TextStyle(
+                        color: Color(0xFF3D475C),
+                        fontSize: 14,
+                      ),
+                    ),
+                  )
+                : Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF9B59B6).withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Core Name',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF9B59B6),
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                'Core Stock',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF9B59B6),
+                                  letterSpacing: 0.5,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                'Core Code',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF9B59B6),
+                                  letterSpacing: 0.5,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: data.record?.length ?? 0,
+                        itemBuilder: (context, index) {
+                          final item = data.record![index];
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: index.isEven
+                                  ? const Color(0xFF9B59B6).withOpacity(0.03)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: Colors.grey[200]!,
+                                width: 0.5,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    item.mCoreName.toString(),
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF2C3E50),
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    item.coreStock.toString(),
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF2C3E50),
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    item.mCoreCode.toString(),
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF2C3E50),
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  );
+          case CoreListErrorStatus:
+            final coreListState = (state as CoreListErrorStatus).message;
+
+            return Center(
               child: Text(
-                data.message ?? 'No response from server',
+                coreListState.toString(),
                 style: const TextStyle(color: Color(0xFF3D475C), fontSize: 14),
               ),
-            )
-          : Container(
-              height: 450,
-              alignment: Alignment.topCenter,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blue.withOpacity(0.1),
-                    spreadRadius: 3,
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: Container(
-                height: 350,
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.cyan.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            Icons.center_focus_strong,
-                            color: Colors.cyan,
-                            size: 24,
-                          ),
-                        ),
-                        SizedBox(width: 12),
-                        Text(
-                          'Core',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2C3E50),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    SizedBox(height: 20),
-                    Container(
-                      padding: EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Color(0xFF9B59B6).withOpacity(0.05),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Core Name',
-                              style: TextStyle(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF9B59B6),
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          Expanded(
-                            child: Text(
-                              'Core Stock',
-                              style: TextStyle(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF9B59B6),
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          Expanded(
-                            child: Text(
-                              'Core Code',
-                              style: TextStyle(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF9B59B6),
-                              ),
-                              textAlign: TextAlign.end,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: data.record!.length,
-                      itemBuilder: (context, index) {
-                        return Container(
-                          margin: EdgeInsets.symmetric(vertical: 4),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: index.isEven
-                                ? Colors.cyan.withOpacity(0.03)
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  data.record![index].mCoreName.toString(),
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF2C3E50),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                              Expanded(
-                                child: Text(
-                                  data.record![index].coreStock.toString(),
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF2C3E50),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                              Expanded(
-                                child: Text(
-                                  data.record![index].mCoreCode.toString(),
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF2C3E50),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  textAlign: TextAlign.end,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-      error: (error, stackTrace) {
-        ToastService.instance.showError(context, error.toString());
-        return SizedBox.shrink();
-      },
-      loading: () {
-        return const Center(child: CircularProgressIndicator());
+            );
+          default:
+            return const SizedBox.shrink();
+        }
       },
     );
   }

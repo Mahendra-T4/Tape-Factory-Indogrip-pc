@@ -13,7 +13,7 @@ import 'package:retry/retry.dart';
 // );
 
 class NotificationRepository {
-  static Future<NotificationModel> fetchNotifications(filterBy) async {
+  static Future<NotificationModel> fetchNotifications() async {
     NotificationModel notificationModel = NotificationModel();
     try {
       final response = await retry(
@@ -22,7 +22,7 @@ class NotificationRepository {
               data: FormData.fromMap({
                 'activity': 'admin-notification',
                 'userKey': HiveService.getUserId(),
-                'filterBy': filterBy.toString(),
+                // 'filterBy': filterBy.toString(),
               }),
             ).timeout(
               const Duration(seconds: 5),
@@ -51,6 +51,8 @@ class NotificationRepository {
     }
     return notificationModel;
   }
+
+  
 
   static Future<ReadNotificationModel> markNotificationAsRead(
     String notificationKey,

@@ -16,12 +16,14 @@ class DefaultSettingWidget extends StatefulWidget {
 }
 
 class _DefaultSettingWidgetState extends State<DefaultSettingWidget> {
+  final _formKey = GlobalKey<FormState>();
   late final GlobalBloc _globalBloc;
   final TextEditingController conversionRateController =
       TextEditingController();
   final TextEditingController wastagePercentageController =
       TextEditingController();
   final TextEditingController amountPerKGController = TextEditingController();
+  bool _isDataLoaded = false;
 
   @override
   void initState() {
@@ -32,7 +34,29 @@ class _DefaultSettingWidgetState extends State<DefaultSettingWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder(
+    return BlocConsumer(
+      listener: (context, state) {
+        if (state is UpdateDefaultSettingSuccessStatus) {
+          if (state.model.status == 1) {
+            ToastService.instance.showSuccess(
+              context,
+              state.model.message.toString(),
+            );
+          } else {
+            ToastService.instance.showError(
+              context,
+              state.model.message.toString(),
+            );
+          }
+        } else if (state is UpdateDefaultSettingErrorStatus) {
+          ToastService.instance.showError(context, state.message.toString());
+        } else if (state is FetchUserSettingsErrorStatus) {
+          ToastService.instance.showError(context, state.message.toString());
+        }
+        if (state is FetchUserSettingsErrorStatus) {
+          ToastService.instance.showError(context, state.message.toString());
+        }
+      },
       bloc: _globalBloc,
       builder: (context, state) {
         if (state is GlobalLoadingStatus) {
@@ -41,7 +65,7 @@ class _DefaultSettingWidgetState extends State<DefaultSettingWidget> {
 
         if (state is FetchUserSettingsSuccessStatus) {
           final data = state.model;
-          if (data.status == 1) {
+          if (data.status == 1 && !_isDataLoaded) {
             amountPerKGController.text = data.record!.first.amountPerKG
                 .toString();
             conversionRateController.text = data.record!.first.conversionRate
@@ -51,6 +75,7 @@ class _DefaultSettingWidgetState extends State<DefaultSettingWidget> {
                 .first
                 .wastagePercentage
                 .toString();
+            _isDataLoaded = true;
           }
 
           return data.status != 1
@@ -90,107 +115,144 @@ class _DefaultSettingWidgetState extends State<DefaultSettingWidget> {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Default Settings',
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF2C3E50),
-              letterSpacing: -0.5,
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Default Settings',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF2C3E50),
+                letterSpacing: -0.5,
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Configure default values for inventory calculations',
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w400,
+            const SizedBox(height: 4),
+            Text(
+              'Configure default values for inventory calculations',
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w400,
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
-          Row(
-            spacing: 24,
-            children: [
-              Expanded(
-                child: _buildSettingField(
-                  label: 'Amount Per KG',
-                  controller: amountPerKGController,
-                  icon: Icons.currency_rupee,
+            const SizedBox(height: 24),
+            Row(
+              spacing: 24,
+              children: [
+                Expanded(
+                  child: _buildSettingField(
+                    label: 'Amount Per KG',
+                    controller: amountPerKGController,
+                    icon: Icons.currency_rupee,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Amount Per KG is required';
+                      }
+                      final numValue = double.tryParse(value);
+                      if (numValue == null || numValue <= 0) {
+                        return 'Amount Per KG must be a positive number';
+                      }
+                      return null;
+                    },
+                  ),
                 ),
-              ),
-              Expanded(
-                child: _buildSettingField(
-                  label: 'Wastage Percentage',
-                  controller: wastagePercentageController,
-                  icon: Icons.percent,
+                Expanded(
+                  child: _buildSettingField(
+                    label: 'Wastage Percentage',
+                    controller: wastagePercentageController,
+                    icon: Icons.percent,
+                    validator: (p0) {
+                      if (p0 == null || p0.isEmpty) {
+                        return 'Wastage Percentage is required';
+                      }
+                      final numValue = double.tryParse(p0);
+                      if (numValue == null || numValue < 0 || numValue > 100) {
+                        return 'Wastage Percentage must be between 0 and 100';
+                      }
+                      return null;
+                    },
+                  ),
                 ),
-              ),
-              Expanded(
-                child: _buildSettingField(
-                  label: 'Conversion Rate',
-                  controller: conversionRateController,
-                  icon: Icons.trending_up,
+                Expanded(
+                  child: _buildSettingField(
+                    label: 'Conversion Rate',
+                    controller: conversionRateController,
+                    icon: Icons.trending_up,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Conversion Rate is required';
+                      }
+                      final numValue = double.tryParse(value);
+                      if (numValue == null || numValue <= 0) {
+                        return 'Conversion Rate must be a positive number';
+                      }
+                      return null;
+                    },
+                  ),
                 ),
-              ),
-            ],
-          ),
-          Row(
-            spacing: 20,
-            children: [
-              Expanded(child: SizedBox()),
-              Expanded(child: SizedBox()),
-              Expanded(child: SizedBox()),
-              Expanded(
-                child: BlocConsumer(
-                  bloc: _globalBloc,
-                  listener: (context, state) {
-                    if (state is UpdateDefaultSettingSuccessStatus) {
-                      if (state.model.status == 1) {
-                        ToastService.instance.showSuccess(
-                          context,
-                          state.model.message ?? 'retry',
-                        );
-                        // Refresh the settings provider to reload updated values
-                        _globalBloc.add(FetchUserSettingsEvent());
-                      } else {
+              ],
+            ),
+            Row(
+              spacing: 20,
+              children: [
+                Expanded(child: SizedBox()),
+                Expanded(child: SizedBox()),
+                Expanded(child: SizedBox()),
+                Expanded(
+                  child: BlocConsumer(
+                    bloc: _globalBloc,
+                    listener: (context, state) {
+                      if (state is UpdateDefaultSettingSuccessStatus) {
+                        if (state.model.status == 1) {
+                          ToastService.instance.showSuccess(
+                            context,
+                            state.model.message ?? 'retry',
+                          );
+                          // Refresh the settings provider to reload updated values
+                          _isDataLoaded = false;
+                          _globalBloc.add(FetchUserSettingsEvent());
+                        } else {
+                          ToastService.instance.showError(
+                            context,
+                            state.model.message ?? 'retry',
+                          );
+                        }
+                      } else if (state is UpdateDefaultSettingErrorStatus) {
                         ToastService.instance.showError(
                           context,
-                          state.model.message ?? 'retry',
+                          state.message.toString(),
                         );
                       }
-                    } else if (state is UpdateDefaultSettingErrorStatus) {
-                      ToastService.instance.showError(
-                        context,
-                        state.message.toString(),
+                    },
+                    builder: (context, state) {
+                      if (state is GlobalLoadingStatus) {
+                        return Center(child: const CircularProgressIndicator());
+                      }
+                      return CustomButton(
+                        label: 'Submit',
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            _globalBloc.add(
+                              UpdateDefaultSettingEvent(
+                                conversionRate: conversionRateController.text,
+                                wastagePercentage:
+                                    wastagePercentageController.text,
+                                amountPerKG: amountPerKGController.text,
+                              ),
+                            );
+                          }
+                        },
                       );
-                    }
-                  },
-                  builder: (context, state) {
-                    if (state is GlobalLoadingStatus) {
-                      return Center(child: const CircularProgressIndicator());
-                    }
-                    return CustomButton(
-                      label: 'Submit',
-                      onPressed: () {
-                        _globalBloc.add(
-                          UpdateDefaultSettingEvent(
-                            conversionRate: conversionRateController.text,
-                            wastagePercentage: wastagePercentageController.text,
-                            amountPerKG: amountPerKGController.text,
-                          ),
-                        );
-                      },
-                    );
-                  },
+                    },
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -199,6 +261,7 @@ class _DefaultSettingWidgetState extends State<DefaultSettingWidget> {
     required String label,
     required TextEditingController controller,
     required IconData icon,
+    String? Function(String?)? validator,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -225,7 +288,7 @@ class _DefaultSettingWidgetState extends State<DefaultSettingWidget> {
           ],
         ),
         const SizedBox(height: 8),
-        CustomTextField(controller: controller),
+        CustomTextField(controller: controller, validator: validator),
       ],
     );
   }

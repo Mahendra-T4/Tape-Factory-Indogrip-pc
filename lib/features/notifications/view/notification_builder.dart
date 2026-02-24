@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:indogrip/core/utils/widgets/textfield_label.dart';
 import 'package:indogrip/core/utils/widgets/toast_service.dart';
@@ -11,19 +13,20 @@ import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
 abstract class NotificationBuilder extends State<Notifications> {
   final GlobalKey<ScaffoldState> stateKey = GlobalKey<ScaffoldState>();
-  late NotificationDataSource dataSource;
+  NotificationDataSource? dataSource;
   late final GlobalBloc globalBloc;
   List<Map<String, dynamic>> selectedItems = [];
   final GlobalKey key = GlobalKey();
   bool isChecked = false;
-  List<DataGridRow> selectedRows = [];
+  List<int> selectedIndices =
+      []; // Store indices instead of DataGridRow objects
   bool isMultipleSelection = false;
   String? filterBy;
   @override
   void initState() {
     super.initState();
     globalBloc = GlobalBloc(globalRepository: GlobalManagerRepository());
-    globalBloc.add(LoadNotificationsEvent(filterBy: 2));
+    globalBloc.add(LoadNotificationsEvent());
   }
 
   Widget buildSelectionActions() {
@@ -33,8 +36,14 @@ abstract class NotificationBuilder extends State<Notifications> {
         children: [
           MultiDeleteButton(
             selectedItems: selectedItems,
-            panel: 'view-client',
+            panel: 'admin-notification',
+            keyField:
+                'notificationKey', // Specify the correct field name for notifications
             onPressed: () {
+              log('MultiDeleteButton onPressed called');
+              log(
+                'Selected items for deletion: ${selectedItems.map((e) => e['notificationKey']).toList()}',
+              );
               if (selectedItems.isNotEmpty) {
                 globalBloc.add(
                   GlobalDeleteMultipleRecordsEvent(
@@ -44,6 +53,8 @@ abstract class NotificationBuilder extends State<Notifications> {
                     rPanel: 'admin-notification',
                   ),
                 );
+              } else {
+                log('selectedItems is empty!');
               }
             },
           ),
@@ -53,8 +64,14 @@ abstract class NotificationBuilder extends State<Notifications> {
   }
 
   void handleSelectionChanged(List<Map<String, dynamic>> items) {
+    log('handleSelectionChanged called with ${items.length} items');
+    if (items.isNotEmpty) {
+      log('First item keys: ${items.first.keys.toList()}');
+      log('First item notificationKey: ${items.first['notificationKey']}');
+    }
     setState(() {
       selectedItems = items;
+      log('selectedItems updated to ${selectedItems.length} items');
     });
   }
 
@@ -64,6 +81,7 @@ abstract class NotificationBuilder extends State<Notifications> {
         columnName: NotificationColumn.srNo,
         columnWidthMode: ColumnWidthMode.fitByCellValue,
         width: 70,
+        minimumWidth: 50,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -74,35 +92,42 @@ abstract class NotificationBuilder extends State<Notifications> {
           ),
         ),
       ),
-      GridColumn(
-        columnName: NotificationColumn.action,
-        width: 250,
-        label: Container(
-          color: Colors.grey[100],
-          child: const Center(child: TextFieldlabelText("Action")),
-        ),
-      ),
+      // GridColumn(
+      //   columnName: NotificationColumn.action,
+      //   width: 250,
+      //   label: Container(
+      //     color: Colors.grey[100],
+      //     child: const Center(child: TextFieldlabelText("Action")),
+      //   ),
+      // ),
       GridColumn(
         columnName: NotificationColumn.message,
-        width: 500,
+        columnWidthMode: ColumnWidthMode.fill,
+        minimumWidth: 200,
         label: Container(
           color: Colors.grey[100],
+          alignment: Alignment.center,
           child: const Center(child: TextFieldlabelText("Message")),
         ),
       ),
       GridColumn(
         columnName: NotificationColumn.date,
-        width: 350,
+        columnWidthMode: ColumnWidthMode.fitByColumnName,
+        minimumWidth: 150,
         label: Container(
           color: Colors.grey[100],
+          alignment: Alignment.center,
           child: const Center(child: TextFieldlabelText("Date")),
         ),
       ),
       GridColumn(
         columnName: NotificationColumn.panel,
-        width: 350,
+
+        width: 200,
+        minimumWidth: 100,
         label: Container(
           color: Colors.grey[100],
+          alignment: Alignment.center,
           child: const Center(child: TextFieldlabelText("Panel")),
         ),
       ),
@@ -117,8 +142,10 @@ abstract class NotificationBuilder extends State<Notifications> {
       GridColumn(
         columnName: 'actions',
         width: 200,
+        minimumWidth: 150,
         label: Container(
           color: Colors.grey[100],
+          alignment: Alignment.center,
           child: const Center(child: TextFieldlabelText("Actions")),
         ),
       ),
@@ -147,7 +174,7 @@ abstract class NotificationBuilder extends State<Notifications> {
         ToastService.instance.showSuccess(context, result.message.toString());
         // Refresh the notifications
         // ref.invalidate(notificationProvider);
-        globalBloc.add(LoadNotificationsEvent(filterBy: 2));
+        globalBloc.add(LoadNotificationsEvent());
       } else {
         ToastService.instance.showError(context, result.message.toString());
       }

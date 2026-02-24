@@ -2,7 +2,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:developer' as developer;
 
 class EnvConfig {
-  static String get indoGripBaseUrl => dotenv.env['IndoGrip_BASE_URL'] ?? '';
+  static String get indoGripBaseUrl => dotenv.env['IndoGrip_BASE_URL2'] ?? '';
   // static String get accountSureBaseUrl =>
   //     dotenv.env['IndoGrip_BASE_URL2'] ?? '';
   //  ?? 'http://accountsure.in/development/app/inventory/TFour/software-api/'dindex.php';

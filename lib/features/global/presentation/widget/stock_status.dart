@@ -142,10 +142,10 @@ class _StockStatusState extends State<StockStatus> {
                           )
                         : InputDecoration(border: InputBorder.none),
                     hint: Text(
-                      '-Select Status-',
+                      'Select Status',
                       style: TextStyle(
                         color: Colors.grey.shade600,
-                        fontSize: 11,
+                        fontSize: 12,
                       ),
                     ),
                     onChanged: widget.onChanged,

@@ -42,7 +42,7 @@ abstract class AddCartonBuilder extends State<AddCartonPanel> {
         cartonBloc.add(
           AddCartonOnRecordEvent(
             apiParams: CartonApiParams(
-              cartonType: '1',
+              cartonType: selectedCartonType.toString(),
               cartonDate: dataController.text,
               cartonQuantity: qntController.text,
               billNumber: billNumberController.text,

@@ -42,6 +42,120 @@ class _TableBottomWidgetState extends State<TableBottomWidget> {
     super.dispose();
   }
 
+  List<Widget> _buildPageButtons() {
+    final int totalPages = widget.pageQty ?? 1;
+    final int currentPage = widget.currentPage ?? 1;
+
+    if (totalPages <= 10) {
+      // If total pages are 10 or less, show all pages
+      return List.generate(
+        totalPages,
+        (index) => _buildPageButton(index + 1),
+      );
+    }
+
+    // Google-style pagination: show exactly 10 page numbers when total > 10
+    List<Widget> pageButtons = [];
+    const int maxVisiblePages = 10;
+
+    // Calculate start and end page numbers to show exactly 10 pages
+    int startPage = (currentPage - (maxVisiblePages ~/ 2)).clamp(1, totalPages - maxVisiblePages + 1);
+    int endPage = startPage + maxVisiblePages - 1;
+
+    // Ensure we don't go beyond total pages
+    if (endPage > totalPages) {
+      endPage = totalPages;
+      startPage = (totalPages - maxVisiblePages + 1).clamp(1, totalPages);
+    }
+
+    // Always show first page if not in range
+    if (startPage > 1) {
+      pageButtons.add(_buildPageButton(1));
+      if (startPage > 2) {
+        pageButtons.add(_buildEllipsis());
+      }
+    }
+
+    // Show exactly 10 pages in the middle section
+    for (int i = startPage; i <= endPage; i++) {
+      pageButtons.add(_buildPageButton(i));
+    }
+
+    // Always show last page if not in range
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        pageButtons.add(_buildEllipsis());
+      }
+      pageButtons.add(_buildPageButton(totalPages));
+    }
+
+    return pageButtons;
+  }
+
+  Widget _buildPageButton(int pageNumber) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      child: SizedBox(
+        width: 40,
+        child: TextButton(
+          onPressed: () {
+            widget.onPagePressed?.call(pageNumber);
+            log('Page Number: $pageNumber');
+          },
+          style: ButtonStyle(
+            overlayColor: MaterialStateProperty.resolveWith<Color>((states) {
+              if (states.contains(MaterialState.hovered)) {
+                return Colors.blue.withOpacity(0.1);
+              }
+              return Colors.transparent;
+            }),
+            backgroundColor: MaterialStateProperty.resolveWith<Color>((states) {
+              if (widget.currentPage == pageNumber) {
+                return Colors.blue.withOpacity(0.2);
+              }
+              return Colors.transparent;
+            }),
+            padding: MaterialStateProperty.all(
+              EdgeInsets.symmetric(horizontal: 8),
+            ),
+            shape: MaterialStateProperty.all(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+          child: Text(
+            '$pageNumber',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: widget.currentPage == pageNumber ? Colors.blue : Colors.grey,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEllipsis() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      child: SizedBox(
+        width: 40,
+        child: Center(
+          child: Text(
+            '...',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -57,7 +171,7 @@ class _TableBottomWidgetState extends State<TableBottomWidget> {
         right: Responsive.kHZRowPaddingTB,
       ),
       decoration: BoxDecoration(
-        color: Colors.grey.shade400,
+        color: Color(0xFFeeeeee),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Listener(
@@ -103,58 +217,7 @@ class _TableBottomWidgetState extends State<TableBottomWidget> {
             ),
             const VerticalDivider(color: Colors.grey, thickness: 1),
 
-            ...List.generate(
-              widget.pageQty != null ? widget.pageQty! : 1,
-              (index) => Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2),
-                child: SizedBox(
-                  width: 40,
-                  child: TextButton(
-                    onPressed: () {
-                      int pageNumber = index + 1;
-                      widget.onPagePressed?.call(pageNumber);
-                      log('Page Number: $pageNumber');
-                    },
-                    style: ButtonStyle(
-                      overlayColor: MaterialStateProperty.resolveWith<Color>((
-                        states,
-                      ) {
-                        if (states.contains(MaterialState.hovered)) {
-                          return Colors.blue.withOpacity(0.1);
-                        }
-                        return Colors.transparent;
-                      }),
-                      backgroundColor: MaterialStateProperty.resolveWith<Color>(
-                        (states) {
-                          if (widget.currentPage == index + 1) {
-                            return Colors.blue.withOpacity(0.2);
-                          }
-                          return Colors.transparent;
-                        },
-                      ),
-                      padding: MaterialStateProperty.all(
-                        EdgeInsets.symmetric(horizontal: 8),
-                      ),
-                      shape: MaterialStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                    ),
-                    child: Text(
-                      '${index + 1}',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                        color: widget.currentPage == index + 1
-                            ? Colors.blue
-                            : Colors.grey,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            ..._buildPageButtons(),
             const VerticalDivider(color: Colors.grey, thickness: 1),
             TextButton(
               onPressed: widget.onNextPressed,

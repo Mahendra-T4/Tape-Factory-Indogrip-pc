@@ -280,7 +280,6 @@ class _ViewClientPanelState extends ViewClientBuilder {
                             ClientProfile.routeName,
                             extra: staff,
                           );
-                         
                         },
                         onChanged: (String? value, ClientRecord record) {
                           globalBloc.add(
@@ -537,7 +536,6 @@ class _ViewClientPanelState extends ViewClientBuilder {
         ),
       ),
 
-      
       GridColumn(
         columnName: 'actions',
         width: 120,
@@ -553,32 +551,34 @@ class _ViewClientPanelState extends ViewClientBuilder {
   Widget build(BuildContext context) {
     return StreamBuilder(
       stream: InternetConnectionService().connectionStream,
-        initialData: true, // Assume connected initially
-        builder: (context, snapshot) {
-          // Handle error state
-          if (snapshot.hasError) {
-            return const NoInternetConnection();
-          }
+      initialData: true, // Assume connected initially
+      builder: (context, snapshot) {
+        // Handle error state
+        if (snapshot.hasError) {
+          return const NoInternetConnection();
+        }
 
-          // Handle disconnected state
-          if (snapshot.data == false) {
-            return const NoInternetConnection();
-          }
+        // Handle disconnected state
+        if (snapshot.data == false) {
+          return const NoInternetConnection();
+        }
 
-          // Handle loading state
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
+        // Handle loading state
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
         return Scaffold(
           key: _stateKey,
           appBar: !Responsive.isDesktop(context)
               ? MobileAppBar(context, _stateKey, 'View Clients')
               : null,
-          drawer: !Responsive.isDesktop(context) ? const SideMenuWidget() : null,
+          drawer: !Responsive.isDesktop(context)
+              ? const SideMenuWidget()
+              : null,
           body: _buildDesktopView(),
           // floatingActionButton:
         );
-      }
+      },
     );
   }
 

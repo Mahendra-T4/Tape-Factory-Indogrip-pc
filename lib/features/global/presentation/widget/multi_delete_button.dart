@@ -13,9 +13,11 @@ class MultiDeleteButton extends StatefulWidget {
     required this.onPressed,
     required this.panel,
     required this.selectedItems,
+    this.keyField = 'rKey', // Default to 'rKey' for backward compatibility
   });
   final String panel;
   List<Map<String, dynamic>> selectedItems = [];
+  final String keyField; // New parameter for custom key field
 
   final void Function()? onPressed;
 
@@ -83,13 +85,13 @@ class _MultiDeleteButtonState extends State<MultiDeleteButton> {
             onPressed: () {
               if (widget.selectedItems.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('No staff members selected')),
+                  const SnackBar(content: Text('No record are selected')),
                 );
                 return;
               }
 
               final List<String> rKeys = widget.selectedItems
-                  .map((m) => m['rKey']?.toString())
+                  .map((m) => m[widget.keyField]?.toString())
                   .where((k) => k != null && k.isNotEmpty)
                   .cast<String>()
                   .toList();

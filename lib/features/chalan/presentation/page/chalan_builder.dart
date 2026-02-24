@@ -22,21 +22,19 @@ abstract class ChalanBuilder extends State<ChalanPanel> {
   bool isMultipleSelection = false;
   String? clientKey;
   int? highlightedRowIndex;
-  var recordValue, filterValue, entryValue, currentPage;
+  var recordValue, filterValue, entryValue;
   late final ChallanBloc challanBloc;
   late final GlobalBloc globalBloc;
   final GlobalKey key = GlobalKey();
   String? staffKey;
+  int? pageNo = 1;
+  int? pageQty = 1;
   @override
   void initState() {
     super.initState();
     challanBloc = ChallanBloc();
     globalBloc = GlobalBloc(globalRepository: GlobalManagerRepository());
-    challanBloc.add(
-      FetchChallanRecordsEvent(
-        param: ViewRecordApiParam(pageNo: '', sortBy: '10'),
-      ),
-    );
+    challanBloc.add(FetchChallanRecordsEvent(param: ViewRecordApiParam()));
   }
 
   dataLoadingEventCall() {
@@ -46,7 +44,7 @@ abstract class ChalanBuilder extends State<ChalanPanel> {
           keyword: searchController.text,
           filterBy: recordValue ?? '',
           orderBy: filterValue.toString(),
-          pageNo: currentPage.toString(),
+          pageNo: pageNo.toString(),
           sortBy: entryValue.toString(),
           fromDate: fromDateController.text,
           toDate: toDateController.text,
@@ -60,10 +58,6 @@ abstract class ChalanBuilder extends State<ChalanPanel> {
   ChalanDataSource? dataSource;
   late Map<String, double> columnWidths = {};
   bool isChecked = false;
-
-  // List<DataGridRow> selectedRows = [];
-  int? pageNo;
-  int? pageQty;
 
   // Mock data for demonstration - replace with actual BLoC later
   late List<ChalanRecord> dummyData;
@@ -111,7 +105,13 @@ abstract class ChalanBuilder extends State<ChalanPanel> {
 
   Widget get buildContentTableWidget => BlocConsumer(
     bloc: challanBloc,
-    listener: (context, state) {},
+    listener: (context, state) {
+      if (state is ChallanRecordLoadedSuccessState) {
+        setState(() {
+          pageQty = state.model.pageQty ?? 1;
+        });
+      }
+    },
     builder: (context, state) {
       switch (state.runtimeType) {
         case ChallanLoadingState:

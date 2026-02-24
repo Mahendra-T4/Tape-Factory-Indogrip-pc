@@ -24,7 +24,7 @@ events:
       The output was:
       0
       MSBuild version 17.14.18+a338add32 for .NET Framework
-      Build started 20-02-2026 12:39:29.
+      Build started 24-02-2026 13:03:43.
       
       Project "D:\\CodeWithMax\\PC Projects\\indogrip\\build\\windows\\x64\\CMakeFiles\\3.31.6-msvc6\\CompilerIdCXX\\CompilerIdCXX.vcxproj" on node 1 (default targets).
       PrepareForBuild:
@@ -53,7 +53,7 @@ events:
           0 Warning(s)
           0 Error(s)
       
-      Time Elapsed 00:00:00.51
+      Time Elapsed 00:00:00.80
       
       
       Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CompilerIdCXX.exe"
@@ -72,8 +72,8 @@ events:
     checks:
       - "Detecting CXX compiler ABI info"
     directories:
-      source: "D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/CMakeFiles/CMakeScratch/TryCompile-kjpfq9"
-      binary: "D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/CMakeFiles/CMakeScratch/TryCompile-kjpfq9"
+      source: "D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/CMakeFiles/CMakeScratch/TryCompile-ga2t9k"
+      binary: "D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/CMakeFiles/CMakeScratch/TryCompile-ga2t9k"
     cmakeVariables:
       CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /W3 /GR /EHsc"
       CMAKE_CXX_FLAGS_DEBUG: "/MDd /Zi /Ob0 /Od /RTC1"
@@ -83,40 +83,40 @@ events:
       variable: "CMAKE_CXX_ABI_COMPILED"
       cached: true
       stdout: |
-        Change Dir: 'D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/CMakeFiles/CMakeScratch/TryCompile-kjpfq9'
+        Change Dir: 'D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/CMakeFiles/CMakeScratch/TryCompile-ga2t9k'
         
-        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_2dd2c.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_15f6a.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
         MSBuild version 17.14.18+a338add32 for .NET Framework
-        Build started 20-02-2026 12:39:30.
+        Build started 24-02-2026 13:03:45.
         
-        Project "D:\\CodeWithMax\\PC Projects\\indogrip\\build\\windows\\x64\\CMakeFiles\\CMakeScratch\\TryCompile-kjpfq9\\cmTC_2dd2c.vcxproj" on node 1 (default targets).
+        Project "D:\\CodeWithMax\\PC Projects\\indogrip\\build\\windows\\x64\\CMakeFiles\\CMakeScratch\\TryCompile-ga2t9k\\cmTC_15f6a.vcxproj" on node 1 (default targets).
         PrepareForBuild:
-          Creating directory "cmTC_2dd2c.dir\\Debug\\".
+          Creating directory "cmTC_15f6a.dir\\Debug\\".
           Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
-          Creating directory "D:\\CodeWithMax\\PC Projects\\indogrip\\build\\windows\\x64\\CMakeFiles\\CMakeScratch\\TryCompile-kjpfq9\\Debug\\".
-          Creating directory "cmTC_2dd2c.dir\\Debug\\cmTC_2dd2c.tlog\\".
+          Creating directory "D:\\CodeWithMax\\PC Projects\\indogrip\\build\\windows\\x64\\CMakeFiles\\CMakeScratch\\TryCompile-ga2t9k\\Debug\\".
+          Creating directory "cmTC_15f6a.dir\\Debug\\cmTC_15f6a.tlog\\".
         InitializeBuildStatus:
-          Creating "cmTC_2dd2c.dir\\Debug\\cmTC_2dd2c.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
-          Touching "cmTC_2dd2c.dir\\Debug\\cmTC_2dd2c.tlog\\unsuccessfulbuild".
+          Creating "cmTC_15f6a.dir\\Debug\\cmTC_15f6a.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_15f6a.dir\\Debug\\cmTC_15f6a.tlog\\unsuccessfulbuild".
         ClCompile:
-          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_2dd2c.dir\\Debug\\\\" /Fd"cmTC_2dd2c.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TP /errorReport:queue "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\share\\cmake-3.31\\Modules\\CMakeCXXCompilerABI.cpp"
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_15f6a.dir\\Debug\\\\" /Fd"cmTC_15f6a.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TP /errorReport:queue "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\share\\cmake-3.31\\Modules\\CMakeCXXCompilerABI.cpp"
           Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35213 for x64
           Copyright (C) Microsoft Corporation.  All rights reserved.
-          cl /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_2dd2c.dir\\Debug\\\\" /Fd"cmTC_2dd2c.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TP /errorReport:queue "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\share\\cmake-3.31\\Modules\\CMakeCXXCompilerABI.cpp"
+          cl /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_15f6a.dir\\Debug\\\\" /Fd"cmTC_15f6a.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TP /errorReport:queue "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\share\\cmake-3.31\\Modules\\CMakeCXXCompilerABI.cpp"
           CMakeCXXCompilerABI.cpp
         Link:
-          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:"D:\\CodeWithMax\\PC Projects\\indogrip\\build\\windows\\x64\\CMakeFiles\\CMakeScratch\\TryCompile-kjpfq9\\Debug\\cmTC_2dd2c.exe" /INCREMENTAL /ILK:"cmTC_2dd2c.dir\\Debug\\cmTC_2dd2c.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/CMakeFiles/CMakeScratch/TryCompile-kjpfq9/Debug/cmTC_2dd2c.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/CMakeFiles/CMakeScratch/TryCompile-kjpfq9/Debug/cmTC_2dd2c.lib" /MACHINE:X64  /machine:x64 cmTC_2dd2c.dir\\Debug\\CMakeCXXCompilerABI.obj
-          cmTC_2dd2c.vcxproj -> D:\\CodeWithMax\\PC Projects\\indogrip\\build\\windows\\x64\\CMakeFiles\\CMakeScratch\\TryCompile-kjpfq9\\Debug\\cmTC_2dd2c.exe
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:"D:\\CodeWithMax\\PC Projects\\indogrip\\build\\windows\\x64\\CMakeFiles\\CMakeScratch\\TryCompile-ga2t9k\\Debug\\cmTC_15f6a.exe" /INCREMENTAL /ILK:"cmTC_15f6a.dir\\Debug\\cmTC_15f6a.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/CMakeFiles/CMakeScratch/TryCompile-ga2t9k/Debug/cmTC_15f6a.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/CMakeFiles/CMakeScratch/TryCompile-ga2t9k/Debug/cmTC_15f6a.lib" /MACHINE:X64  /machine:x64 cmTC_15f6a.dir\\Debug\\CMakeCXXCompilerABI.obj
+          cmTC_15f6a.vcxproj -> D:\\CodeWithMax\\PC Projects\\indogrip\\build\\windows\\x64\\CMakeFiles\\CMakeScratch\\TryCompile-ga2t9k\\Debug\\cmTC_15f6a.exe
         FinalizeBuildStatus:
-          Deleting file "cmTC_2dd2c.dir\\Debug\\cmTC_2dd2c.tlog\\unsuccessfulbuild".
-          Touching "cmTC_2dd2c.dir\\Debug\\cmTC_2dd2c.tlog\\cmTC_2dd2c.lastbuildstate".
-        Done Building Project "D:\\CodeWithMax\\PC Projects\\indogrip\\build\\windows\\x64\\CMakeFiles\\CMakeScratch\\TryCompile-kjpfq9\\cmTC_2dd2c.vcxproj" (default targets).
+          Deleting file "cmTC_15f6a.dir\\Debug\\cmTC_15f6a.tlog\\unsuccessfulbuild".
+          Touching "cmTC_15f6a.dir\\Debug\\cmTC_15f6a.tlog\\cmTC_15f6a.lastbuildstate".
+        Done Building Project "D:\\CodeWithMax\\PC Projects\\indogrip\\build\\windows\\x64\\CMakeFiles\\CMakeScratch\\TryCompile-ga2t9k\\cmTC_15f6a.vcxproj" (default targets).
         
         Build succeeded.
             0 Warning(s)
             0 Error(s)
         
-        Time Elapsed 00:00:00.53
+        Time Elapsed 00:00:00.66
         
       exitCode: 0
   -

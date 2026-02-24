@@ -12,7 +12,7 @@ class Carton {
   static final String date = 'Date';
   static final String quantity = 'Quantity';
   static final String billNo = 'Bill No';
-  static final String companyName = 'Company Name';
+  static final String companyName = 'Vendor Name';
 }
 
 class CartonDataSource extends DataGridSource {
@@ -50,41 +50,43 @@ class CartonDataSource extends DataGridSource {
             value: data.sNo.toString(),
           ),
           DataGridCell<String>(
-            columnName: Carton.companyName,
-            value: data.companyName.toString(),
-          ),
-
-          DataGridCell<String>(
-            columnName: Carton.cartonType,
-            value: data.cartonType.toString(),
-          ),
-          DataGridCell<String>(
-            columnName: Carton.cartonTypeText,
-            value: data.cartonTypeText.toString(),
-          ),
-          DataGridCell<String>(
             columnName: Carton.date,
             value: data.cartonDateText.toString(),
-          ),
-          DataGridCell<String>(
-            columnName: Carton.quantity,
-            value: data.cartonQuantity.toString(),
           ),
           DataGridCell<String>(
             columnName: Carton.billNo,
             value: data.cartonBillNumber.toString(),
           ),
-          DataGridCell<Widget>(
-            columnName: 'Status',
-            value: MasterUserStatus(
-              isShowLabel: false,
-              isCustomized: false,
-              onChanged: (value) {
-                onChanged.call(value, data);
-              },
-              initialStatus: data.rStatus.toString(),
-            ),
+          DataGridCell<String>(
+            columnName: Carton.companyName,
+            value: data.companyName.toString(),
           ),
+
+          // DataGridCell<String>(
+          //   columnName: Carton.cartonType,
+          //   value: data.cartonType.toString(),
+          // ),
+          DataGridCell<String>(
+            columnName: Carton.cartonTypeText,
+            value: data.cartonTypeText.toString(),
+          ),
+
+          DataGridCell<String>(
+            columnName: Carton.quantity,
+            value: data.cartonQuantity.toString(),
+          ),
+
+          // DataGridCell<Widget>(
+          //   columnName: 'Status',
+          //   value: MasterUserStatus(
+          //     isShowLabel: false,
+          //     isCustomized: false,
+          //     onChanged: (value) {
+          //       onChanged.call(value, data);
+          //     },
+          //     initialStatus: data.rStatus.toString(),
+          //   ),
+          // ),
           if (HiveService.getRole() != '2')
             DataGridCell<Widget>(
               columnName: 'actions',

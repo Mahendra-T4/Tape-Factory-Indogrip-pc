@@ -42,179 +42,116 @@ class _MasterCartonTypeDropDownDBState
                 (state as FetchMasterCartonTypeSuccessStatus).cartonTypeModel;
             return carton.status != 1
                 ? Center(child: Text(carton.message.toString()))
-                : Container(
-                    constraints: BoxConstraints(maxHeight: 450),
-                    alignment: Alignment.center,
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.blue.withOpacity(0.1),
-                          spreadRadius: 3,
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
+                : Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF9B59B6).withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                      ],
-                    ),
-                    child: Container(
-                      height: 420,
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: const Color.fromARGB(
-                                    255,
-                                    7,
-                                    35,
-                                    254,
-                                  ).withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(
-                                  Icons.add_box,
-                                  color: Color.fromARGB(255, 7, 35, 254),
-                                  size: 24,
-                                ),
-                              ),
-                              SizedBox(width: 12),
-                              Text(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
                                 'Carton Type',
                                 style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF2C3E50),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF9B59B6),
+                                  letterSpacing: 0.5,
                                 ),
                               ),
-                            ],
-                          ),
-                          SizedBox(height: 20),
-                          Container(
-                            padding: EdgeInsets.all(12),
+                            ),
+                            Expanded(
+                              child: Text(
+                                'Carton Stock',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF9B59B6),
+                                  letterSpacing: 0.5,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                'Carton Code',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF9B59B6),
+                                  letterSpacing: 0.5,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: carton.record?.length ?? 0,
+                        itemBuilder: (context, index) {
+                          final item = carton.record![index];
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: Color(0xFF9B59B6).withOpacity(0.05),
-                              borderRadius: BorderRadius.circular(12),
+                              color: index.isEven
+                                  ? const Color(0xFF9B59B6).withOpacity(0.03)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: Colors.grey[200]!,
+                                width: 0.5,
+                              ),
                             ),
                             child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Expanded(
                                   child: Text(
-                                    'Carton Type',
-                                    style: TextStyle(
-                                      fontSize: 12.5,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF9B59B6),
+                                    item.mCartonName.toString(),
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF2C3E50),
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    item.cartonStock.toString(),
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF2C3E50),
                                     ),
                                     textAlign: TextAlign.center,
                                   ),
                                 ),
                                 Expanded(
                                   child: Text(
-                                    'Carton Stock',
-                                    style: TextStyle(
-                                      fontSize: 12.5,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF9B59B6),
+                                    item.mCartonCode.toString(),
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF2C3E50),
                                     ),
                                     textAlign: TextAlign.center,
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    'Carton Code',
-                                    style: TextStyle(
-                                      fontSize: 12.5,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF9B59B6),
-                                    ),
-                                    textAlign: TextAlign.end,
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                          ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: state.cartonTypeModel.record!.length,
-                            itemBuilder: (context, index) {
-                              return Container(
-                                margin: EdgeInsets.symmetric(vertical: 4),
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 8,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: index.isEven
-                                      ? const Color.fromARGB(
-                                          255,
-                                          7,
-                                          35,
-                                          254,
-                                        ).withOpacity(0.03)
-                                      : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        state
-                                            .cartonTypeModel
-                                            .record![index]
-                                            .mCartonName
-                                            .toString(),
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Color(0xFF2C3E50),
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        state
-                                            .cartonTypeModel
-                                            .record![index]
-                                            .cartonStock
-                                            .toString(),
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Color(0xFF2C3E50),
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        state
-                                            .cartonTypeModel
-                                            .record![index]
-                                            .mCartonCode
-                                            .toString(),
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Color(0xFF2C3E50),
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                        textAlign: TextAlign.end,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        ],
+                          );
+                        },
                       ),
-                    ),
+                    ],
                   );
+
           case FetchViewCartonRecordFailureStatus:
             final errorState = state as FetchViewCartonRecordFailureStatus;
             return Center(child: Text('Error: ${errorState.errorMessage}'));

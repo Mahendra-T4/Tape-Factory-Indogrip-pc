@@ -64,6 +64,7 @@ class _IndoGripDashboardState extends DashboardBuilder {
                     _buildWelcomeHeader,
                     productWidget,
                     SalesDashboard(),
+                    buildPredictCalculationFormWidget,
                     desktopWidgetWrapper,
                     DefaultSettingWidget(),
                     const SizedBox(height: 200),

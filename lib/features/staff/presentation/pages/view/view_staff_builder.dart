@@ -484,33 +484,33 @@ abstract class ViewStaffBuilder extends State<ViewStaffPanel> {
 
   //! tablet
 
-  Widget get buildFilterFieldsTablet => Padding(
-    padding: const EdgeInsets.only(top: kDefaultVerticalPadding),
-    child: Column(
-      spacing: 16,
-      children: [
-        searchFields,
+  // Widget get buildFilterFieldsTablet => Padding(
+  //   padding: const EdgeInsets.only(top: kDefaultVerticalPadding),
+  //   child: Column(
+  //     spacing: 16,
+  //     children: [
+  //       searchFields,
 
-        // SizedBox(height: 15),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            TextButton.icon(
-              onPressed: toggleMultipleSelection,
-              icon: Icon(
-                isMultipleSelection
-                    ? Icons.check_box
-                    : Icons.check_box_outline_blank,
-                color: Colors.blue,
-              ),
-              label: Text(
-                isMultipleSelection ? 'Multiple Selection' : 'Single Selection',
-                style: const TextStyle(color: Colors.blue),
-              ),
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
+  //       // SizedBox(height: 15),
+  //       Row(
+  //         mainAxisAlignment: MainAxisAlignment.end,
+  //         children: [
+  //           TextButton.icon(
+  //             onPressed: toggleMultipleSelection,
+  //             icon: Icon(
+  //               isMultipleSelection
+  //                   ? Icons.check_box
+  //                   : Icons.check_box_outline_blank,
+  //               color: Colors.blue,
+  //             ),
+  //             label: Text(
+  //               isMultipleSelection ? 'Multiple Selection' : 'Single Selection',
+  //               style: const TextStyle(color: Colors.blue),
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ],
+  //   ),
+  // );
 }

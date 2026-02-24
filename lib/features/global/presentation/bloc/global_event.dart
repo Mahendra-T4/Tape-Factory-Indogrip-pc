@@ -39,11 +39,9 @@ final class ReadUnReadNotificationsEvent extends GlobalEvent {
   ReadUnReadNotificationsEvent({required this.notificationKey});
 }
 
-final class LoadNotificationsEvent extends GlobalEvent {
-  final int filterBy;
+final class LoadNotificationsEvent extends GlobalEvent {}
 
-  LoadNotificationsEvent({required this.filterBy});
-}
+final class LoadNotificationsMainEvent extends GlobalEvent {}
 
 final class ReadUnReadNotificationMasterStatusEvent extends GlobalEvent {}
 

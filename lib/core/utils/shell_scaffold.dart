@@ -69,7 +69,7 @@ class _ShellScaffoldState extends ConsumerState<ShellScaffold>
               data: FormData.fromMap({
                 'activity': 'admin-notification',
                 'userKey': HiveService.getUserId(),
-                // 'filterBy': '1',
+                'filterBy': '1',
               }),
             ).timeout(
               const Duration(seconds: 5),

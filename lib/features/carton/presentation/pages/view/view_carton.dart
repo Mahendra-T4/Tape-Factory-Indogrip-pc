@@ -395,7 +395,7 @@ class _ViewCartonPanelState extends ViewCartonBuilder {
       GridColumn(
         columnName: Carton.srNo,
         columnWidthMode: ColumnWidthMode.fitByCellValue,
-        width: 70,
+        width: 80,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -404,68 +404,49 @@ class _ViewCartonPanelState extends ViewCartonBuilder {
         ),
       ),
       GridColumn(
-        columnName: Carton.companyName,
-        columnWidthMode: ColumnWidthMode.fill,
-        width: 300,
-        label: Container(
-          color: Colors.grey[100],
-          child: const Center(child: TextFieldlabelText('Company Name')),
-        ),
-      ),
-      GridColumn(
-        columnName: Carton.cartonType,
-        columnWidthMode: ColumnWidthMode.fill,
-        width: 150,
-        label: Container(
-          color: Colors.grey[100],
-          child: const Center(child: TextFieldlabelText('Carton Type')),
-        ),
-      ),
-      GridColumn(
-        columnName: Carton.cartonTypeText,
-        columnWidthMode: ColumnWidthMode.fill,
-        width: 150,
-        label: Container(
-          color: Colors.grey[100],
-          child: const Center(child: TextFieldlabelText('Carton Type Name')),
-        ),
-      ),
-      GridColumn(
         columnName: Carton.date,
         columnWidthMode: ColumnWidthMode.fill,
-        width: 180,
         label: Container(
           color: Colors.grey[100],
           child: const Center(child: TextFieldlabelText('Date')),
         ),
       ),
       GridColumn(
-        columnName: Carton.quantity,
-        // columnWidthMode: ColumnWidthMode.fill,
-        width: 120,
-        label: Container(
-          color: Colors.grey[100],
-          child: const Center(child: TextFieldlabelText('Quantity')),
-        ),
-      ),
-      GridColumn(
         columnName: Carton.billNo,
         columnWidthMode: ColumnWidthMode.fill,
-        width: 150,
         label: Container(
           color: Colors.grey[100],
           child: const Center(child: TextFieldlabelText('Bill No')),
         ),
       ),
       GridColumn(
-        columnName: 'Status',
-        columnWidthMode: ColumnWidthMode.fitByColumnName,
-        width: 130,
+        columnName: Carton.companyName,
+        width: 300,
+        columnWidthMode: ColumnWidthMode.fill,
         label: Container(
           color: Colors.grey[100],
-          child: const Center(child: TextFieldlabelText('Status')),
+          child: const Center(child: TextFieldlabelText('Vendor Name')),
         ),
       ),
+
+      GridColumn(
+        columnName: Carton.cartonTypeText,
+        columnWidthMode: ColumnWidthMode.fill,
+        label: Container(
+          color: Colors.grey[100],
+          child: const Center(child: TextFieldlabelText('Carton Type Name')),
+        ),
+      ),
+
+      GridColumn(
+        columnName: Carton.quantity,
+        columnWidthMode: ColumnWidthMode.fill,
+        label: Container(
+          color: Colors.grey[100],
+          child: const Center(child: TextFieldlabelText('Quantity')),
+        ),
+      ),
+
       if (HiveService.getRole() != '2')
         GridColumn(
           columnName: 'actions',

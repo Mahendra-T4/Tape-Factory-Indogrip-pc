@@ -226,7 +226,7 @@ class _ViewStaffPanelState extends ViewStaffBuilder {
                 child: buildFilterFieldsDesktop,
               ),
 
-              if (isMultipleSelection) buildSelectionActions(),
+              // if (isMultipleSelection) buildSelectionActions(),
               SizedBox(height: 15),
               Row(
                 mainAxisSize: MainAxisSize.min,

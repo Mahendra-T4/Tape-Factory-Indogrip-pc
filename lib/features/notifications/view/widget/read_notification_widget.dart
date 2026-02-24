@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart' hide Notification;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:indogrip/core/theme/color_conts.dart';
 import 'package:indogrip/core/utils/widgets/toast_service.dart';
 import 'package:indogrip/features/global/presentation/bloc/global_bloc.dart';
 import 'package:indogrip/features/notifications/model/notification_model.dart';
@@ -69,11 +70,14 @@ class ReadNotificationWidget extends ConsumerWidget {
                 );
               }
             },
-            icon: const Icon(Icons.check, size: 16),
-            label: const Text('Mark as Read'),
+            icon: const Icon(Icons.check, size: 16, color: Colors.white),
+            label: const Text(
+              'Mark as Read',
+              style: TextStyle(color: Colors.white),
+            ),
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              backgroundColor: Colors.blue,
+              backgroundColor: kButtonColor,
             ),
           );
   }

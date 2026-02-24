@@ -1,6 +1,8 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:indogrip/core/responsive/responsive.dart';
 import 'package:indogrip/core/service/connectivity/internate%20connectivity-checker.dart';
 import 'package:indogrip/core/service/connectivity/not_connected.dart';
@@ -81,11 +83,7 @@ class _NotificationsState extends NotificationBuilder {
                 onReadUnreadChanged: (value) {
                   setState(() {
                     filterBy = value;
-                    globalBloc.add(
-                      LoadNotificationsEvent(
-                        filterBy: int.parse(filterBy.toString()),
-                      ),
-                    );
+                    globalBloc.add(LoadNotificationsEvent());
                   });
                 },
               ),
@@ -93,7 +91,23 @@ class _NotificationsState extends NotificationBuilder {
               Expanded(
                 child: BlocConsumer(
                   bloc: globalBloc,
-                  listener: (context, state) {},
+                  listener: (context, state) {
+                    // Reset data source when new data is loaded
+                    if (state is LoadNotificationsSuccessStatus) {
+                      dataSource = null;
+                    }
+                    // Clear selections after successful delete
+                    if (state is GlobalDeleteMultipleRecordsSuccessStatus) {
+                      if (state.deleteRecordEntity.status == 1) {
+                        setState(() {
+                          selectedItems.clear();
+                          selectedIndices.clear(); // Clear indices instead of rows
+                          isChecked = false;
+                          globalBloc.add(LoadNotificationsEvent());
+                        });
+                      }
+                    }
+                  },
                   builder: (context, state) {
                     switch (state.runtimeType) {
                       case GlobalLoadingStatus:
@@ -102,7 +116,7 @@ class _NotificationsState extends NotificationBuilder {
                         final notification =
                             (state as LoadNotificationsSuccessStatus)
                                 .notifications;
-                        dataSource = NotificationDataSource(
+                        dataSource ??= NotificationDataSource(
                           notificationData: notification.record ?? [],
                           onMarkAsRead: (notification) {
                             handleMarkAsRead(notification);
@@ -113,9 +127,13 @@ class _NotificationsState extends NotificationBuilder {
                             setState(() {
                               isChecked = value;
                               if (value) {
-                                selectedRows = List.from(dataSource.rows);
+                                // Select all indices
+                                selectedIndices = List.generate(
+                                  state.notifications.record?.length ?? 0,
+                                  (index) => index,
+                                );
                               } else {
-                                selectedRows.clear();
+                                selectedIndices.clear();
                               }
                               final selectedData = value
                                   ? (state.notifications.record ?? [])
@@ -127,34 +145,11 @@ class _NotificationsState extends NotificationBuilder {
                             });
                           },
                           onCheckboxChanged: (checked, index) {
-                            if (dataSource == null) return;
-                            setState(() {
-                              if (checked) {
-                                selectedRows.add(dataSource.rows[index]);
-                              } else {
-                                selectedRows.remove(dataSource.rows[index]);
-                              }
-                              final selectedRecords = selectedRows
-                                  .map((row) {
-                                    final idx = dataSource.rows.indexOf(row);
-                                    if (idx != -1 &&
-                                        idx <
-                                            (state
-                                                    .notifications
-                                                    .record
-                                                    ?.length ??
-                                                0)) {
-                                      final record =
-                                          state.notifications.record![idx];
-                                      return record.toJson();
-                                    }
-                                    return null;
-                                  })
-                                  .where((record) => record != null)
-                                  .cast<Map<String, dynamic>>()
-                                  .toList();
-                              handleSelectionChanged(selectedRecords);
-                            });
+                            // This is now handled by onSelectionChanged in SfDataGrid
+                            // Keeping for backward compatibility
+                          },
+                          onSuccess: () {
+                            globalBloc.add(LoadNotificationsEvent());
                           },
                           onDelete: (Record) {},
                         );
@@ -188,6 +183,7 @@ class _NotificationsState extends NotificationBuilder {
                                                     !isMultipleSelection;
                                                 if (!isMultipleSelection) {
                                                   selectedItems.clear();
+                                                  selectedIndices.clear();
                                                 }
                                               });
                                             },
@@ -216,6 +212,10 @@ class _NotificationsState extends NotificationBuilder {
                                     Expanded(
                                       child: SfDataGrid(
                                         showHorizontalScrollbar: true,
+                                        key: key,
+                                        rowsPerPage: 4,
+                                        allowPullToRefresh: true,
+                                        allowColumnsResizing: true,
                                         columnResizeMode:
                                             ColumnResizeMode.onResizeEnd,
                                         isScrollbarAlwaysShown: true,
@@ -224,13 +224,47 @@ class _NotificationsState extends NotificationBuilder {
                                         selectionMode: isMultipleSelection
                                             ? SelectionMode.multiple
                                             : SelectionMode.single,
+                                        onSelectionChanged: isMultipleSelection
+                                            ? (List<DataGridRow> addedRows, List<DataGridRow> removedRows) {
+                                                developer.log('Selection changed: added=${addedRows.length}, removed=${removedRows.length}');
+                                                setState(() {
+                                                  // Handle added rows
+                                                  for (var row in addedRows) {
+                                                    final rowIndex = dataSource!.rows.indexOf(row);
+                                                    if (rowIndex != -1 && !selectedIndices.contains(rowIndex)) {
+                                                      selectedIndices.add(rowIndex);
+                                                      developer.log('Added row index: $rowIndex');
+                                                    }
+                                                  }
+                                                  
+                                                  // Handle removed rows
+                                                  for (var row in removedRows) {
+                                                    final rowIndex = dataSource!.rows.indexOf(row);
+                                                    if (rowIndex != -1) {
+                                                      selectedIndices.remove(rowIndex);
+                                                      developer.log('Removed row index: $rowIndex');
+                                                    }
+                                                  }
+                                                  
+                                                  developer.log('Current selectedIndices: $selectedIndices');
+                                                  
+                                                  // Convert selected indices to record data
+                                                  final selectedRecords = selectedIndices
+                                                      .where((idx) => idx >= 0 && idx < (state.notifications.record?.length ?? 0))
+                                                      .map((idx) {
+                                                        final record = state.notifications.record![idx];
+                                                        developer.log('Converting index $idx to record: ${record.notificationKey}');
+                                                        return record.toJson();
+                                                      })
+                                                      .toList();
+                                                  
+                                                  developer.log('Selected records count: ${selectedRecords.length}');
+                                                  handleSelectionChanged(selectedRecords);
+                                                });
+                                              }
+                                            : null,
 
-                                        key: key,
-                                        rowsPerPage: 10,
-                                        allowColumnsResizing: true,
-                                        highlightRowOnHover: true,
-
-                                        source: dataSource,
+                                        source: dataSource!,
                                         columns: buildGridColumns(),
                                       ),
                                     ),

@@ -174,7 +174,7 @@ abstract class ViewClientBuilder extends State<ViewClientPanel> {
                     rKeys: selectedItems
                         .map((item) => item['rKey'].toString())
                         .toList(),
-                    rPanel: 'view-staff',
+                    rPanel: 'view-client',
                   ),
                 );
               }

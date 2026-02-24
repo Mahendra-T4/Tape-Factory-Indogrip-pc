@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:indogrip/core/utils/widgets/delete_alert.dart';
 import 'package:indogrip/features/notifications/model/notification_model.dart';
 import 'package:indogrip/features/notifications/view/widget/read_notification_widget.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
@@ -12,6 +13,7 @@ class NotificationDataSource extends DataGridSource {
   final Function(Record) onMarkAsRead;
   final BuildContext context;
   final Function(Record) onDelete;
+  final void Function()? onSuccess;
 
   NotificationDataSource({
     required this.notificationData,
@@ -21,6 +23,7 @@ class NotificationDataSource extends DataGridSource {
     required this.onCheckboxChanged,
     required this.isAllChecked,
     required this.onDelete,
+    this.onSuccess,
   }) {
     buildDataGridRows();
   }
@@ -34,10 +37,10 @@ class NotificationDataSource extends DataGridSource {
             columnName: NotificationColumn.srNo,
             value: data.sNo.toString(),
           ),
-          DataGridCell<String>(
-            columnName: NotificationColumn.action,
-            value: data.notificationAction.toString(),
-          ),
+          // DataGridCell<String>(
+          //   columnName: NotificationColumn.action,
+          //   value: data.notificationAction.toString(),
+          // ),
           DataGridCell<String>(
             columnName: NotificationColumn.message,
             value: data.notificationMsg.toString(),
@@ -82,7 +85,7 @@ class NotificationDataSource extends DataGridSource {
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: SelectableText(
             cell.value?.toString() ?? '',
-            maxLines: 2,
+            maxLines: 1,
             toolbarOptions: const ToolbarOptions(copy: true, selectAll: true),
           ),
         );
@@ -103,10 +106,7 @@ class NotificationDataSource extends DataGridSource {
             if (notification.notificationStatus == 1)
               ReadNotificationWidget(
                 notification: notification,
-                onSuccess: () {
-                  // Callback to refresh the data when mark as read succeeds
-                  // The parent widget should handle this refresh
-                },
+                onSuccess: onSuccess,
               ),
             IconButton(
               icon: const Icon(Icons.delete, size: 20),
@@ -114,19 +114,19 @@ class NotificationDataSource extends DataGridSource {
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(minWidth: 35, minHeight: 35),
               onPressed: () {
-                // DeleteConfirmationAlert.show(
-                //   context,
-                //   title: 'Delete Record',
-                //   message: 'Are Your to Delete This client Record',
-                //   itemName: '${not.cConsigneeName}',
-                //   onConfirm: () {
-                //     onDelete(notification);
-                //   },
-                //   rPanel: 'view-client',
-                //   item: notification,
-                //   index: 1,
-                //   rKey: notification.notificationKey.toString(),
-                // );
+                DeleteConfirmationAlert.show(
+                  context,
+                  title: 'Delete Record',
+                  message: 'Are Your to Delete This Notification Record',
+                  itemName: '${notification.notificationMsg}',
+                  onConfirm: () {
+                    onDelete(notification);
+                  },
+                  rPanel: 'admin-notification',
+                  item: notificationData,
+                  index: notificationData.indexOf(notification),
+                  rKey: notification.notificationKey.toString(),
+                );
               },
             ),
           ],

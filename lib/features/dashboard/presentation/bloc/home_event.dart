@@ -4,3 +4,11 @@ part of 'home_bloc.dart';
 sealed class HomeEvent {}
 
 final class FetchDashboardStaticsEvent extends HomeEvent {}
+
+final class PredictCalculationEvent extends HomeEvent {
+  final PredictCalParam param;
+
+  PredictCalculationEvent({required this.param});
+}
+
+final class FetchCoreListEvent extends HomeEvent {}

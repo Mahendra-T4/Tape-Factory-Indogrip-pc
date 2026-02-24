@@ -5,7 +5,6 @@ sealed class HomeState {}
 
 final class HomeInitial extends HomeState {}
 
-
 final class HomeLoadingStatus extends HomeState {}
 
 final class HomeDashboardStaticsSuccessStatus extends HomeState {
@@ -18,4 +17,29 @@ final class HomeDashboardStaticsErrorStatus extends HomeState {
   final String message;
 
   HomeDashboardStaticsErrorStatus({required this.message});
+}
+
+final class PredictCalculationSuccessStatus extends HomeState {
+  final PredictCalculationModel predictCalculationModel;
+
+  PredictCalculationSuccessStatus({required this.predictCalculationModel});
+}
+
+
+final class PredictCalculationErrorStatus extends HomeState {
+  final String message;
+
+  PredictCalculationErrorStatus({required this.message});
+}
+
+final class CoreListSuccessStatus extends HomeState {
+  final CoreListModel coreListModel;
+
+  CoreListSuccessStatus({required this.coreListModel});
+}
+
+final class CoreListErrorStatus extends HomeState {
+  final String message;
+
+  CoreListErrorStatus({required this.message});
 }

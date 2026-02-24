@@ -95,6 +95,8 @@ final class LoadNotificationsErrorStatus extends GlobalState {
   LoadNotificationsErrorStatus({required this.message});
 }
 
+
+
 final class ReadUnReadNotificationMasterStatusSuccessStatus
     extends GlobalState {
   final ReadUnReadMasterStatusModel model;
