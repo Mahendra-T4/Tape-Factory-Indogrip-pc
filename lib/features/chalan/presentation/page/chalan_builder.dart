@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:indogrip/core/utils/scroll_behavier.dart';
 import 'package:indogrip/features/chalan/data/chalan_datasource.dart';
 import 'package:indogrip/features/chalan/data/model/chalanlist_model.dart';
 import 'package:indogrip/features/chalan/presentation/bloc/challan_bloc.dart';
@@ -29,6 +30,7 @@ abstract class ChalanBuilder extends State<ChalanPanel> {
   String? staffKey;
   int? pageNo = 1;
   int? pageQty = 1;
+  String? pageText;
   @override
   void initState() {
     super.initState();
@@ -109,6 +111,7 @@ abstract class ChalanBuilder extends State<ChalanPanel> {
       if (state is ChallanRecordLoadedSuccessState) {
         setState(() {
           pageQty = state.model.pageQty ?? 1;
+          pageText = state.model.pageText.toString();
         });
       }
     },
@@ -157,61 +160,67 @@ abstract class ChalanBuilder extends State<ChalanPanel> {
             );
           }
           return state.model.status != 1
-              ? Expanded(
-                  child: Center(
-                    child: Text(state.model.message ?? 'Refresh to load data'),
-                  ),
+              ? Center(
+                  child: Text(state.model.message ?? 'Refresh to load data'),
                 )
-              : Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
-                    child: SfDataGridTheme(
-                      data: SfDataGridThemeData(
-                        headerColor: Colors.grey[200],
-                        gridLineColor: Colors.grey[300],
-                        gridLineStrokeWidth: 1,
-                      ),
-                      child: SfDataGrid(
-                        showHorizontalScrollbar: true,
-                        key: key,
-                        rowsPerPage: 4,
-                        allowPullToRefresh: true,
-                        allowColumnsResizing: true,
+              : Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 15,
+                    vertical: 16,
+                  ),
+                  child: SfDataGridTheme(
+                    data: SfDataGridThemeData(
+                      headerColor: Colors.grey[200],
+                      gridLineColor: Colors.grey[300],
+                      gridLineStrokeWidth: 1,
+                    ),
+                    child: ScrollConfiguration(
+                      behavior: HorizontalMouseScrollBehavior(),
+                      child: SizedBox(
+                        height: 700,
+                        child: SfDataGrid(
+                          showHorizontalScrollbar: true,
+                          key: key,
+                          rowsPerPage: 4,
+                          allowPullToRefresh: true,
+                          allowColumnsResizing: true,
 
-                        columnResizeMode: ColumnResizeMode.onResizeEnd,
-                        isScrollbarAlwaysShown: true,
-                        showVerticalScrollbar: true,
-                        showCheckboxColumn:
-                            false, // Set to true when multi-selection is enabled
-                        selectionMode: SelectionMode
-                            .single, // Change to multiple when needed
-                        onSelectionChanged: (addedRows, removedRows) {
-                          if (dataSource == null) return;
-                          setState(() {
-                            selectedRows.addAll(addedRows);
-                            selectedRows.removeWhere(
-                              (row) => removedRows.contains(row),
-                            );
-                          });
-                        },
-                        onCellDoubleTap:
-                            (DataGridCellDoubleTapDetails details) {
-                              setState(() {
-                                highlightedRowIndex =
-                                    details.rowColumnIndex.rowIndex - 1;
-                              });
-                            },
-                        onColumnResizeUpdate:
-                            (ColumnResizeUpdateDetails details) {
-                              setState(() {
-                                columnWidths[details.column.columnName] =
-                                    details.width;
-                              });
-                              return true;
-                            },
-                        source: dataSource!,
-                        columnWidthMode: ColumnWidthMode.fill,
-                        columns: buildColumns(),
+                          columnResizeMode: ColumnResizeMode.onResizeEnd,
+                          isScrollbarAlwaysShown: true,
+                          showVerticalScrollbar: true,
+                          showCheckboxColumn:
+                              false, // Set to true when multi-selection is enabled
+                          selectionMode: isMultipleSelection
+                              ? SelectionMode.multiple
+                              : SelectionMode.single,
+
+                          onSelectionChanged: (addedRows, removedRows) {
+                            if (dataSource == null) return;
+                            setState(() {
+                              selectedRows.addAll(addedRows);
+                              selectedRows.removeWhere(
+                                (row) => removedRows.contains(row),
+                              );
+                            });
+                          },
+                          onCellTap: (DataGridCellTapDetails details) {
+                            setState(() {
+                              highlightedRowIndex =
+                                  details.rowColumnIndex.rowIndex - 1;
+                            });
+                          },
+                          onColumnResizeUpdate:
+                              (ColumnResizeUpdateDetails details) {
+                                setState(() {
+                                  columnWidths[details.column.columnName] =
+                                      details.width;
+                                });
+                                return true;
+                              },
+                          source: dataSource!,
+                          columnWidthMode: ColumnWidthMode.fill,
+                          columns: buildColumns(),
+                        ),
                       ),
                     ),
                   ),

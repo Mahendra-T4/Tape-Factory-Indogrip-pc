@@ -17,6 +17,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<FetchDashboardStaticsEvent>(fetchDashboardStaticsEvent);
     on<PredictCalculationEvent>(predictCalculationEvent);
     on<FetchCoreListEvent>(fetchCoreListEvent);
+    on<PredictCalculationByMicEvent>(predictCalculationByMicEvent);
   }
 
   FutureOr<void> fetchDashboardStaticsEvent(
@@ -55,6 +56,19 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       emit(CoreListSuccessStatus(coreListModel: data));
     } catch (e) {
       emit(CoreListErrorStatus(message: e.toString()));
+    }
+  }
+
+  FutureOr<void> predictCalculationByMicEvent(
+    PredictCalculationByMicEvent event,
+    Emitter<HomeState> emit,
+  ) async {
+    emit(HomeLoadingStatus2());
+    try {
+      final data = await repository.predictCalculationByMic(param: event.param);
+      emit(PredictCalculationByMicSuccessStatus(predictCalculationModel: data));
+    } catch (e) {
+      emit(PredictCalculationByMicErrorStatus(message: e.toString()));
     }
   }
 }

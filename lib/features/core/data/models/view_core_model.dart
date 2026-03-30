@@ -1,9 +1,4 @@
 class ViewCoreModel {
-  int? status;
-  String? message;
-  List<CoreDataRecord>? record;
-  int? pageQty;
-
   ViewCoreModel({this.status, this.message, this.record, this.pageQty});
 
   ViewCoreModel.fromJson(Map<String, dynamic> json) {
@@ -16,7 +11,14 @@ class ViewCoreModel {
       });
     }
     pageQty = json['pageQty'];
+    pageText = json['pageText'];
   }
+
+  String? message;
+  int? pageQty;
+  String? pageText;
+  List<CoreDataRecord>? record;
+  int? status;
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
@@ -26,22 +28,12 @@ class ViewCoreModel {
       data['record'] = this.record!.map((v) => v.toJson()).toList();
     }
     data['pageQty'] = this.pageQty;
+    data['pageText'] = this.pageText;
     return data;
   }
 }
 
 class CoreDataRecord {
-  int? sNo;
-  String? companyName;
-  int? coreType;
-  int? cartonType;
-  String? coreTypeText;
-  String? coreDateText;
-  int? coreQuantity;
-  int? coreBillNumber;
-  String? rKey;
-  int? rStatus;
-
   CoreDataRecord({
     this.sNo,
     this.companyName,
@@ -67,6 +59,17 @@ class CoreDataRecord {
     rKey = json['rKey'];
     rStatus = json['rStatus'];
   }
+
+  int? cartonType;
+  String? companyName;
+  int? coreBillNumber;
+  String? coreDateText;
+  int? coreQuantity;
+  int? coreType;
+  String? coreTypeText;
+  String? rKey;
+  int? rStatus;
+  int? sNo;
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();

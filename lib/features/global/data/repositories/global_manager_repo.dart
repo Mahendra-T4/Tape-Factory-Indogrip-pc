@@ -23,6 +23,7 @@ import 'package:indogrip/features/global/data/model/ustatus_param.dart';
 import 'package:indogrip/features/global/data/model/view_master_user_status_model.dart';
 import 'package:indogrip/features/global/domain/repositories/global_repo.dart';
 import 'package:indogrip/features/outsource/data/model/upload_file_param.dart';
+import 'package:indogrip/features/round/data/models/upload_round_record_model.dart';
 import 'package:retry/retry.dart';
 
 final deleteRecordProvider =
@@ -422,5 +423,67 @@ class GlobalManagerRepository implements GlobalRepository {
       developer.log(e.toString(), name: 'Update Default Setting Error');
     }
     return updateDefaultSetting;
+  }
+
+  @override
+  Future<UploadRoundRecordModel> uploadRoundRecordCsvFile({
+    required UploadFileParam param,
+  }) async {
+    UploadRoundRecordModel successResponse = UploadRoundRecordModel();
+    try {
+      final formData = FormData.fromMap({
+        'activity': 'upload-csv-file',
+        'userKey': HiveService.getUserId(),
+        'rType': param.rType,
+        'billNumber': param.billNumber,
+        'vendorKey': param.selectedVendor,
+        'billDate': param.date,
+        // 'csvFile': param.csvFile,
+        // Add other necessary fields here
+      });
+
+      formData.files.add(
+        MapEntry(
+          'csvFile',
+          await MultipartFile.fromFile(
+            param.csvFile.path,
+            filename: param.csvFile.path.split('/').last,
+          ),
+        ),
+      );
+
+      final response = await retry(
+        () => DioService.dioPostApiCall(data: formData).timeout(
+          const Duration(seconds: 5),
+          onTimeout: () => throw TimeoutException('Request timed out'),
+        ),
+        retryIf: (e) => e is TimeoutException || e is DioException,
+        maxAttempts: 3,
+        delayFactor: const Duration(seconds: 1),
+      );
+
+      if (response.statusCode == 200) {
+        successResponse = UploadRoundRecordModel.fromJson(response.data);
+        developer.log(
+          response.data.toString(),
+          name: 'Upload CSV File Response Parse',
+        );
+        developer.log(
+          successResponse.message.toString(),
+          name: 'Upload CSV File Response',
+        );
+      } else {
+        developer.log(
+          'Failed to upload CSV file: ${response.statusCode}',
+          name: 'Upload CSV File Error',
+        );
+      }
+    } catch (e) {
+      developer.log(
+        'Error uploading CSV file: $e',
+        name: 'Upload CSV File Exception',
+      );
+    }
+    return successResponse;
   }
 }

@@ -114,36 +114,26 @@ class ChalanDataSource extends DataGridSource {
   DataGridRowAdapter buildRow(DataGridRow row) {
     final rowIndex = dataGridRows.indexOf(row);
     final isHighlighted = highlightedRowIndex == rowIndex;
+    Color? rowBackgroundColor;
+
+    if (isHighlighted) {
+      rowBackgroundColor = Colors.deepPurple.withOpacity(0.2);
+    }
 
     return DataGridRowAdapter(
-      color: isHighlighted ? Colors.grey.withOpacity(0.3) : Colors.transparent,
       cells: row.getCells().map<Widget>((cell) {
-        if (cell.columnName == 'Status') {
-          return Container(
-            alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            color: isHighlighted
-                ? Colors.grey.withOpacity(0.3)
-                : Colors.transparent,
-            child: cell.value as Widget,
-          );
-        }
         if (cell.columnName == 'actions') {
           return Container(
             alignment: Alignment.center,
             padding: const EdgeInsets.symmetric(horizontal: 4),
-            color: isHighlighted
-                ? Colors.grey.withOpacity(0.3)
-                : Colors.transparent,
+            color: rowBackgroundColor,
             child: cell.value as Widget,
           );
         }
         return Container(
           alignment: Alignment.center,
           padding: const EdgeInsets.symmetric(horizontal: 8),
-          color: isHighlighted
-              ? Colors.grey.withOpacity(0.3)
-              : Colors.transparent,
+          color: rowBackgroundColor,
           child: SelectableText(
             cell.value?.toString() ?? '',
             maxLines: 1,

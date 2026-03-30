@@ -342,11 +342,13 @@ abstract class TapeBuilder extends State<TapPanel> {
 
     // displayMicController.text = data.additionalInfo!.micLabel
     //     .toString();
-    tapLengthController.text = stickerModel
-        .record!
-        .batchInformation!
-        .displayValue
-        .toString();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      tapLengthController.text = stickerModel
+          .record!
+          .batchInformation!
+          .displayValue
+          .toString();
+    });
 
     remarkController.text = stickerModel.record!.batchInformation!.batchRemark
         .toString();
@@ -432,7 +434,9 @@ abstract class TapeBuilder extends State<TapPanel> {
                           showValue = val?.toString();
                         });
                         if (mounted) {
-                          setState(() {});
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            setState(() {});
+                          });
                         }
                         log('Selected Show Value: $showValue');
                       },

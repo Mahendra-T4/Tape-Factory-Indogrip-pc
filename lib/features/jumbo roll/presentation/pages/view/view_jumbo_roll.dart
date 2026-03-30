@@ -9,6 +9,7 @@ import 'package:indogrip/core/service/connectivity/internate%20connectivity-chec
 import 'package:indogrip/core/service/connectivity/not_connected.dart';
 import 'package:indogrip/core/utils/appbar/desktop_appbar.dart';
 import 'package:indogrip/core/utils/appbar/mobile_appbar.dart';
+import 'package:indogrip/core/utils/scroll_behavier.dart';
 import 'package:indogrip/core/utils/sidebar.dart';
 import 'package:indogrip/core/utils/widgets/textfield_label.dart';
 import 'package:indogrip/core/utils/widgets/toast_service.dart';
@@ -19,6 +20,7 @@ import 'package:indogrip/features/global/presentation/widget/pagination_widget.d
 import 'package:indogrip/features/global/presentation/widget/refresh_button.dart';
 import 'package:indogrip/features/jumbo%20roll/presentation/bloc/jumbo_roll_bloc.dart';
 import 'package:indogrip/features/jumbo%20roll/presentation/pages/edit/edit_jump_roll.dart';
+import 'package:indogrip/features/jumbo%20roll/presentation/pages/widgets/jumbo_detail_box.dart';
 import 'package:indogrip/features/staff/data/models/view_staff_api_param.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:indogrip/features/jumbo%20roll/data/jumboroll_data_source.dart';
@@ -64,405 +66,406 @@ class _ViewJumboRollPanelState extends ViewJumboRollBuilder {
   void _initializeDataSource() {}
 
   Widget _buildDesktopView() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // if (Responsive.isDesktop(context)) const SideMenuWidget(),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (Responsive.isDesktop(context))
-                DesktopAppBar(context, _stateKey, 'View Jumbo Rolls', false),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Search fields
-                      BlocListener<GlobalBloc, GlobalState>(
-                        bloc: globalBloc,
-                        listener: (context, state) {
-                          if (state is GlobalChangeUserStatusSuccessStatus) {
-                            // Handle status change success (for approved, rejected, blocked, etc.)
-                            if (state.changeStatusEntity.status == 1) {
-                              ToastService.instance.showSuccess(
-                                context,
-                                state.changeStatusEntity.message.toString(),
-                              );
-                              jumboRollBloc.add(
-                                FetchViewJumboRollRecordEvent(
-                                  param: ViewRecordApiParam(
-                                    keyword: searchController.text,
-                                    filterBy: recordValue?.toString() ?? '',
-                                    orderBy: filterValue?.toString() ?? '',
-                                    pageNo: pageNo.toString(),
-                                    sortBy: entryValue?.toString() ?? '',
-                                    vendorKey: vendorKey,
-                                    micID: micID,
-                                    baseID: baseID,
-                                    widthID: widthID,
-                                    fromDate: fromDateController.text,
-                                    toDate: toDateController.text,
-                                  ),
-                                ),
-                              );
-                            } else {
-                              ToastService.instance.showSuccess(
-                                context,
-                                state.changeStatusEntity.message.toString(),
-                              );
-                              jumboRollBloc.add(
-                                FetchViewJumboRollRecordEvent(
-                                  param: ViewRecordApiParam(
-                                    keyword: searchController.text,
-                                    filterBy: recordValue?.toString() ?? '',
-                                    orderBy: filterValue?.toString() ?? '',
-                                    pageNo: pageNo.toString(),
-                                    sortBy: entryValue?.toString() ?? '',
-                                    vendorKey: vendorKey,
-                                    micID: micID,
-                                    baseID: baseID,
-                                    widthID: widthID,
-                                    fromDate: fromDateController.text,
-                                    toDate: toDateController.text,
-                                  ),
-                                ),
-                              );
-                            }
-                          } else if (state
-                              is GlobalChangeUserStatusErrorStatus) {
-                            ToastService.instance.showError(
-                              context,
-                              state.message.toString(),
-                            );
-                          } else if (state is GlobalDeleteRecordSuccessStatus) {
-                            ToastService.instance.showSuccess(
-                              context,
-                              state.deleteRecordEntity.message.toString(),
-                            );
-                            // Refresh list after single delete
-                            jumboRollBloc.add(
-                              FetchViewJumboRollRecordEvent(
-                                param: ViewRecordApiParam(
-                                  keyword: searchController.text,
-                                  filterBy: recordValue?.toString() ?? '',
-                                  orderBy: filterValue?.toString() ?? '',
-                                  pageNo: pageNo.toString(),
-                                  sortBy: entryValue?.toString() ?? '',
-                                  vendorKey: vendorKey,
-                                  micID: micID,
-                                  baseID: baseID,
-                                  widthID: widthID,
-                                  fromDate: fromDateController.text,
-                                  toDate: toDateController.text,
-                                ),
-                              ),
-                            );
-                          } else if (state is GlobalDeleteRecordErrorStatus) {
-                            ToastService.instance.showError(
-                              context,
-                              state.message.toString(),
-                            );
-                          } else if (state
-                              is GlobalDeleteMultipleRecordsSuccessStatus) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  state.deleteRecordEntity.message ??
-                                      'Records deleted',
-                                ),
-                              ),
-                            );
-                            // Refresh list after bulk delete
-                            jumboRollBloc.add(
-                              FetchViewJumboRollRecordEvent(
-                                param: ViewRecordApiParam(
-                                  keyword: searchController.text,
-                                  filterBy: recordValue?.toString() ?? '',
-                                  orderBy: filterValue?.toString() ?? '',
-                                  pageNo: pageNo.toString(),
-                                  sortBy: entryValue?.toString() ?? '',
-                                  vendorKey: vendorKey,
-                                  micID: micID,
-                                  baseID: baseID,
-                                  widthID: widthID,
-                                  fromDate: fromDateController.text,
-                                  toDate: toDateController.text,
-                                ),
-                              ),
-                            );
-                            // Clear selection
-                            setState(() {
-                              selectedRows.clear();
-                              selectedItems.clear();
-                              isMultipleSelection = false;
-                            });
-                          } else if (state
-                              is GlobalDeleteMultipleRecordsErrorStatus) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(state.message)),
-                            );
-                          }
-                        },
-                        child: buildFilterFieldsDesktop,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Search fields
+            BlocListener<GlobalBloc, GlobalState>(
+              bloc: globalBloc,
+              listener: (context, state) {
+                if (state is GlobalChangeUserStatusSuccessStatus) {
+                  // Handle status change success (for approved, rejected, blocked, etc.)
+                  if (state.changeStatusEntity.status == 1) {
+                    ToastService.instance.showSuccess(
+                      context,
+                      state.changeStatusEntity.message.toString(),
+                    );
+                    jumboRollBloc.add(
+                      FetchViewJumboRollRecordEvent(
+                        param: ViewRecordApiParam(
+                          keyword: searchController.text,
+                          filterBy: recordValue?.toString() ?? '',
+                          orderBy: filterValue?.toString() ?? '',
+                          pageNo: pageNo.toString(),
+                          sortBy: entryValue?.toString() ?? '',
+                          vendorKey: vendorKey,
+                          micID: micID,
+                          baseID: baseID,
+                          widthID: widthID,
+                          fromDate: fromDateController.text,
+                          toDate: toDateController.text,
+                        ),
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [_buildPaginationWidget],
+                    );
+                  } else {
+                    ToastService.instance.showSuccess(
+                      context,
+                      state.changeStatusEntity.message.toString(),
+                    );
+                    jumboRollBloc.add(
+                      FetchViewJumboRollRecordEvent(
+                        param: ViewRecordApiParam(
+                          keyword: searchController.text,
+                          filterBy: recordValue?.toString() ?? '',
+                          orderBy: filterValue?.toString() ?? '',
+                          pageNo: pageNo.toString(),
+                          sortBy: entryValue?.toString() ?? '',
+                          vendorKey: vendorKey,
+                          micID: micID,
+                          baseID: baseID,
+                          widthID: widthID,
+                          fromDate: fromDateController.text,
+                          toDate: toDateController.text,
+                        ),
                       ),
-                      // Selection actions widget
-                      BlocConsumer(
-                        bloc: jumboRollBloc,
-
-                        listener: (context, state) {
-                          if (state is FetchViewJumboRollRecordSuccessStatus) {
-                            dataSource = null;
-                            // Reset data source when new data is fetched
-                          }
-                        },
-                        buildWhen: (previous, current) {
-                          // Always rebuild to handle state changes
-                          return true;
-                        },
-                        builder: (context, state) {
-                          switch (state.runtimeType) {
-                            case const (JumboRollLoadingStatus):
-                              return const Center(
-                                child: CircularProgressIndicator.adaptive(),
-                              );
-                            case const (FetchViewJumboRollRecordSuccessStatus):
-                              final successData =
-                                  (state as FetchViewJumboRollRecordSuccessStatus)
-                                      .viewJumboRollModel;
-
-                              dataSource ??= JumboRollDataSource(
-                                context: context,
-                                jumboRollData: successData.record ?? [],
-                                isAllChecked: isChecked,
-                                onStatusChanged: (value) {
-                                  setState(() {
-                                    isChecked = value;
-                                    if (value) {
-                                      selectedRows = List.from(
-                                        dataSource?.rows ?? [],
-                                      );
-                                    } else {
-                                      selectedRows.clear();
-                                    }
-                                    final selectedData = value
-                                        ? (successData.record ?? [])
-                                              .map((record) => record.toJson())
-                                              .cast<Map<String, dynamic>>()
-                                              .toList()
-                                        : <Map<String, dynamic>>[];
-                                    handleSelectionChanged(selectedData);
-                                  });
-                                },
-                                //
-                                onCheckboxChanged: (checked, index) {
-                                  if (dataSource == null) return;
-                                  setState(() {
-                                    if (checked) {
-                                      selectedRows.add(dataSource!.rows[index]);
-                                    } else {
-                                      selectedRows.remove(
-                                        dataSource!.rows[index],
-                                      );
-                                    }
-                                    final selectedRecords = selectedRows
-                                        .map((row) {
-                                          final idx = dataSource!.rows.indexOf(
-                                            row,
-                                          );
-                                          if (idx != -1 &&
-                                              idx <
-                                                  (successData.record?.length ??
-                                                      0)) {
-                                            final record =
-                                                successData.record![idx];
-                                            return record.toJson();
-                                          }
-                                          return null;
-                                        })
-                                        .where((record) => record != null)
-                                        .cast<Map<String, dynamic>>()
-                                        .toList();
-                                    handleSelectionChanged(selectedRecords);
-                                  });
-                                },
-                                onEdit: (value) {
-                                  context.pushNamed(
-                                    EditJumboRollPanel.routeName,
-                                    extra: value,
-                                  );
-                                },
-                                onDelete: (roll) {
-                                  jumboRollBloc.add(
-                                    FetchViewJumboRollRecordEvent(
-                                      param: ViewRecordApiParam(),
-                                    ),
-                                  );
-                                  jumboRollBloc.add(
-                                    FetchViewJumboRollRecordEvent(
-                                      param: ViewRecordApiParam(
-                                        keyword: searchController.text,
-                                        filterBy: recordValue?.toString() ?? '',
-                                        orderBy: filterValue?.toString() ?? '',
-                                        pageNo: pageNo.toString(),
-                                        sortBy: entryValue?.toString() ?? '',
-                                        vendorKey: vendorKey,
-                                        micID: micID,
-                                        baseID: baseID,
-                                        widthID: widthID,
-                                        fromDate: fromDateController.text,
-                                        toDate: toDateController.text,
-                                      ),
-                                    ),
-                                  );
-                                },
-                                // onProfile: (p0) {},
-                                stickerPopup: (value) {
-                                  JumboPrintStickers(value);
-                                },
-                              );
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                setState(() {
-                                  pageQty = successData.pageQty ?? 1;
-                                });
-                              });
-                              return successData.status == 1
-                                  ? Expanded(
-                                      child: SfDataGrid(
-                                        showHorizontalScrollbar: true,
-                                        key: _key,
-                                        rowsPerPage: 4,
-                                        refreshIndicatorStrokeWidth: 100,
-                                        allowPullToRefresh: true,
-                                        allowColumnsResizing: true,
-                                        highlightRowOnHover: true,
-
-                                        columnResizeMode:
-                                            ColumnResizeMode.onResizeEnd,
-                                        isScrollbarAlwaysShown: true,
-                                        showVerticalScrollbar: true,
-
-                                        // refreshIndicatorDisplacement: 50,
-                                        showCheckboxColumn: isMultipleSelection,
-                                        selectionMode: isMultipleSelection
-                                            ? SelectionMode.multiple
-                                            : SelectionMode.single,
-                                        onSelectionChanged: (addedRows, removedRows) {
-                                          if (dataSource == null) return;
-                                          setState(() {
-                                            selectedRows.addAll(addedRows);
-                                            selectedRows.removeWhere(
-                                              (row) =>
-                                                  removedRows.contains(row),
-                                            );
-
-                                            final selectedRecords = selectedRows
-                                                .map((row) {
-                                                  final index = dataSource!.rows
-                                                      .indexOf(row);
-                                                  if (index >= 0 &&
-                                                      index <
-                                                          successData
-                                                              .record!
-                                                              .length) {
-                                                    return successData
-                                                        .record?[index]
-                                                        .toJson();
-                                                  }
-                                                  return null;
-                                                })
-                                                .where(
-                                                  (record) => record != null,
-                                                )
-                                                .cast<Map<String, dynamic>>()
-                                                .toList();
-                                            handleSelectionChanged(
-                                              selectedRecords,
-                                            );
-
-                                            print(
-                                              'DEBUG: Selected ${selectedRows.length} rows',
-                                            );
-                                            print(
-                                              'DEBUG: Added: ${addedRows.length}, Removed: ${removedRows.length}',
-                                            );
-                                          });
-                                        },
-                                        onColumnResizeUpdate: (details) {
-                                          setState(() {
-                                            columnWidths[details
-                                                    .column
-                                                    .columnName] =
-                                                details.width;
-                                          });
-                                          return true;
-                                        },
-                                        source: dataSource!,
-                                        columns: buildGridColumns(),
-                                      ),
-                                    )
-                                  : Expanded(
-                                      child: Center(
-                                        child: Text(
-                                          successData.message ??
-                                              'No response from server',
-                                          style: const TextStyle(fontSize: 16),
-                                        ),
-                                      ),
-                                    );
-                            case const (FetchViewJumboRollRecordFailureStatus):
-                              return Center(
-                                child: RefreshButton(
-                                  onPressed: () {
-                                    log(
-                                      (state
-                                              as FetchViewJumboRollRecordFailureStatus)
-                                          .errorMessage,
-                                      name:
-                                          'FetchViewJumboRollRecordFailureStatus',
-                                    );
-                                    jumboRollBloc.add(
-                                      FetchViewJumboRollRecordEvent(
-                                        param: ViewRecordApiParam(
-                                          keyword: searchController.text,
-                                          filterBy:
-                                              recordValue?.toString() ?? '',
-                                          orderBy:
-                                              filterValue?.toString() ?? '',
-                                          pageNo: pageNo.toString(),
-                                          sortBy: entryValue?.toString() ?? '',
-                                          vendorKey: vendorKey,
-                                          micID: micID,
-                                          baseID: baseID,
-                                          widthID: widthID,
-                                          fromDate: fromDateController.text,
-                                          toDate: toDateController.text,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              );
-                            default:
-                              return SizedBox.shrink();
-                          }
-                        },
+                    );
+                  }
+                } else if (state is GlobalChangeUserStatusErrorStatus) {
+                  ToastService.instance.showError(
+                    context,
+                    state.message.toString(),
+                  );
+                } else if (state is GlobalDeleteRecordSuccessStatus) {
+                  ToastService.instance.showSuccess(
+                    context,
+                    state.deleteRecordEntity.message.toString(),
+                  );
+                  // Refresh list after single delete
+                  jumboRollBloc.add(
+                    FetchViewJumboRollRecordEvent(
+                      param: ViewRecordApiParam(
+                        keyword: searchController.text,
+                        filterBy: recordValue?.toString() ?? '',
+                        orderBy: filterValue?.toString() ?? '',
+                        pageNo: pageNo.toString(),
+                        sortBy: entryValue?.toString() ?? '',
+                        vendorKey: vendorKey,
+                        micID: micID,
+                        baseID: baseID,
+                        widthID: widthID,
+                        fromDate: fromDateController.text,
+                        toDate: toDateController.text,
                       ),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                } else if (state is GlobalDeleteRecordErrorStatus) {
+                  ToastService.instance.showError(
+                    context,
+                    state.message.toString(),
+                  );
+                } else if (state is GlobalDeleteMultipleRecordsSuccessStatus) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        state.deleteRecordEntity.message ?? 'Records deleted',
+                      ),
+                    ),
+                  );
+                  // Refresh list after bulk delete
+                  jumboRollBloc.add(
+                    FetchViewJumboRollRecordEvent(
+                      param: ViewRecordApiParam(
+                        keyword: searchController.text,
+                        filterBy: recordValue?.toString() ?? '',
+                        orderBy: filterValue?.toString() ?? '',
+                        pageNo: pageNo.toString(),
+                        sortBy: entryValue?.toString() ?? '',
+                        vendorKey: vendorKey,
+                        micID: micID,
+                        baseID: baseID,
+                        widthID: widthID,
+                        fromDate: fromDateController.text,
+                        toDate: toDateController.text,
+                      ),
+                    ),
+                  );
+                  // Clear selection
+                  setState(() {
+                    selectedRows.clear();
+                    selectedItems.clear();
+                    isMultipleSelection = false;
+                  });
+                } else if (state is GlobalDeleteMultipleRecordsErrorStatus) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(state.message)));
+                }
+              },
+              child: buildFilterFieldsDesktop,
+            ),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [_buildPaginationWidget],
               ),
-            ],
-          ),
+            ),
+
+            // Selection actions widget
+            SizedBox(
+              height: MediaQuery.sizeOf(context).height,
+              child: BlocConsumer(
+                bloc: jumboRollBloc,
+
+                listener: (context, state) {
+                  if (state is FetchViewJumboRollRecordSuccessStatus) {
+                    pageText = state.viewJumboRollModel.pageText.toString();
+                    dataSource = null;
+                    highlightedRowIndex = null;
+                    // Reset data source when new data is fetched
+                  }
+                },
+                buildWhen: (previous, current) {
+                  // Always rebuild to handle state changes
+                  return true;
+                },
+                builder: (context, state) {
+                  switch (state.runtimeType) {
+                    case const (JumboRollLoadingStatus):
+                      return const Center(
+                        child: CircularProgressIndicator.adaptive(),
+                      );
+                    case const (FetchViewJumboRollRecordSuccessStatus):
+                      final successData =
+                          (state as FetchViewJumboRollRecordSuccessStatus)
+                              .viewJumboRollModel;
+
+                      dataSource ??= JumboRollDataSource(
+                        context: context,
+                        jumboRollData: successData.record ?? [],
+                        isAllChecked: isChecked,
+                        highlightedRowIndex: highlightedRowIndex,
+                        onStatusChanged: (value) {
+                          setState(() {
+                            isChecked = value;
+                            if (value) {
+                              selectedRows = List.from(dataSource?.rows ?? []);
+                            } else {
+                              selectedRows.clear();
+                            }
+                            final selectedData = value
+                                ? (successData.record ?? [])
+                                      .map((record) => record.toJson())
+                                      .cast<Map<String, dynamic>>()
+                                      .toList()
+                                : <Map<String, dynamic>>[];
+                            handleSelectionChanged(selectedData);
+                          });
+                        },
+                        //
+                        onCheckboxChanged: (checked, index) {
+                          if (dataSource == null) return;
+                          setState(() {
+                            if (checked) {
+                              selectedRows.add(dataSource!.rows[index]);
+                            } else {
+                              selectedRows.remove(dataSource!.rows[index]);
+                            }
+                            final selectedRecords = selectedRows
+                                .map((row) {
+                                  final idx = dataSource!.rows.indexOf(row);
+                                  if (idx != -1 &&
+                                      idx < (successData.record?.length ?? 0)) {
+                                    final record = successData.record![idx];
+                                    return record.toJson();
+                                  }
+                                  return null;
+                                })
+                                .where((record) => record != null)
+                                .cast<Map<String, dynamic>>()
+                                .toList();
+                            handleSelectionChanged(selectedRecords);
+                          });
+                        },
+                        onEdit: (value) {
+                          context.pushNamed(
+                            EditJumboRollPanel.routeName,
+                            extra: value,
+                          );
+                        },
+                        onDelete: (roll) {
+                          jumboRollBloc.add(
+                            FetchViewJumboRollRecordEvent(
+                              param: ViewRecordApiParam(),
+                            ),
+                          );
+                          jumboRollBloc.add(
+                            FetchViewJumboRollRecordEvent(
+                              param: ViewRecordApiParam(
+                                keyword: searchController.text,
+                                filterBy: recordValue?.toString() ?? '',
+                                orderBy: filterValue?.toString() ?? '',
+                                pageNo: pageNo.toString(),
+                                sortBy: entryValue?.toString() ?? '',
+                                vendorKey: vendorKey,
+                                micID: micID,
+                                baseID: baseID,
+                                widthID: widthID,
+                                fromDate: fromDateController.text,
+                                toDate: toDateController.text,
+                              ),
+                            ),
+                          );
+                        },
+                        // onProfile: (p0) {},
+                        stickerPopup: (value) {
+                          JumboPrintStickers(value);
+                        },
+                      );
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        setState(() {
+                          pageQty = successData.pageQty ?? 1;
+                        });
+                      });
+                      return successData.status == 1
+                          ? Column(
+                              children: [
+                                JumboDetailBox(
+                                  availableJumbo: successData.availableJumbo
+                                      .toString(),
+                                  availableLength: successData.availableLength
+                                      .toString(),
+                                ),
+                                SizedBox(
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.8,
+                                  child: ScrollConfiguration(
+                                    behavior: HorizontalMouseScrollBehavior(),
+                                    child: SfDataGrid(
+                                      showHorizontalScrollbar: true,
+                                      key: _key,
+                                      rowsPerPage: 4,
+                                      refreshIndicatorStrokeWidth: 100,
+                                      allowPullToRefresh: true,
+                                      allowColumnsResizing: true,
+                                      highlightRowOnHover: true,
+
+                                      columnResizeMode:
+                                          ColumnResizeMode.onResizeEnd,
+                                      isScrollbarAlwaysShown: true,
+                                      showVerticalScrollbar: true,
+
+                                      // refreshIndicatorDisplacement: 50,
+                                      showCheckboxColumn: isMultipleSelection,
+                                      selectionMode: isMultipleSelection
+                                          ? SelectionMode.multiple
+                                          : SelectionMode.single,
+                                      onSelectionChanged: (addedRows, removedRows) {
+                                        if (dataSource == null) return;
+                                        setState(() {
+                                          selectedRows.addAll(addedRows);
+                                          selectedRows.removeWhere(
+                                            (row) => removedRows.contains(row),
+                                          );
+
+                                          final selectedRecords = selectedRows
+                                              .map((row) {
+                                                final index = dataSource!.rows
+                                                    .indexOf(row);
+                                                if (index >= 0 &&
+                                                    index <
+                                                        successData
+                                                            .record!
+                                                            .length) {
+                                                  return successData
+                                                      .record?[index]
+                                                      .toJson();
+                                                }
+                                                return null;
+                                              })
+                                              .where((record) => record != null)
+                                              .cast<Map<String, dynamic>>()
+                                              .toList();
+                                          handleSelectionChanged(
+                                            selectedRecords,
+                                          );
+
+                                          print(
+                                            'DEBUG: Selected ${selectedRows.length} rows',
+                                          );
+                                          print(
+                                            'DEBUG: Added: ${addedRows.length}, Removed: ${removedRows.length}',
+                                          );
+                                        });
+                                      },
+                                      onCellTap:
+                                          (DataGridCellTapDetails details) {
+                                            if (dataSource != null) {
+                                              dataSource!.highlightedRowIndex =
+                                                  details
+                                                      .rowColumnIndex
+                                                      .rowIndex -
+                                                  1;
+                                            }
+                                          },
+                                      onColumnResizeUpdate: (details) {
+                                        setState(() {
+                                          columnWidths[details
+                                                  .column
+                                                  .columnName] =
+                                              details.width;
+                                        });
+                                        return true;
+                                      },
+                                      source: dataSource!,
+                                      columns: buildGridColumns(),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Expanded(
+                              child: Center(
+                                child: Text(
+                                  successData.message ??
+                                      'No response from server',
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                              ),
+                            );
+                    case const (FetchViewJumboRollRecordFailureStatus):
+                      return Center(
+                        child: RefreshButton(
+                          onPressed: () {
+                            log(
+                              (state as FetchViewJumboRollRecordFailureStatus)
+                                  .errorMessage,
+                              name: 'FetchViewJumboRollRecordFailureStatus',
+                            );
+                            jumboRollBloc.add(
+                              FetchViewJumboRollRecordEvent(
+                                param: ViewRecordApiParam(
+                                  keyword: searchController.text,
+                                  filterBy: recordValue?.toString() ?? '',
+                                  orderBy: filterValue?.toString() ?? '',
+                                  pageNo: pageNo.toString(),
+                                  sortBy: entryValue?.toString() ?? '',
+                                  vendorKey: vendorKey,
+                                  micID: micID,
+                                  baseID: baseID,
+                                  widthID: widthID,
+                                  fromDate: fromDateController.text,
+                                  toDate: toDateController.text,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    default:
+                      return SizedBox.shrink();
+                  }
+                },
+              ),
+            ),
+            SizedBox(height: 100),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -676,7 +679,7 @@ class _ViewJumboRollPanelState extends ViewJumboRollBuilder {
           key: _stateKey,
           appBar: !Responsive.isDesktop(context)
               ? MobileAppBar(context, _stateKey, 'View Jumbo Rolls')
-              : null,
+              : DesktopAppBar(context, _stateKey, 'View Jumbo Rolls', false),
           drawer: !Responsive.isDesktop(context)
               ? const SideMenuWidget()
               : null,
@@ -689,6 +692,7 @@ class _ViewJumboRollPanelState extends ViewJumboRollBuilder {
   }
 
   Widget get _buildPaginationWidget => TableBottomWidget(
+    pageText: pageText,
     currentPage: pageNo,
     pageQty: pageQty,
     onPagePressed: (pageNumber) {

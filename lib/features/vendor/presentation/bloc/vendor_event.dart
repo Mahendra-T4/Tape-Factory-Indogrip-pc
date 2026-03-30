@@ -15,9 +15,15 @@ final class ViewVendorRecordsFetchingEvent extends VendorEvent {
   ViewVendorRecordsFetchingEvent({required this.param});
 }
 
-
 final class EditVendorOnRecordEvent extends VendorEvent {
   final EditVendorApiParam apiParams;
 
   EditVendorOnRecordEvent({required this.apiParams});
+}
+
+final class UploadVendorCSVFileEvent extends VendorEvent {
+  final String activity;
+  final File csvFile;
+
+  UploadVendorCSVFileEvent({required this.activity, required this.csvFile});
 }

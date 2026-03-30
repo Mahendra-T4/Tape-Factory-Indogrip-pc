@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:indogrip/core/database/hive_service.dart';
 import 'package:indogrip/core/responsive/responsive.dart';
@@ -9,7 +8,6 @@ import 'package:indogrip/core/utils/appbar/desktop_appbar.dart';
 import 'package:indogrip/core/utils/appbar/mobile_appbar.dart';
 import 'package:indogrip/features/dashboard/presentation/page/dashboard_builder.dart';
 import 'package:indogrip/features/dashboard/presentation/widget/default_setting_widget.dart';
-import 'package:indogrip/features/dashboard/presentation/widget/report_widget.dart';
 
 class IndoGripDashboard extends StatefulWidget {
   const IndoGripDashboard({super.key});
@@ -62,9 +60,12 @@ class _IndoGripDashboardState extends DashboardBuilder {
                 child: Column(
                   children: [
                     _buildWelcomeHeader,
-                    productWidget,
-                    SalesDashboard(),
+                    // productWidget,
+                    // SalesDashboard(),
+                    SizedBox(height: 16),
                     buildPredictCalculationFormWidget,
+                    SizedBox(height: 16),
+                    buildPredictCalculation2FormWidget,
                     desktopWidgetWrapper,
                     DefaultSettingWidget(),
                     const SizedBox(height: 200),
@@ -152,7 +153,7 @@ class _IndoGripDashboardState extends DashboardBuilder {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Welcome back, Admin!',
+                        'Welcome back, AS-Admin!',
                         style: TextStyle(
                           fontSize: Responsive.isDesktop(context) ? 36 : 28,
                           fontWeight: FontWeight.w800,

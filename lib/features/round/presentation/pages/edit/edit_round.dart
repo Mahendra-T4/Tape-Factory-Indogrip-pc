@@ -34,12 +34,14 @@ class JumboRoll {
 class _EditRoundPanelState extends EditRoundBuilder {
   @override
   void initState() {
-    selectedJumbo = widget.record.jumboKey;
+    // selectedJumbo = widget.record.jumboKey;
     roundController.text = widget.record.roundCount.toString();
     meterController.text = widget.record.tapeLength.toString();
     selectedCore = widget.record.coreID?.toString();
     selectedSize = widget.record.rollSizeID?.toString();
-    selectedJumbo = widget.record.jumboKey;
+    selectedJumbo = widget.record.jumboKey is List
+        ? widget.record.jumboKey as List<String>
+        : [widget.record.jumboKey.toString()];
     wastagePercentageController.text = widget.record.wastagePercentage
         .toString();
     selectedCartonType = widget.record.cartonType.toString();
@@ -55,22 +57,22 @@ class _EditRoundPanelState extends EditRoundBuilder {
   Widget build(BuildContext context) {
     return StreamBuilder(
       stream: InternetConnectionService().connectionStream,
-        initialData: true, // Assume connected initially
-        builder: (context, snapshot) {
-          // Handle error state
-          if (snapshot.hasError) {
-            return const NoInternetConnection();
-          }
+      initialData: true, // Assume connected initially
+      builder: (context, snapshot) {
+        // Handle error state
+        if (snapshot.hasError) {
+          return const NoInternetConnection();
+        }
 
-          // Handle disconnected state
-          if (snapshot.data == false) {
-            return const NoInternetConnection();
-          }
+        // Handle disconnected state
+        if (snapshot.data == false) {
+          return const NoInternetConnection();
+        }
 
-          // Handle loading state
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
+        // Handle loading state
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
         return Scaffold(
           key: stateKey,
           appBar: !Responsive.isDesktop(context)
@@ -83,7 +85,7 @@ class _EditRoundPanelState extends EditRoundBuilder {
               ? roundDesktopWidgetWrapper
               : _roundTabletView,
         );
-      }
+      },
     );
   }
 
@@ -116,11 +118,11 @@ class _EditRoundPanelState extends EditRoundBuilder {
                   Expanded(
                     // flex: 2,
                     child: MasterJumboRoll(
-                      selectedJumbo: selectedJumbo.toString(),
+                      selectedJumbo: selectedJumbo,
                       onChanged: (values) {
                         log(name: 'Roll Key', values.toString());
                         setState(() {
-                          selectedJumbo = values.toString();
+                          selectedJumbo = values;
                           ;
                         });
                       },

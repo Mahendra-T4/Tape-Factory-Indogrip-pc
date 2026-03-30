@@ -37,6 +37,7 @@ class PrintStretchFilmSticker extends StatefulWidget {
 class _PrintStickerState extends State<PrintStretchFilmSticker> {
   // BatchDetailsModel batchDetailsModel = BatchDetailsModel();
   late final InventoryOutBloc inventoryOutBloc;
+  String? pageText;
 
   bool isLoading = true;
   bool isMultiSelect = false;

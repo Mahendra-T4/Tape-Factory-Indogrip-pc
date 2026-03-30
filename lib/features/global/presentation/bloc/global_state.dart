@@ -7,6 +7,10 @@ final class GlobalInitial extends GlobalState {}
 
 final class GlobalLoadingStatus extends GlobalState {}
 
+final class GlobalLoadingStatus2 extends GlobalState {}
+
+final class GlobalLoadingStatus3 extends GlobalState {}
+
 final class GlobalChangeUserStatusSuccessStatus extends GlobalState {
   final ChangeStatusEntity changeStatusEntity;
 
@@ -59,6 +63,18 @@ final class GlobalUploadCsvFileErrorStatus extends GlobalState {
   GlobalUploadCsvFileErrorStatus({required this.message});
 }
 
+final class GlobalRoundRecordUploadCsvFileSuccessStatus extends GlobalState {
+  final UploadRoundRecordModel successResponse;
+
+  GlobalRoundRecordUploadCsvFileSuccessStatus({required this.successResponse});
+}
+
+final class GlobalRoundRecordUploadCsvFileErrorStatus extends GlobalState {
+  final String message;
+
+  GlobalRoundRecordUploadCsvFileErrorStatus({required this.message});
+}
+
 final class GlobalMasterMicronSuccessStatus extends GlobalState {
   final ViewMicronModel micronModel;
 
@@ -95,8 +111,6 @@ final class LoadNotificationsErrorStatus extends GlobalState {
   LoadNotificationsErrorStatus({required this.message});
 }
 
-
-
 final class ReadUnReadNotificationMasterStatusSuccessStatus
     extends GlobalState {
   final ReadUnReadMasterStatusModel model;
@@ -132,4 +146,40 @@ final class FetchUserSettingsErrorStatus extends GlobalState {
   final String message;
 
   FetchUserSettingsErrorStatus({required this.message});
+}
+
+final class ChallanProductVerifySuccessState extends GlobalState {
+  final ChallanProductVerifyModel model;
+
+  ChallanProductVerifySuccessState({required this.model});
+}
+
+final class ChallanProductVerifyFailureState extends GlobalState {
+  final String errorMessage;
+
+  ChallanProductVerifyFailureState({required this.errorMessage});
+}
+
+final class UnVerifyProductSuccessState extends GlobalState {
+  final SuccessResponse model;
+
+  UnVerifyProductSuccessState({required this.model});
+}
+
+final class UnVerifyProductFailureState extends GlobalState {
+  final String errorMessage;
+
+  UnVerifyProductFailureState({required this.errorMessage});
+}
+
+final class ReturnChallanProductSuccessState extends GlobalState {
+  final SuccessResponse model;
+
+  ReturnChallanProductSuccessState({required this.model});
+}
+
+final class ReturnChallanProductFailureState extends GlobalState {
+  final String errorMessage;
+
+  ReturnChallanProductFailureState({required this.errorMessage});
 }

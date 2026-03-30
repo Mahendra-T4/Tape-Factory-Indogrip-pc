@@ -11,4 +11,10 @@ final class PredictCalculationEvent extends HomeEvent {
   PredictCalculationEvent({required this.param});
 }
 
+final class PredictCalculationByMicEvent extends HomeEvent {
+  final PredictCalParam param;
+
+  PredictCalculationByMicEvent({required this.param});
+}
+
 final class FetchCoreListEvent extends HomeEvent {}

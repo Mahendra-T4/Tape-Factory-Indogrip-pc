@@ -221,7 +221,7 @@ class _BillFormateState extends BillFormatBuilder {
                             ),
                             pw.Padding(
                               padding: pw.EdgeInsets.all(4),
-                              child: pw.Center(child: pw.Text('Unit')),
+                              child: pw.Center(child: pw.Text('Display Price')),
                             ),
                             pw.Padding(
                               padding: pw.EdgeInsets.all(4),
@@ -229,87 +229,121 @@ class _BillFormateState extends BillFormatBuilder {
                             ),
                             pw.Padding(
                               padding: pw.EdgeInsets.all(4),
-                              child: pw.Center(child: pw.Text('Display Price')),
+                              child: pw.Center(child: pw.Text('Remark')),
                             ),
                             pw.Padding(
                               padding: pw.EdgeInsets.all(4),
-                              child: pw.Center(child: pw.Text('Remark')),
+                              child: pw.Center(child: pw.Text('Return Date')),
+                            ),
+                            pw.Padding(
+                              padding: pw.EdgeInsets.all(4),
+                              child: pw.Center(child: pw.Text('Return Qty')),
+                            ),
+                            pw.Padding(
+                              padding: pw.EdgeInsets.all(4),
+                              child: pw.Center(child: pw.Text('Return Reason')),
                             ),
                           ],
                         ),
                         ...List<pw.TableRow>.generate(
                           data.first.orderProduct!.length,
-                          (index) => pw.TableRow(
-                            children: [
-                              pw.Padding(
-                                padding: pw.EdgeInsets.all(10),
-                                child: pw.Text('${index + 1}'),
-                              ),
-                              pw.Padding(
-                                padding: pw.EdgeInsets.all(10),
-                                child: pw.Text(''),
-                              ),
-                              pw.Padding(
-                                padding: pw.EdgeInsets.all(10),
-                                child: pw.Text(
-                                  data
-                                          .first
-                                          .orderProduct![index]
-                                          .productInformation ??
-                                      '',
+                          (index) {
+                            final product = data.first.orderProduct![index];
+                            final unitPrice =
+                                double.tryParse(
+                                  product.unitPrice?.toString() ?? '',
+                                ) ??
+                                0;
+                            final displayQty =
+                                double.tryParse(
+                                  product.displayQty?.toString() ?? '',
+                                ) ??
+                                0;
+                            final actualQty =
+                                double.tryParse(
+                                  product.quantity?.toString() ?? '',
+                                ) ??
+                                0;
+                            final displayPrice =
+                                product.displayPrice?.toString() ??
+                                (unitPrice * displayQty).toString();
+                            final totalPrice = (unitPrice * actualQty)
+                                .toString();
+                            return pw.TableRow(
+                              children: [
+                                pw.Padding(
+                                  padding: pw.EdgeInsets.all(10),
+                                  child: pw.Text('${index + 1}'),
                                 ),
-                              ),
-                              pw.Padding(
-                                padding: pw.EdgeInsets.all(10),
-                                child: pw.Text(
-                                  data.first.orderProduct![index].hsnCode
-                                          ?.toString() ??
-                                      '',
+                                pw.Padding(
+                                  padding: pw.EdgeInsets.all(10),
+                                  child: pw.Text(
+                                    product.displayInformation ?? '',
+                                  ),
                                 ),
-                              ),
-                              pw.Padding(
-                                padding: pw.EdgeInsets.all(10),
-                                child: pw.Text(
-                                  data.first.orderProduct![index].unitPrice
-                                          ?.toString() ??
-                                      '',
-                                ), // Unit, perhaps add if available
-                              ),
-                              pw.Padding(
-                                padding: pw.EdgeInsets.all(10),
-                                child: pw.Text(
-                                  '',
-                                ), // Unit, perhaps add if available
-                              ),
-                              pw.Padding(
-                                padding: pw.EdgeInsets.all(10),
-                                child: pw.Text(
-                                  data.first.orderProduct![index].quantity
-                                          ?.toString() ??
-                                      '',
+                                pw.Padding(
+                                  padding: pw.EdgeInsets.all(10),
+                                  child: pw.Text(
+                                    product.productInformation ?? '',
+                                  ),
                                 ),
-                              ),
-                              pw.Padding(
-                                padding: pw.EdgeInsets.all(10),
-                                child: pw.Text(''),
-                              ),
-                              pw.Padding(
-                                padding: pw.EdgeInsets.all(10),
-                                child: pw.Text(
-                                  data.first.orderProduct![index].productPrice
-                                          ?.toString() ??
-                                      '',
+                                pw.Padding(
+                                  padding: pw.EdgeInsets.all(10),
+                                  child: pw.Text(
+                                    product.hsnCode?.toString() ?? '',
+                                  ),
                                 ),
-                              ),
-
-                              pw.Padding(
-                                padding: pw.EdgeInsets.all(10),
-                                child: pw.Text(
-                                  '',
-                                ), // Unit, perhaps add if available
-                              ),
-                            ],
-                          ),
+                                pw.Padding(
+                                  padding: pw.EdgeInsets.all(10),
+                                  child: pw.Text(
+                                    product.unitPrice?.toString() ?? '',
+                                  ),
+                                ),
+                                pw.Padding(
+                                  padding: pw.EdgeInsets.all(10),
+                                  child: pw.Text(
+                                    product.displayQty?.toString() ?? '',
+                                  ),
+                                ),
+                                pw.Padding(
+                                  padding: pw.EdgeInsets.all(10),
+                                  child: pw.Text(
+                                    product.quantity?.toString() ?? '',
+                                  ),
+                                ),
+                                pw.Padding(
+                                  padding: pw.EdgeInsets.all(10),
+                                  child: pw.Text(
+                                    product.displayPrice?.toString() ?? '',
+                                  ),
+                                ),
+                                pw.Padding(
+                                  padding: pw.EdgeInsets.all(10),
+                                  child: pw.Text(
+                                    product.productPrice?.toString() ?? '',
+                                  ),
+                                ),
+                                pw.Padding(
+                                  padding: pw.EdgeInsets.all(10),
+                                  child: pw.Text(product.prRemarks ?? ''),
+                                ),
+                                pw.Padding(
+                                  padding: pw.EdgeInsets.all(10),
+                                  child: pw.Text(product.returnDate ?? ''),
+                                ),
+                                pw.Padding(
+                                  padding: pw.EdgeInsets.all(10),
+                                  child: pw.Text(
+                                    product.returnQty?.toString() ?? '',
+                                  ),
+                                ),
+                                pw.Padding(
+                                  padding: pw.EdgeInsets.all(10),
+                                  child: pw.Text(product.returnReason ?? ''),
+                                ),
+                              ],
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -397,9 +431,9 @@ class _BillFormateState extends BillFormatBuilder {
           drawer: !Responsive.isDesktop(context)
               ? const SideMenuWidget()
               : null,
-          body: BlocConsumer(
+          body: BlocBuilder(
             bloc: challanBloc,
-            listener: (context, state) {},
+
             builder: (context, state) {
               switch (state.runtimeType) {
                 case ChallanLoadingState:
@@ -419,32 +453,32 @@ class _BillFormateState extends BillFormatBuilder {
                           padding: const EdgeInsets.all(16.0),
                           child: Column(
                             children: [
-                              SizedBox(height: 25),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 30,
-                                ),
-                                child: Row(
-                                  spacing: 16,
-                                  children: [
-                                    // Expanded(child: SizedBox()),
-                                    Expanded(child: SizedBox()),
-                                    Expanded(child: verifyButton),
-                                    Expanded(
-                                      child: CustomButton(
-                                        label: 'Print Challan ',
-                                        onPressed: () => _printBill(data),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: CustomButton(
-                                        label: 'Print Challan',
-                                        onPressed: () => _printBill(data),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                              // SizedBox(height: 25),
+                              // Padding(
+                              //   padding: const EdgeInsets.symmetric(
+                              //     horizontal: 30,
+                              //   ),
+                              //   child: Row(
+                              //     spacing: 16,
+                              //     children: [
+                              //       Expanded(child: SizedBox()),
+                              //       Expanded(child: SizedBox()),
+                              //       Expanded(child: verifyButton),
+                              //       Expanded(
+                              //         child: CustomButton(
+                              //           label: 'Print Challan ',
+                              //           onPressed: () => _printBill(data),
+                              //         ),
+                              //       ),
+                              //       Expanded(
+                              //         child: CustomButton(
+                              //           label: 'Print Challan',
+                              //           onPressed: () => _printBill(data),
+                              //         ),
+                              //       ),
+                              //     ],
+                              //   ),
+                              // ),
                               SizedBox(height: 25),
 
                               Center(

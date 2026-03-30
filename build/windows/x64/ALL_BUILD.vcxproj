@@ -145,6 +145,10 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <Project>{CBF0BD6C-A2EA-34AC-A239-27F03C27D08D}</Project>
       <Name>connectivity_plus_plugin</Name>
     </ProjectReference>
+    <ProjectReference Include="D:\CodeWithMax\PC Projects\indogrip\build\windows\x64\plugins\file_saver\file_saver_plugin.vcxproj">
+      <Project>{EA166E04-8F9E-3D98-9781-51743E63735A}</Project>
+      <Name>file_saver_plugin</Name>
+    </ProjectReference>
     <ProjectReference Include="D:\CodeWithMax\PC Projects\indogrip\build\windows\x64\plugins\file_selector_windows\file_selector_windows_plugin.vcxproj">
       <Project>{9ECFE500-E586-393E-A247-B8B201DA3C20}</Project>
       <Name>file_selector_windows_plugin</Name>

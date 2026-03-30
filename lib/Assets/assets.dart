@@ -205,6 +205,9 @@ class Assets {
   static const String assetsImagesChalanInvoiceIcon =
       "assets/images/invoice-bill-svgrepo-com.svg";
 
+  static const String assetsImagesExportExcelFileIcon =
+      "assets/images/file.png";
+
   /// Assets for assetsImagesTrophy
   /// assets/images/trophy.svg
   static const String assetsImagesTrophy = "assets/images/trophy.svg";

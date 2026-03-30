@@ -2,12 +2,14 @@ class PredictCalculationModel {
   int? status;
   dynamic cartonRate;
   dynamic cartonWithMargin;
+  dynamic perPieceRate;
   String? message;
 
   PredictCalculationModel({
     this.status,
     this.cartonRate,
     this.cartonWithMargin,
+    this.perPieceRate,
     this.message,
   });
 
@@ -15,6 +17,7 @@ class PredictCalculationModel {
     status = json['status'];
     cartonRate = json['cartonRate'];
     cartonWithMargin = json['cartonWithMargin'];
+    perPieceRate = json['perPieceRate'];
     message = json['message'];
   }
 
@@ -23,6 +26,7 @@ class PredictCalculationModel {
     data['status'] = this.status;
     data['cartonRate'] = this.cartonRate;
     data['cartonWithMargin'] = this.cartonWithMargin;
+    data['perPieceRate'] = this.perPieceRate;
     data['message'] = this.message;
     return data;
   }

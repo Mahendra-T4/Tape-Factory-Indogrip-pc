@@ -3,8 +3,18 @@ class ViewTapInventoryModel {
   String? message;
   List<TapRecord>? record;
   int? pageQty;
+  String? pageText;
+  int? totalPieces;
+  int? availableCarton;
 
-  ViewTapInventoryModel({this.status, this.message, this.record, this.pageQty});
+  ViewTapInventoryModel({
+    this.status,
+    this.message,
+    this.record,
+    this.pageQty,
+    this.availableCarton,
+    this.totalPieces,
+  });
 
   ViewTapInventoryModel.fromJson(Map<String, dynamic> json) {
     status = json['status'];
@@ -16,6 +26,9 @@ class ViewTapInventoryModel {
       });
     }
     pageQty = json['pageQty'];
+    pageText = json['pageText'];
+    totalPieces = json['totalPieces'];
+    availableCarton = json['availableCarton'];
   }
 
   Map<String, dynamic> toJson() {
@@ -26,6 +39,7 @@ class ViewTapInventoryModel {
       data['record'] = this.record!.map((v) => v.toJson()).toList();
     }
     data['pageQty'] = this.pageQty;
+    data['pageText'] = this.pageText;
     return data;
   }
 }
@@ -199,7 +213,6 @@ class VendorInfo {
   }
 }
 
-
 class BatchInformation {
   dynamic batchID;
   String? batchCode;
@@ -265,4 +278,3 @@ class BatchInformation {
     return data;
   }
 }
-

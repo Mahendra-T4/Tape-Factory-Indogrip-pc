@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:indogrip/core/responsive/responsive.dart';
 import 'package:indogrip/core/utils/widgets/button.dart';
 import 'package:indogrip/core/utils/widgets/custom_textfield.dart';
@@ -21,18 +23,27 @@ import 'package:indogrip/features/dashboard/presentation/widget/width_db_widget.
 import 'package:indogrip/features/global/data/repositories/global_manager_repo.dart';
 import 'package:indogrip/features/global/presentation/bloc/global_bloc.dart';
 import 'package:indogrip/features/global/presentation/widget/refresh_button.dart';
+import 'package:indogrip/features/jumbo%20roll/presentation/bloc/jumbo_roll_bloc.dart';
+import 'package:indogrip/features/jumbo%20roll/presentation/pages/widgets/micron_dropdown_widget.dart';
 import 'package:indogrip/features/outsource/presentation/widget/master_product_type_model.dart';
+import 'package:indogrip/features/round/domain/repositories/add_round_repo.dart';
+import 'package:indogrip/features/round/presentation/bloc/round_bloc.dart';
 import 'package:indogrip/features/round/presentation/widgets/master_roll_size_widget.dart';
+
+enum whatToShow { micron, ratePerSqrtMeter }
 
 abstract class DashboardBuilder extends State<IndoGripDashboard> {
   late final HomeBloc homeBloc;
   late final GlobalBloc _globalBloc;
+  whatToShow showWhat = whatToShow.ratePerSqrtMeter;
   String? selectedProduct;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey2 = GlobalKey<FormState>();
   final TextEditingController amountPerKg = TextEditingController();
   final TextEditingController wastagePercentage = TextEditingController();
   final TextEditingController conversionRate = TextEditingController();
   final TextEditingController wastagePercentage2 = TextEditingController();
+  final TextEditingController amountPerKg2 = TextEditingController();
   final TextEditingController conversionRate2 = TextEditingController();
   TextEditingController tapeLengthController = TextEditingController();
   TextEditingController ratePerSquareMeterController = TextEditingController();
@@ -41,16 +52,42 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
   TextEditingController marginController = TextEditingController();
   String? selectedRoundSize;
   ShowStaticModel? dashboardData;
+  String? selectedMic;
+  String? micLabel;
+  String? roundSizeLabel;
+  String? cutMMMeterLabel;
+  late final RoundBloc _roundBloc;
+  late final JumboRollBloc _jumboRollBloc;
+  dynamic ratePerSqrtMeter;
+  dynamic wastagePrt;
+  dynamic conversionRt;
+
+  bool isMic = false;
 
   @override
   void initState() {
     homeBloc = HomeBloc();
     _globalBloc = GlobalBloc(globalRepository: GlobalManagerRepository());
     homeBloc.add(FetchDashboardStaticsEvent());
+    _roundBloc = RoundBloc(addRoundRepository: AddRoundRepository());
+    _jumboRollBloc = JumboRollBloc();
+
     // Fetch default settings to populate form fields
     _globalBloc.add(FetchUserSettingsEvent());
     buildDefaultSettingInit();
     super.initState();
+  }
+
+  void clearControllers() {
+    _roundBloc.add(FetchMasterRollSizeEvent());
+    _jumboRollBloc.add(LoadMasterJumboMicronEvent());
+    amountPerKg.clear();
+
+    amountPerKg2.clear();
+
+    tapeLengthController.clear();
+    ratePerSquareMeterController.clear();
+    marginController.clear();
   }
 
   Widget buildDefaultSettingInit() => BlocBuilder(
@@ -348,7 +385,7 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
           spacing: 16,
           children: [
             Text(
-              'Predict Calculation',
+              'Predict Calculation using Rate Per Square Meter',
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -366,11 +403,14 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
                   Expanded(
                     child: MasterRoleSizeSelector(
                       selectedRole: selectedRoundSize,
+                      onLabelChanged: (label) =>
+                          setState(() => cutMMMeterLabel = label),
                       onChanged: (String? value) {
                         setState(() {
                           selectedRoundSize = value;
                         });
                       },
+                      isValidate: false,
                     ),
                   ),
                   Expanded(
@@ -380,6 +420,11 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
                         CustomTextFieldExtra(
                           controller: tapeLengthController,
                           labelText: 'Tape Length',
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[0-9.]'),
+                            ),
+                          ],
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter tape length';
@@ -400,6 +445,11 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
                         CustomTextFieldExtra(
                           controller: ratePerSquareMeterController,
                           labelText: 'Rate Per Square Meter',
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[0-9.]'),
+                            ),
+                          ],
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter rate per square meter';
@@ -427,6 +477,9 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
                     child: CustomTextFieldExtra(
                       controller: wastagePercentage2,
                       labelText: 'Wastage Percentage',
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                      ],
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter wastage percentage';
@@ -446,6 +499,9 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
                     child: CustomTextFieldExtra(
                       controller: conversionRate2,
                       labelText: 'Conversion Rate',
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                      ],
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter conversion rate';
@@ -465,6 +521,9 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
                     child: CustomTextFieldExtra(
                       controller: marginController,
                       labelText: 'Margin',
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                      ],
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter margin';
@@ -503,6 +562,245 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
     ),
   );
 
+  Widget
+  get buildPredictCalculation2FormWidget => BlocListener<GlobalBloc, GlobalState>(
+    bloc: _globalBloc,
+    listener: (context, state) {
+      if (state is FetchUserSettingsSuccessStatus) {
+        // Auto-populate form fields with default settings
+        final data = state.model;
+        if (data.record != null && data.record!.isNotEmpty) {
+          amountPerKg2.text = data.record!.first.amountPerKG.toString();
+          wastagePercentage2.text = data.record!.first.wastagePercentage
+              .toString();
+          conversionRate2.text = data.record!.first.conversionRate.toString();
+          // selectedMic = data.record!.first.micID;
+          // selectedRoundSize = data.record!.first.;
+          conversionRt = data.record!.first.conversionRate;
+          wastagePrt = data.record!.first.wastagePercentage;
+        }
+      }
+    },
+    child: Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey[200]!, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Form(
+        key: _formKey2,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 16,
+          children: [
+            Text(
+              'Predict Calculation using Micron',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF2C3E50),
+                letterSpacing: -0.5,
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: Responsive.kHZRowPadding,
+              ),
+              child: Row(
+                spacing: 16,
+                children: [
+                  Expanded(
+                    child: MicronDropdownWidget(
+                      value: selectedMic,
+
+                      onChanged: (val) => setState(() => selectedMic = val),
+                      onLabelChanged: (label) =>
+                          setState(() => micLabel = label),
+                    ),
+                  ),
+                  Expanded(
+                    child: MasterRoleSizeSelector(
+                      selectedRole: selectedRoundSize,
+                      onLabelChanged: (label) =>
+                          setState(() => cutMMMeterLabel = label),
+                      onChanged: (String? value) {
+                        setState(() {
+                          selectedRoundSize = value;
+                        });
+                      },
+                      isValidate: false,
+                    ),
+                  ),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        SizedBox(height: 10),
+                        CustomTextFieldExtra(
+                          controller: tapeLengthController,
+                          labelText: 'Tape Length',
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[0-9.]'),
+                            ),
+                          ],
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter tape length';
+                            }
+                            if (double.tryParse(value) == null) {
+                              return 'Please enter a valid number';
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: Responsive.kHZRowPadding,
+              ),
+              child: Row(
+                spacing: 16,
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        SizedBox(height: 10),
+                        CustomTextFieldExtra(
+                          controller: amountPerKg2,
+                          labelText: 'Amount Per KG',
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[0-9.]'),
+                            ),
+                          ],
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter amount per kg';
+                            }
+                            if (double.tryParse(value) == null) {
+                              return 'Please enter a valid number';
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: CustomTextFieldExtra(
+                      controller: wastagePercentage2,
+                      labelText: 'Wastage Percentage',
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                      ],
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter wastage percentage';
+                        }
+                        if (double.tryParse(value) == null) {
+                          return 'Please enter a valid number';
+                        }
+                        if (double.parse(value) < 0 ||
+                            double.parse(value) > 100) {
+                          return 'Wastage percentage must be between 0 and 100';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: CustomTextFieldExtra(
+                      controller: conversionRate2,
+                      labelText: 'Conversion Rate',
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                      ],
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter conversion rate';
+                        }
+                        if (double.tryParse(value) == null) {
+                          return 'Please enter a valid number';
+                        }
+                        // if (double.parse(value) < 0 ||
+                        //     double.parse(value) > 100) {
+                        //   return 'Conversion rate must be between 0 and 100';
+                        // }
+                        return null;
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: Responsive.kHZRowPadding,
+              ),
+              child: Row(
+                spacing: 16,
+                children: [
+                  Expanded(
+                    child: CustomTextFieldExtra(
+                      controller: marginController,
+                      labelText: 'Margin',
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                      ],
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter margin';
+                        }
+                        if (double.tryParse(value) == null) {
+                          return 'Please enter a valid number';
+                        }
+                        if (double.parse(value) < 0 ||
+                            double.parse(value) > 100) {
+                          return 'Margin must be between 0 and 100';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  Expanded(child: SizedBox()),
+                  Expanded(child: SizedBox()),
+                ],
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: Responsive.kHZRowPadding,
+              ),
+              child: Row(
+                spacing: 16,
+                children: [
+                  Expanded(child: SizedBox()),
+                  Expanded(child: SizedBox()),
+                  Expanded(child: SizedBox()),
+                  Expanded(child: predictCalculationByMicButton),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+
   Widget get predictCalculationButton => BlocConsumer(
     bloc: homeBloc,
     listener: (context, state) {
@@ -512,11 +810,16 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
             context,
             state.predictCalculationModel.message.toString(),
           );
+          setState(() {
+            showWhat = whatToShow.ratePerSqrtMeter;
+          });
+
           // open a dialog to display returned values
           showPredictResultDialog(
             context: context,
             cartonRate: state.predictCalculationModel.cartonRate,
             cartonWithMargin: state.predictCalculationModel.cartonWithMargin,
+            piecesPerCarton: state.predictCalculationModel.perPieceRate,
           );
         } else {
           ToastService.instance.showError(
@@ -540,7 +843,7 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
             homeBloc.add(
               PredictCalculationEvent(
                 param: PredictCalParam(
-                  rollSize: selectedRoundSize.toString(),
+                  rollSize: selectedRoundSize,
                   tapeLength: tapeLengthController.text,
                   ratePerSquareMeter: ratePerSquareMeterController.text,
                   wastagePercentage: wastagePercentage2.text,
@@ -555,10 +858,71 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
     },
   );
 
+  Widget get predictCalculationByMicButton => BlocConsumer(
+    bloc: homeBloc,
+    listener: (context, state) {
+      if (state is PredictCalculationByMicSuccessStatus) {
+        if (state.predictCalculationModel.status == 1) {
+          ToastService.instance.showSuccess(
+            context,
+            state.predictCalculationModel.message.toString(),
+          );
+
+          setState(() {
+            showWhat = whatToShow.micron;
+          });
+
+          // clearControllers();
+          // open a dialog to display returned values
+          showPredictResultDialog(
+            context: context,
+            cartonRate: state.predictCalculationModel.cartonRate,
+            cartonWithMargin: state.predictCalculationModel.cartonWithMargin,
+            piecesPerCarton: state.predictCalculationModel.perPieceRate,
+          );
+        } else {
+          ToastService.instance.showError(
+            context,
+            state.predictCalculationModel.message.toString(),
+          );
+        }
+      }
+      if (state is PredictCalculationByMicErrorStatus) {
+        ToastService.instance.showError(context, state.message.toString());
+      }
+    },
+    builder: (context, state) {
+      if (state is HomeLoadingStatus2) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      return CustomButton(
+        label: 'Submit',
+        onPressed: () {
+          if (_formKey2.currentState!.validate()) {
+            homeBloc.add(
+              PredictCalculationByMicEvent(
+                param: PredictCalParam(
+                  micID: selectedMic,
+                  tapeLength: tapeLengthController.text,
+                  amountPerKG: amountPerKg2.text,
+                  wastagePercentage: wastagePercentage2.text,
+                  conversionRate: conversionRate2.text,
+                  margin: marginController.text,
+                  rollSize: selectedRoundSize,
+                ),
+              ),
+            );
+          }
+        },
+      );
+    },
+  );
+
   void showPredictResultDialog({
     required BuildContext context,
     required dynamic cartonRate,
     required dynamic cartonWithMargin,
+    required dynamic piecesPerCarton,
   }) {
     showDialog(
       context: context,
@@ -591,7 +955,10 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
                       ),
                     ),
                     InkWell(
-                      onTap: () => Navigator.of(context).pop(),
+                      onTap: () {
+                        context.pop(context);
+                        clearControllers();
+                      },
                       child: Container(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
@@ -613,6 +980,162 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
+                            'CutMMMeter',
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            cutMMMeterLabel.toString(),
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    showWhat == whatToShow.micron
+                        ? Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Micron',
+                                  style: TextStyle(color: Colors.grey[600]),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  micLabel.toString(),
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w700,
+                                    color: Theme.of(context).primaryColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Rate Per Square Meter',
+                                  style: TextStyle(color: Colors.grey[600]),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  ratePerSquareMeterController.text.isEmpty
+                                      ? '0'
+                                      : ratePerSquareMeterController.text,
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w700,
+                                    color: Theme.of(context).primaryColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Tape Length',
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            tapeLengthController.text,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  spacing: 20,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Wastage Percentage',
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            wastagePrt?.toString() ?? wastagePercentage.text,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Conversion Rate',
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            conversionRt?.toString() ?? conversionRate.text,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Margin',
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            marginController.text,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  spacing: 20,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
                             'Carton Rate',
                             style: TextStyle(color: Colors.grey[600]),
                           ),
@@ -627,7 +1150,7 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 20),
+
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -648,20 +1171,45 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
                         ],
                       ),
                     ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Pieces Per Carton',
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            piecesPerCarton?.toString() ?? '-',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
+
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: () {
+                        context.pop(context);
+                        clearControllers();
+                      },
                       child: Text('Close'),
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.of(context).pop();
+                        context.pop(context);
+                        clearControllers();
                       },
                       child: Text('OK'),
                     ),

@@ -6,10 +6,12 @@ import 'package:indogrip/Assets/assets.dart';
 import 'package:indogrip/core/constants/sizes.dart';
 import 'package:indogrip/features/global/presentation/widget/base_filter_field.dart';
 import 'package:indogrip/features/global/presentation/widget/data_filtration.dart';
+import 'package:indogrip/features/global/presentation/widget/file_export_button.dart';
 import 'package:indogrip/features/global/presentation/widget/multi_delete_button.dart';
 import 'package:indogrip/features/global/presentation/widget/refresh_button.dart';
 import 'package:indogrip/features/global/presentation/widget/search_field_round.dart';
 import 'package:indogrip/features/global/presentation/widget/vendor_list_widget.dart';
+import 'package:indogrip/features/jumbo%20roll/data/jumbo_roll_exporter.dart';
 import 'package:indogrip/features/jumbo%20roll/data/jumboroll_data_source.dart';
 import 'package:indogrip/features/jumbo%20roll/data/models/view_jumbo_roll_model.dart';
 import 'package:indogrip/features/jumbo%20roll/presentation/bloc/jumbo_roll_bloc.dart';
@@ -25,10 +27,12 @@ import 'package:pdf/widgets.dart' as pw;
 
 abstract class ViewJumboRollBuilder extends State<ViewJumboRollPanel> {
   late JumboRollBloc jumboRollBloc;
+  String pageText = '';
   bool isMultipleSelection = false;
   List<Map<String, dynamic>> selectedItems = [];
   late JumboRollDataSource? dataSource;
   Set<int> selectedIndices = {};
+  int? highlightedRowIndex;
   TextEditingController searchController = TextEditingController();
   final fromDateController = TextEditingController();
   final toDateController = TextEditingController();
@@ -56,13 +60,13 @@ abstract class ViewJumboRollBuilder extends State<ViewJumboRollPanel> {
     isStatus: true,
     controller: searchController,
     onSearch: (keyword) {
-      setState(() {
-        searchController.text = keyword;
-      });
+      // setState(() {
+      //   searchController.text = keyword;
+      // });
       jumboRollBloc.add(
         FetchViewJumboRollRecordEvent(
           param: ViewRecordApiParam(
-            keyword: searchController.text,
+            keyword: keyword,
             filterBy: recordValue?.toString() ?? '',
             orderBy: filterValue?.toString() ?? '',
             pageNo: pageNo.toString(),
@@ -853,6 +857,14 @@ abstract class ViewJumboRollBuilder extends State<ViewJumboRollPanel> {
           refreshButton,
 
           if (isMultipleSelection) buildSelectionActions(),
+          SizedBox(width: 10),
+          FileExportButton(
+            onPressed: () async {
+              await JumboRollExporter.exportJumboRollExcelFile(
+                context: context,
+              );
+            },
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [

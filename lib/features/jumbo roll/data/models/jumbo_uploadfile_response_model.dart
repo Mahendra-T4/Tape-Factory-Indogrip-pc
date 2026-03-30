@@ -1,17 +1,38 @@
 class JumboUploadFileResponseModel {
   final int? status;
   final String? message;
-  final MissRecord? missRecord;
+  final List<JumboMissRecord>? missRecord;
 
   JumboUploadFileResponseModel({this.status, this.message, this.missRecord});
 
   factory JumboUploadFileResponseModel.fromJson(Map<String, dynamic> json) {
+    List<JumboMissRecord>? missRecords;
+
+    if (json['missRecord'] != null) {
+      if (json['missRecord'] is List) {
+        // Handle empty list or list of records
+        if ((json['missRecord'] as List).isEmpty) {
+          missRecords = [];
+        } else {
+          missRecords = (json['missRecord'] as List)
+              .map(
+                (item) =>
+                    JumboMissRecord.fromJson(item as Map<String, dynamic>),
+              )
+              .toList();
+        }
+      } else if (json['missRecord'] is Map) {
+        // Handle single map object
+        missRecords = [
+          JumboMissRecord.fromJson(json['missRecord'] as Map<String, dynamic>),
+        ];
+      }
+    }
+
     return JumboUploadFileResponseModel(
       status: json['status'],
       message: json['message'],
-      missRecord: json['missRecord'] != null
-          ? MissRecord.fromJson(json['missRecord'])
-          : null,
+      missRecord: missRecords,
     );
   }
 
@@ -19,12 +40,12 @@ class JumboUploadFileResponseModel {
     return {
       'status': status,
       'message': message,
-      'missRecord': missRecord?.toJson(),
+      'missRecord': missRecord?.map((m) => m.toJson()).toList(),
     };
   }
 }
 
-class MissRecord {
+class JumboMissRecord {
   final String? vendorKey;
   final String? billDate;
   final String? billNumber;
@@ -41,7 +62,7 @@ class MissRecord {
   final String? rKey;
   final String? msg;
 
-  MissRecord({
+  JumboMissRecord({
     this.vendorKey,
     this.billDate,
     this.billNumber,
@@ -59,8 +80,8 @@ class MissRecord {
     this.msg,
   });
 
-  factory MissRecord.fromJson(Map<String, dynamic> json) {
-    return MissRecord(
+  factory JumboMissRecord.fromJson(Map<String, dynamic> json) {
+    return JumboMissRecord(
       vendorKey: json['vendorKey'],
       billDate: json['billDate'],
       billNumber: json['billNumber'],

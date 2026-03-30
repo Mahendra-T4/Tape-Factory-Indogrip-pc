@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +8,7 @@ import 'package:indogrip/core/service/connectivity/internate%20connectivity-chec
 import 'package:indogrip/core/service/connectivity/not_connected.dart';
 import 'package:indogrip/core/utils/appbar/desktop_appbar.dart';
 import 'package:indogrip/core/utils/appbar/mobile_appbar.dart';
+import 'package:indogrip/core/utils/scroll_behavier.dart';
 import 'package:indogrip/core/utils/sidebar.dart';
 import 'package:indogrip/core/utils/widgets/textfield_label.dart';
 import 'package:indogrip/core/utils/widgets/toast_service.dart';
@@ -47,364 +50,361 @@ class _ViewClientPanelState extends ViewClientBuilder {
   }
 
   Widget _buildDesktopView() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // if (Responsive.isDesktop(context)) SideMenuWidget(),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              DesktopAppBar(context, _stateKey, 'View Clients', false),
-              BlocListener<GlobalBloc, GlobalState>(
-                bloc: globalBloc,
-                listener: (context, state) {
-                  if (state is GlobalChangeUserStatusSuccessStatus) {
-                    // Handle status change success (for approved, rejected, blocked, etc.)
-                    if (state.changeStatusEntity.status == 1) {
-                      ToastService.instance.showSuccess(
-                        context,
-                        state.changeStatusEntity.message.toString(),
-                      );
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          BlocListener<GlobalBloc, GlobalState>(
+            bloc: globalBloc,
+            listener: (context, state) {
+              if (state is GlobalChangeUserStatusSuccessStatus) {
+                // Handle status change success (for approved, rejected, blocked, etc.)
+                if (state.changeStatusEntity.status == 1) {
+                  ToastService.instance.showSuccess(
+                    context,
+                    state.changeStatusEntity.message.toString(),
+                  );
 
-                      // Refresh list after status change
-                      clientBloc.add(
-                        ViewClientRecordsFetchingEvent(
-                          viewClientApiParam: ViewRecordApiParam(
-                            keyword: searchController.text,
-                            filterBy: recordValue ?? '',
-                            orderBy: filterValue.toString(),
-                            pageNo: pageNo.toString(),
-                            sortBy: entryValue.toString(),
-                            fromDate: fromDateController.text,
-                            toDate: toDateController.text,
-                          ),
-                        ),
-                      );
-                    } else {
-                      ToastService.instance.showSuccess(
-                        context,
-                        state.changeStatusEntity.message.toString(),
-                      );
-                      clientBloc.add(
-                        ViewClientRecordsFetchingEvent(
-                          viewClientApiParam: ViewRecordApiParam(
-                            keyword: searchController.text,
-                            filterBy: recordValue ?? '',
-                            orderBy: filterValue.toString(),
-                            pageNo: pageNo.toString(),
-                            sortBy: entryValue.toString(),
-                            fromDate: fromDateController.text,
-                            toDate: toDateController.text,
-                          ),
-                        ),
-                      );
-                    }
-                  } else if (state is GlobalChangeUserStatusErrorStatus) {
-                    ToastService.instance.showError(
-                      context,
-                      state.message.toString(),
-                    );
-                  } else if (state is GlobalDeleteRecordSuccessStatus) {
-                    ToastService.instance.showSuccess(
-                      context,
-                      state.deleteRecordEntity.message.toString(),
-                    );
-                    // Refresh list after single delete
-                    clientBloc.add(
-                      ViewClientRecordsFetchingEvent(
-                        viewClientApiParam: ViewRecordApiParam(
-                          keyword: searchController.text,
-                          filterBy: recordValue ?? '',
-                          orderBy: filterValue.toString(),
-                          pageNo: pageNo.toString(),
-                          sortBy: entryValue.toString(),
-                          fromDate: fromDateController.text,
-                          toDate: toDateController.text,
-                        ),
+                  // Refresh list after status change
+                  clientBloc.add(
+                    ViewClientRecordsFetchingEvent(
+                      viewClientApiParam: ViewRecordApiParam(
+                        keyword: searchController.text,
+                        filterBy: recordValue ?? '',
+                        orderBy: filterValue.toString(),
+                        pageNo: pageNo.toString(),
+                        sortBy: entryValue.toString(),
+                        fromDate: fromDateController.text,
+                        toDate: toDateController.text,
                       ),
-                    );
-                  } else if (state is GlobalDeleteRecordErrorStatus) {
-                    ToastService.instance.showError(
-                      context,
-                      state.message.toString(),
-                    );
-                  } else if (state
-                      is GlobalDeleteMultipleRecordsSuccessStatus) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          state.deleteRecordEntity.message ?? 'Records deleted',
-                        ),
+                    ),
+                  );
+                } else {
+                  ToastService.instance.showSuccess(
+                    context,
+                    state.changeStatusEntity.message.toString(),
+                  );
+                  clientBloc.add(
+                    ViewClientRecordsFetchingEvent(
+                      viewClientApiParam: ViewRecordApiParam(
+                        keyword: searchController.text,
+                        filterBy: recordValue ?? '',
+                        orderBy: filterValue.toString(),
+                        pageNo: pageNo.toString(),
+                        sortBy: entryValue.toString(),
+                        fromDate: fromDateController.text,
+                        toDate: toDateController.text,
                       ),
-                    );
-                    // Refresh list after bulk delete
-                    clientBloc.add(
-                      ViewClientRecordsFetchingEvent(
-                        viewClientApiParam: ViewRecordApiParam(
-                          keyword: searchController.text,
-                          filterBy: recordValue ?? '',
-                          orderBy: filterValue.toString(),
-                          pageNo: pageNo.toString(),
-                          sortBy: entryValue.toString(),
-                          fromDate: fromDateController.text,
-                          toDate: toDateController.text,
-                        ),
-                      ),
-                    );
-                    // Clear selection
-                    setState(() {
-                      selectedRows.clear();
-                      selectedItems.clear();
-                      isMultipleSelection = false;
-                    });
-                  } else if (state is GlobalDeleteMultipleRecordsErrorStatus) {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text(state.message)));
-                  }
-                },
-                child: buildFilterFieldsDesktop,
-              ),
-              SizedBox(height: 10),
+                    ),
+                  );
+                }
+              } else if (state is GlobalChangeUserStatusErrorStatus) {
+                ToastService.instance.showError(
+                  context,
+                  state.message.toString(),
+                );
+              } else if (state is GlobalDeleteRecordSuccessStatus) {
+                ToastService.instance.showSuccess(
+                  context,
+                  state.deleteRecordEntity.message.toString(),
+                );
+                // Refresh list after single delete
+                clientBloc.add(
+                  ViewClientRecordsFetchingEvent(
+                    viewClientApiParam: ViewRecordApiParam(
+                      keyword: searchController.text,
+                      filterBy: recordValue ?? '',
+                      orderBy: filterValue.toString(),
+                      pageNo: pageNo.toString(),
+                      sortBy: entryValue.toString(),
+                      fromDate: fromDateController.text,
+                      toDate: toDateController.text,
+                    ),
+                  ),
+                );
+              } else if (state is GlobalDeleteRecordErrorStatus) {
+                ToastService.instance.showError(
+                  context,
+                  state.message.toString(),
+                );
+              } else if (state is GlobalDeleteMultipleRecordsSuccessStatus) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      state.deleteRecordEntity.message ?? 'Records deleted',
+                    ),
+                  ),
+                );
+                // Refresh list after bulk delete
+                clientBloc.add(
+                  ViewClientRecordsFetchingEvent(
+                    viewClientApiParam: ViewRecordApiParam(
+                      keyword: searchController.text,
+                      filterBy: recordValue ?? '',
+                      orderBy: filterValue.toString(),
+                      pageNo: pageNo.toString(),
+                      sortBy: entryValue.toString(),
+                      fromDate: fromDateController.text,
+                      toDate: toDateController.text,
+                    ),
+                  ),
+                );
+                // Clear selection
+                setState(() {
+                  selectedRows.clear();
+                  selectedItems.clear();
+                  isMultipleSelection = false;
+                });
+              } else if (state is GlobalDeleteMultipleRecordsErrorStatus) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(state.message)));
+              }
+            },
+            child: buildFilterFieldsDesktop,
+          ),
+          SizedBox(height: 10),
 
-              Row(
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 mainAxisSize: MainAxisSize.min,
                 children: [_buildPaginationWidget],
               ),
-              BlocConsumer(
-                bloc: clientBloc,
-                listener: (context, state) {
-                  if (state is ViewClientRecordsLoadedSuccessStatus) {
-                    _dataSource = null;
-                    // Reset data source when new data is fetched
-                  }
-                },
-                buildWhen: (previous, current) {
-                  // Always rebuild to handle state changes
-                  return true;
-                },
-                builder: (context, state) {
-                  switch (state.runtimeType) {
-                    case const (ClientLoadingStatus):
-                      return const Center(
-                        child: CircularProgressIndicator.adaptive(),
-                      );
-                    case const (ViewClientRecordsLoadedSuccessStatus):
-                      final successState =
-                          (state as ViewClientRecordsLoadedSuccessStatus)
-                              .viewClientModel;
-
-                      _dataSource ??= ClientDataSource(
-                        context: context,
-                        clientData: successState.record ?? [],
-                        isAllChecked: isChecked,
-                        onStatusChanged: (value) {
-                          setState(() {
-                            isChecked = value;
-                            if (value) {
-                              selectedRows = List.from(_dataSource?.rows ?? []);
-                            } else {
-                              selectedRows.clear();
-                            }
-                            final selectedData = value
-                                ? (state.viewClientModel.record ?? [])
-                                      .map((record) => record.toJson())
-                                      .cast<Map<String, dynamic>>()
-                                      .toList()
-                                : <Map<String, dynamic>>[];
-                            handleSelectionChanged(selectedData);
-                          });
-                        },
-                        onCheckboxChanged: (checked, index) {
-                          if (_dataSource == null) return;
-                          setState(() {
-                            if (checked) {
-                              selectedRows.add(_dataSource!.rows[index]);
-                            } else {
-                              selectedRows.remove(_dataSource!.rows[index]);
-                            }
-                            final selectedRecords = selectedRows
-                                .map((row) {
-                                  final idx = _dataSource!.rows.indexOf(row);
-                                  if (idx != -1 &&
-                                      idx <
-                                          (state
-                                                  .viewClientModel
-                                                  .record
-                                                  ?.length ??
-                                              0)) {
-                                    final record =
-                                        state.viewClientModel.record![idx];
-                                    return record.toJson();
-                                  }
-                                  return null;
-                                })
-                                .where((record) => record != null)
-                                .cast<Map<String, dynamic>>()
-                                .toList();
-                            handleSelectionChanged(selectedRecords);
-                          });
-                        },
-                        onEdit: (client, unit) {
-                          context.pushNamed(
-                            EditClient.routeName,
-                            extra: EditClientParam(record: client, unit: unit),
-                          );
-                        },
-                        onDelete: (staff) {
-                          globalBloc.add(
-                            GlobalDeleteRecordEvent(
-                              rKey: staff.rKey.toString(),
-                              rPanel: 'view-staff',
-                            ),
-                          );
-
-                          clientBloc.add(
-                            ViewClientRecordsFetchingEvent(
-                              viewClientApiParam: ViewRecordApiParam(
-                                keyword: searchController.text,
-                                filterBy: recordValue ?? '',
-                                orderBy: filterValue.toString(),
-                                pageNo: pageNo.toString(),
-                                sortBy: entryValue.toString(),
-                                fromDate: fromDateController.text,
-                                toDate: toDateController.text,
-                              ),
-                            ),
-                          );
-                        },
-                        onProfile: (staff) {
-                          context.pushNamed(
-                            ClientProfile.routeName,
-                            extra: staff,
-                          );
-                        },
-                        onChanged: (String? value, ClientRecord record) {
-                          globalBloc.add(
-                            GlobalChangeUserStatusEvent(
-                              param: ChangeStaffParam(
-                                rKey: record.rKey.toString(),
-                                rPanel: 'view-client',
-                                rStatus: value.toString(),
-                                statusReason: '',
-                              ),
-                            ),
-                          );
-                          clientBloc.add(
-                            ViewClientRecordsFetchingEvent(
-                              viewClientApiParam: ViewRecordApiParam(
-                                keyword: searchController.text,
-                                filterBy: recordValue ?? '',
-                                orderBy: filterValue.toString(),
-                                pageNo: pageNo.toString(),
-                                sortBy: entryValue.toString(),
-                                fromDate: fromDateController.text,
-                                toDate: toDateController.text,
-                              ),
-                            ),
-                          );
-                          // For other statuses, call API directly (no reason required)
-                        },
-                      );
-
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        setState(() {
-                          pageQty = state.viewClientModel.pageQty ?? 1;
-                        });
-                      });
-
-                      return successState.status == 1
-                          ? Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 12,
-                                  right: 12,
-                                ),
-                                child: SfDataGrid(
-                                  showHorizontalScrollbar: true,
-                                  key: _key,
-                                  rowsPerPage: 4,
-                                  allowPullToRefresh: true,
-                                  allowColumnsResizing: true,
-                                  columnResizeMode:
-                                      ColumnResizeMode.onResizeEnd,
-                                  isScrollbarAlwaysShown: true,
-                                  showVerticalScrollbar: true,
-                                  showCheckboxColumn: isMultipleSelection,
-                                  selectionMode: isMultipleSelection
-                                      ? SelectionMode.multiple
-                                      : SelectionMode.single,
-
-                                  onSelectionChanged: (addedRows, removedRows) {
-                                    setState(() {
-                                      selectedRows.addAll(addedRows);
-                                      selectedRows.removeWhere(
-                                        (row) => removedRows.contains(row),
-                                      );
-
-                                      final selectedData = selectedRows.map((
-                                        row,
-                                      ) {
-                                        final index = _dataSource!.rows.indexOf(
-                                          row,
-                                        );
-                                        return state
-                                            .viewClientModel
-                                            .record![index];
-                                      }).toList();
-                                      handleSelectionChanged(
-                                        state.viewClientModel.record!
-                                            .where(
-                                              (record) =>
-                                                  selectedData.contains(record),
-                                            )
-                                            .map((e) => e.toJson())
-                                            .cast<Map<String, dynamic>>()
-                                            .toList(),
-                                      );
-                                    });
-                                  },
-                                  onColumnResizeUpdate:
-                                      (ColumnResizeUpdateDetails details) {
-                                        setState(() {
-                                          columnWidths[details
-                                                  .column
-                                                  .columnName] =
-                                              details.width;
-                                        });
-                                        return true;
-                                      },
-                                  source: _dataSource!,
-
-                                  columns: buildGridColumns(),
-                                ),
-                              ),
-                            )
-                          : Expanded(
-                              child: Center(
-                                child: Text(
-                                  successState.message ??
-                                      'Refresh to load data',
-                                ),
-                              ),
-                            );
-                    case const (ViewClientRecordsErrorStatus):
-                      return Center(
-                        child: Text(
-                          (state as ViewClientRecordsErrorStatus).errorMessage,
-                        ),
-                      );
-                    default:
-                      return SizedBox.shrink();
-                  }
-                },
-              ),
-            ],
+            ),
           ),
-        ),
-      ],
+          SizedBox(
+            height: MediaQuery.sizeOf(context).height,
+            child: BlocConsumer(
+              bloc: clientBloc,
+              listener: (context, state) {
+                if (state is ViewClientRecordsLoadedSuccessStatus) {
+                  pageText = state.viewClientModel.pageText.toString();
+                  log('Client Page Text: $pageText');
+                  _dataSource = null;
+                  // Reset data source when new data is fetched
+                }
+              },
+              buildWhen: (previous, current) {
+                // Always rebuild to handle state changes
+                return true;
+              },
+              builder: (context, state) {
+                switch (state.runtimeType) {
+                  case const (ClientLoadingStatus):
+                    return const Center(
+                      child: CircularProgressIndicator.adaptive(),
+                    );
+                  case const (ViewClientRecordsLoadedSuccessStatus):
+                    final successState =
+                        (state as ViewClientRecordsLoadedSuccessStatus)
+                            .viewClientModel;
+
+                    _dataSource ??= ClientDataSource(
+                      context: context,
+                      clientData: successState.record ?? [],
+                      isAllChecked: isChecked,
+                      onStatusChanged: (value) {
+                        setState(() {
+                          isChecked = value;
+                          if (value) {
+                            selectedRows = List.from(_dataSource?.rows ?? []);
+                          } else {
+                            selectedRows.clear();
+                          }
+                          final selectedData = value
+                              ? (state.viewClientModel.record ?? [])
+                                    .map((record) => record.toJson())
+                                    .cast<Map<String, dynamic>>()
+                                    .toList()
+                              : <Map<String, dynamic>>[];
+                          handleSelectionChanged(selectedData);
+                        });
+                      },
+                      onCheckboxChanged: (checked, index) {
+                        if (_dataSource == null) return;
+                        setState(() {
+                          if (checked) {
+                            selectedRows.add(_dataSource!.rows[index]);
+                          } else {
+                            selectedRows.remove(_dataSource!.rows[index]);
+                          }
+                          final selectedRecords = selectedRows
+                              .map((row) {
+                                final idx = _dataSource!.rows.indexOf(row);
+                                if (idx != -1 &&
+                                    idx <
+                                        (state.viewClientModel.record?.length ??
+                                            0)) {
+                                  final record =
+                                      state.viewClientModel.record![idx];
+                                  return record.toJson();
+                                }
+                                return null;
+                              })
+                              .where((record) => record != null)
+                              .cast<Map<String, dynamic>>()
+                              .toList();
+                          handleSelectionChanged(selectedRecords);
+                        });
+                      },
+                      onEdit: (client, unit) {
+                        context.pushNamed(
+                          EditClient.routeName,
+                          extra: EditClientParam(record: client, unit: unit),
+                        );
+                      },
+                      onDelete: (staff) {
+                        globalBloc.add(
+                          GlobalDeleteRecordEvent(
+                            rKey: staff.rKey.toString(),
+                            rPanel: 'view-staff',
+                          ),
+                        );
+
+                        clientBloc.add(
+                          ViewClientRecordsFetchingEvent(
+                            viewClientApiParam: ViewRecordApiParam(
+                              keyword: searchController.text,
+                              filterBy: recordValue ?? '',
+                              orderBy: filterValue.toString(),
+                              pageNo: pageNo.toString(),
+                              sortBy: entryValue.toString(),
+                              fromDate: fromDateController.text,
+                              toDate: toDateController.text,
+                            ),
+                          ),
+                        );
+                      },
+                      onProfile: (staff) {
+                        context.pushNamed(
+                          ClientProfile.routeName,
+                          extra: staff,
+                        );
+                      },
+                      onChanged: (String? value, ClientRecord record) {
+                        globalBloc.add(
+                          GlobalChangeUserStatusEvent(
+                            param: ChangeStaffParam(
+                              rKey: record.rKey.toString(),
+                              rPanel: 'view-client',
+                              rStatus: value.toString(),
+                              statusReason: '',
+                            ),
+                          ),
+                        );
+                        clientBloc.add(
+                          ViewClientRecordsFetchingEvent(
+                            viewClientApiParam: ViewRecordApiParam(
+                              keyword: searchController.text,
+                              filterBy: recordValue ?? '',
+                              orderBy: filterValue.toString(),
+                              pageNo: pageNo.toString(),
+                              sortBy: entryValue.toString(),
+                              fromDate: fromDateController.text,
+                              toDate: toDateController.text,
+                            ),
+                          ),
+                        );
+                        // For other statuses, call API directly (no reason required)
+                      },
+                    );
+
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      setState(() {
+                        pageQty = state.viewClientModel.pageQty ?? 1;
+                      });
+                    });
+
+                    return successState.status == 1
+                        ? Padding(
+                            padding: const EdgeInsets.only(left: 12, right: 12),
+                            child: ScrollConfiguration(
+                              behavior: HorizontalMouseScrollBehavior(),
+                              child: SfDataGrid(
+                                showHorizontalScrollbar: true,
+                                key: _key,
+                                rowsPerPage: 4,
+                                allowPullToRefresh: true,
+                                allowColumnsResizing: true,
+                                columnResizeMode: ColumnResizeMode.onResizeEnd,
+                                isScrollbarAlwaysShown: true,
+                                showVerticalScrollbar: true,
+                                showCheckboxColumn: isMultipleSelection,
+                                selectionMode: isMultipleSelection
+                                    ? SelectionMode.multiple
+                                    : SelectionMode.single,
+
+                                onSelectionChanged: (addedRows, removedRows) {
+                                  setState(() {
+                                    selectedRows.addAll(addedRows);
+                                    selectedRows.removeWhere(
+                                      (row) => removedRows.contains(row),
+                                    );
+
+                                    final selectedData = selectedRows.map((
+                                      row,
+                                    ) {
+                                      final index = _dataSource!.rows.indexOf(
+                                        row,
+                                      );
+                                      return state
+                                          .viewClientModel
+                                          .record![index];
+                                    }).toList();
+                                    handleSelectionChanged(
+                                      state.viewClientModel.record!
+                                          .where(
+                                            (record) =>
+                                                selectedData.contains(record),
+                                          )
+                                          .map((e) => e.toJson())
+                                          .cast<Map<String, dynamic>>()
+                                          .toList(),
+                                    );
+                                  });
+                                },
+                                onColumnResizeUpdate:
+                                    (ColumnResizeUpdateDetails details) {
+                                      setState(() {
+                                        columnWidths[details
+                                                .column
+                                                .columnName] =
+                                            details.width;
+                                      });
+                                      return true;
+                                    },
+                                source: _dataSource!,
+
+                                columns: buildGridColumns(),
+                              ),
+                            ),
+                          )
+                        : Expanded(
+                            child: Center(
+                              child: Text(
+                                successState.message ?? 'Refresh to load data',
+                              ),
+                            ),
+                          );
+                  case const (ViewClientRecordsErrorStatus):
+                    return Center(
+                      child: Text(
+                        (state as ViewClientRecordsErrorStatus).errorMessage,
+                      ),
+                    );
+                  default:
+                    return SizedBox.shrink();
+                }
+              },
+            ),
+          ),
+          SizedBox(height: 100),
+        ],
+      ),
     );
   }
 
@@ -571,7 +571,7 @@ class _ViewClientPanelState extends ViewClientBuilder {
           key: _stateKey,
           appBar: !Responsive.isDesktop(context)
               ? MobileAppBar(context, _stateKey, 'View Clients')
-              : null,
+              : DesktopAppBar(context, _stateKey, 'View Clients', false),
           drawer: !Responsive.isDesktop(context)
               ? const SideMenuWidget()
               : null,
@@ -583,6 +583,7 @@ class _ViewClientPanelState extends ViewClientBuilder {
   }
 
   Widget get _buildPaginationWidget => TableBottomWidget(
+    pageText: pageText,
     currentPage: pageNo,
     pageQty: pageQty,
     onPagePressed: (pageNumber) {

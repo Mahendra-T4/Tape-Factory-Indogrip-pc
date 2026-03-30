@@ -79,7 +79,7 @@ class StaffRepository {
       'filterBy': param.filterBy,
       'sortBy': param.sortBy,
       'orderBy': param.orderBy,
-      'pageNO': param.pageNo ?? '',
+      'pageNo': param.pageNo ?? '',
       'fromDate': param.fromDate ?? '',
       'toDate': param.toDate ?? '',
     });

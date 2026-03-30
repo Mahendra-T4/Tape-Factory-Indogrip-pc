@@ -42,3 +42,15 @@ final class UpdateVendorOnRecordFailureStatus extends VendorState {
 
   UpdateVendorOnRecordFailureStatus({required this.errorMessage});
 }
+
+final class UploadVendorCSVFileSuccessStatus extends VendorState {
+  final UploadVendorResponse successResponse;
+
+  UploadVendorCSVFileSuccessStatus({required this.successResponse});
+}
+
+final class UploadVendorCSVFileFailureStatus extends VendorState {
+  final String errorMessage;
+
+  UploadVendorCSVFileFailureStatus({required this.errorMessage});
+}

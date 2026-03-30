@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:indogrip/core/service/connectivity/internate%20connectivity-checker.dart';
 import 'package:indogrip/core/service/connectivity/not_connected.dart';
 import 'package:indogrip/core/utils/appbar/desktop_appbar.dart';
+import 'package:indogrip/features/outsource/data/model/tap_miss_record_model.dart';
+import 'package:indogrip/features/outsource/data/model/upload_tap_miss_record_model.dart';
 import 'package:indogrip/features/tape/presentation/pages/tape-miss-record/tape_miss_record_panel_builder.dart';
 
 class TapeMissRecordPanel extends StatefulWidget {
-  const TapeMissRecordPanel({super.key});
+  const TapeMissRecordPanel({super.key, required this.record});
+  final UploadTapRecordModel record;
   static const String routeName = '/tape-miss-record-panel';
 
   @override
@@ -15,11 +18,10 @@ class TapeMissRecordPanel extends StatefulWidget {
 class _TapeMissRecordPanelState extends TapeMissRecordPanelBuilder {
   final GlobalKey<ScaffoldState> _statekey = GlobalKey<ScaffoldState>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _reasonController = TextEditingController();
 
   @override
   void dispose() {
-    _reasonController.dispose();
+    reasonController.dispose();
     super.dispose();
   }
 
@@ -27,22 +29,22 @@ class _TapeMissRecordPanelState extends TapeMissRecordPanelBuilder {
   Widget build(BuildContext context) {
     return StreamBuilder(
       stream: InternetConnectionService().connectionStream,
-        initialData: true, // Assume connected initially
-        builder: (context, snapshot) {
-          // Handle error state
-          if (snapshot.hasError) {
-            return const NoInternetConnection();
-          }
+      initialData: true, // Assume connected initially
+      builder: (context, snapshot) {
+        // Handle error state
+        if (snapshot.hasError) {
+          return const NoInternetConnection();
+        }
 
-          // Handle disconnected state
-          if (snapshot.data == false) {
-            return const NoInternetConnection();
-          }
+        // Handle disconnected state
+        if (snapshot.data == false) {
+          return const NoInternetConnection();
+        }
 
-          // Handle loading state
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
+        // Handle loading state
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
         return Scaffold(
           key: _statekey,
           appBar: DesktopAppBar(context, _statekey, 'Tape Miss Record', false),
@@ -59,13 +61,16 @@ class _TapeMissRecordPanelState extends TapeMissRecordPanelBuilder {
                   children: [
                     const Text(
                       'Reason',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const SizedBox(height: 10),
                     SizedBox(
                       width: MediaQuery.of(context).size.width,
                       child: TextFormField(
-                        controller: _reasonController,
+                        controller: reasonController,
                         maxLines: 4,
                         readOnly: true,
                         decoration: InputDecoration(
@@ -88,7 +93,7 @@ class _TapeMissRecordPanelState extends TapeMissRecordPanelBuilder {
             ],
           ),
         );
-      }
+      },
     );
   }
 }

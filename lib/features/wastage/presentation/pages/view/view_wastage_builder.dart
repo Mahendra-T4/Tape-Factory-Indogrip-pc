@@ -13,6 +13,7 @@ abstract class ViewWastageBuilder extends State<ViewWastagePanel> {
   bool isMultipleSelection = false;
   List<Map<String, dynamic>> selectedItems = [];
   int? currentPage = 1;
+  String pageText = '';
   int? pageQty;
   final TextEditingController searchController = TextEditingController();
 

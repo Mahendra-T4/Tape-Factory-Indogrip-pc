@@ -3,8 +3,18 @@ class ViewJumboRollModel {
   String? message;
   List<JumboRollRecord>? record;
   int? pageQty;
+  String? pageText;
+  dynamic availableLength;
+  int? availableJumbo;
 
-  ViewJumboRollModel({this.status, this.message, this.record, this.pageQty});
+  ViewJumboRollModel({
+    this.status,
+    this.message,
+    this.record,
+    this.pageQty,
+    this.availableLength,
+    this.availableJumbo,
+  });
 
   ViewJumboRollModel.fromJson(Map<String, dynamic> json) {
     status = json['status'];
@@ -16,6 +26,9 @@ class ViewJumboRollModel {
       });
     }
     pageQty = json['pageQty'];
+    pageText = json['pageText'];
+    availableLength = json['availableLength'];
+    availableJumbo = json['availableJumbo'];
   }
 
   Map<String, dynamic> toJson() {
@@ -26,6 +39,9 @@ class ViewJumboRollModel {
       data['record'] = this.record!.map((v) => v.toJson()).toList();
     }
     data['pageQty'] = this.pageQty;
+    data['pageText'] = this.pageText;
+    data['availableLength'] = this.availableLength;
+    data['availableJumbo'] = this.availableJumbo;
     return data;
   }
 }

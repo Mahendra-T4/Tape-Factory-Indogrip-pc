@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer' as developer;
+import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:indogrip/features/client/data/model/add_client_param.dart';
@@ -7,6 +8,7 @@ import 'package:indogrip/features/global/data/model/success_reponse.dart';
 import 'package:indogrip/features/staff/data/models/view_staff_api_param.dart';
 import 'package:indogrip/features/vendor/data/models/edit_vendor_api_param.dart';
 import 'package:indogrip/features/vendor/data/models/edit_vendor_success_model.dart';
+import 'package:indogrip/features/vendor/data/models/upload_vendor_button.dart';
 import 'package:indogrip/features/vendor/data/models/view_vendor_model.dart';
 import 'package:indogrip/features/vendor/domain/repositories/add_vendor_repo.dart';
 import 'package:indogrip/features/vendor/domain/repositories/view_vendor_repo.dart';
@@ -20,6 +22,7 @@ class VendorBloc extends Bloc<VendorEvent, VendorState> {
     on<AddVendorOnRecordEvent>(_addVendorOnRecordEvent);
     on<ViewVendorRecordsFetchingEvent>(_viewVendorRecordsFetchingEvent);
     on<EditVendorOnRecordEvent>(_editVendorOnRecordEvent);
+    on<UploadVendorCSVFileEvent>(_uploadVendorCSVFileEvent);
   }
 
   FutureOr<void> _addVendorOnRecordEvent(
@@ -72,6 +75,23 @@ class VendorBloc extends Bloc<VendorEvent, VendorState> {
     } catch (e) {
       emit(UpdateVendorOnRecordFailureStatus(errorMessage: e.toString()));
       developer.log(e.toString(), name: 'Edit Vendor Event');
+    }
+  }
+
+  FutureOr<void> _uploadVendorCSVFileEvent(
+    UploadVendorCSVFileEvent event,
+    Emitter<VendorState> emit,
+  ) async {
+    emit(VendorLoadingStatus());
+    try {
+      final successResponse = await AddVendorRepository.uploadVendorFile(
+        activity: event.activity,
+        csvFile: event.csvFile,
+      );
+      emit(UploadVendorCSVFileSuccessStatus(successResponse: successResponse));
+    } catch (e) {
+      emit(UploadVendorCSVFileFailureStatus(errorMessage: e.toString()));
+      developer.log(e.toString(), name: 'Upload Vendor CSV File Event');
     }
   }
 }

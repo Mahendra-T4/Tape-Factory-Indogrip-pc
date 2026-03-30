@@ -7,4 +7,8 @@ abstract class HomeManagerRepository {
   Future<PredictCalculationModel> predictCalculation({
     required PredictCalParam param,
   });
+
+  Future<PredictCalculationModel> predictCalculationByMic({
+    required PredictCalParam param,
+  });
 }

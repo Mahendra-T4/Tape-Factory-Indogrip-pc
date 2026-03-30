@@ -58,7 +58,7 @@ class StretchMissRecord {
   final int? coreID;
   final dynamic netWeight;
   final dynamic grossWeight;
-  final int? quantity;
+  final String? quantity;
   final String? remarks;
   final String? reason;
 

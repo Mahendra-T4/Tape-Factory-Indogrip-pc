@@ -27,6 +27,8 @@ import 'package:indogrip/features/outsource/presentation/widget/master_product_t
 import 'package:indogrip/features/outsource/presentation/widget/master_stretch_film_widget.dart';
 import 'package:indogrip/features/round/presentation/widgets/core_dropdown.dart';
 import 'package:indogrip/features/round/presentation/widgets/master_roll_size_widget.dart';
+import 'package:indogrip/features/stretch-film-miss-record/presentation/stretch_film_miss_record_panel.dart';
+import 'package:indogrip/features/tape/presentation/pages/tape-miss-record/tape_miss_record_panel.dart';
 import 'package:intl/intl.dart';
 
 abstract class OutsourceInBuilder extends State<OutSourceIN> {
@@ -247,9 +249,36 @@ abstract class OutsourceInBuilder extends State<OutSourceIN> {
               state.response.message.toString(),
             );
           }
+          if (state.response.missRecord != null) {
+            GoRouter.of(
+              context,
+            ).pushNamed(TapeMissRecordPanel.routeName, extra: state.response);
+            context.pop();
+          }
         } else if (state is InventoryInUploadCSVFileFailedErrorStatus) {
           if (!context.mounted) return;
           ToastService.instance.showError(context, state.message.toString());
+        } else if (state is InventoryInStretchUploadCSVFileSuccessStatus) {
+          if (state.response.status == 1) {
+            if (!context.mounted) return;
+            ToastService.instance.showSuccess(
+              context,
+              state.response.message.toString(),
+            );
+          } else {
+            if (!context.mounted) return;
+            ToastService.instance.showError(
+              context,
+              state.response.message.toString(),
+            );
+          }
+          if (state.response.missRecord != null) {
+            GoRouter.of(context).pushNamed(
+              StretchFilmMissRecordPanel.routeName,
+              extra: state.response,
+            );
+            context.pop();
+          }
         }
       },
       builder: (context, state) {

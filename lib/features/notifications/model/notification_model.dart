@@ -3,6 +3,7 @@ class NotificationModel {
   String? message;
   List<Record>? record;
   int? pageQty;
+  String? pageText;
 
   NotificationModel({this.status, this.message, this.record, this.pageQty});
 
@@ -16,6 +17,7 @@ class NotificationModel {
       });
     }
     pageQty = json['pageQty'];
+    pageText = json['pageText'];
   }
 
   Map<String, dynamic> toJson() {
@@ -26,6 +28,7 @@ class NotificationModel {
       data['record'] = this.record!.map((v) => v.toJson()).toList();
     }
     data['pageQty'] = this.pageQty;
+    data['pageText'] = this.pageText;
     return data;
   }
 }

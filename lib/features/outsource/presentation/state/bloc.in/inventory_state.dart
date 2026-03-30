@@ -20,7 +20,7 @@ final class InventoryInRecordAddErrorStatus extends InventoryState {
 }
 
 final class InventoryInUploadCSVFileSuccessStatus extends InventoryState {
-  final SuccessResponse response;
+  final UploadTapRecordModel response;
 
   InventoryInUploadCSVFileSuccessStatus({required this.response});
 }
@@ -29,4 +29,18 @@ final class InventoryInUploadCSVFileFailedErrorStatus extends InventoryState {
   final String message;
 
   InventoryInUploadCSVFileFailedErrorStatus({required this.message});
+}
+
+final class InventoryInStretchUploadCSVFileSuccessStatus
+    extends InventoryState {
+  final UploadStretchRecordModel response;
+
+  InventoryInStretchUploadCSVFileSuccessStatus({required this.response});
+}
+
+final class InventoryInStretchUploadCSVFileFailedErrorStatus
+    extends InventoryState {
+  final String message;
+
+  InventoryInStretchUploadCSVFileFailedErrorStatus({required this.message});
 }

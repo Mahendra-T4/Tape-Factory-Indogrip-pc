@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:indogrip/features/outsource/data/model/stretch_missrecord_model.dart';
 import 'package:indogrip/features/stretch-film-miss-record/data/stretch_film_miss_record_datasource.dart';
 import 'package:indogrip/features/stretch-film-miss-record/presentation/stretch_film_miss_record_panel.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
@@ -9,61 +10,28 @@ abstract class StretchFilmMissRecordPanelBuilder
   bool isChecked = false;
   late StretchFilmMissRecordDataSource? _dataSource;
   List<DataGridRow> selectedRows = [];
+  final TextEditingController reasonController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    reasonController.text = widget.record.message.toString();
     _dataSource = StretchFilmMissRecordDataSource(
       context: context,
-      stretchFilmData: getDummyStretchFilmData(),
+      stretchFilmData: _getMissRecordData(),
     );
   }
 
-  List<StretchFilmRecord> getDummyStretchFilmData() {
-    return [
-      StretchFilmRecord(
-        sNo: 1,
-        filmCode: 'SF001',
-        filmType: 'LLDPE Stretch Film',
-        width: '500',
-        length: '1500',
-        thickness: '20',
-        material: 'LLDPE',
-        stretchPercentage: '300',
-        supplier: 'ABC Plastics Ltd',
-        batchNumber: 'BATCH001',
-        dateReceived: '2024-01-15',
-        quality: 'A Grade',
-      ),
-      StretchFilmRecord(
-        sNo: 2,
-        filmCode: 'SF002',
-        filmType: 'LLDPE Stretch Film',
-        width: '450',
-        length: '1200',
-        thickness: '18',
-        material: 'LLDPE',
-        stretchPercentage: '280',
-        supplier: 'Global Plastics Inc',
-        batchNumber: 'BATCH002',
-        dateReceived: '2024-01-16',
-        quality: 'A Grade',
-      ),
-      StretchFilmRecord(
-        sNo: 3,
-        filmCode: 'SF003',
-        filmType: 'LDPE Stretch Film',
-        width: '600',
-        length: '2000',
-        thickness: '25',
-        material: 'LDPE',
-        stretchPercentage: '250',
-        supplier: 'Premium Plastic Co',
-        batchNumber: 'BATCH003',
-        dateReceived: '2024-01-17',
-        quality: 'B Grade',
-      ),
-    ];
+  List<StretchMissRecord> _getMissRecordData() {
+    final List<StretchMissRecord> recordList = [];
+
+    if (widget.record.missRecord != null) {
+      for (var item in widget.record.missRecord!) {
+        recordList.add(item);
+      }
+    }
+
+    return recordList;
   }
 
   Widget get buildTableRecordWidget {
@@ -96,174 +64,228 @@ abstract class StretchFilmMissRecordPanelBuilder
               ),
             ),
             GridColumn(
-              columnName: 'Film Code',
+              columnName: 'Reason',
               width: 120,
               label: Container(
                 color: Colors.grey[100],
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 alignment: Alignment.center,
                 child: const Text(
-                  'Film Code',
+                  'Reason',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ),
             GridColumn(
-              columnName: 'Film Type',
+              columnName: 'Inventory Code',
+              width: 120,
+              label: Container(
+                color: Colors.grey[100],
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                alignment: Alignment.center,
+                child: const Text(
+                  'Inventory Code',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+
+            GridColumn(
+              columnName: 'Date',
+              width: 120,
+              label: Container(
+                color: Colors.grey[100],
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                alignment: Alignment.center,
+                child: const Text(
+                  'Date',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            GridColumn(
+              columnName: 'Bill Number',
+              width: 120,
+              label: Container(
+                color: Colors.grey[100],
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                alignment: Alignment.center,
+                child: const Text(
+                  'Bill Number',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            GridColumn(
+              columnName: 'Carton Price',
+              width: 120,
+              label: Container(
+                color: Colors.grey[100],
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                alignment: Alignment.center,
+                child: const Text(
+                  'Carton Price',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            GridColumn(
+              columnName: 'Transport Amount',
+              width: 140,
+              label: Container(
+                color: Colors.grey[100],
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                alignment: Alignment.center,
+                child: const Text(
+                  'Transport Amount',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            GridColumn(
+              columnName: 'Product Type',
+              width: 120,
+              label: Container(
+                color: Colors.grey[100],
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                alignment: Alignment.center,
+                child: const Text(
+                  'Product Type',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            GridColumn(
+              columnName: 'Cut MM Meter',
+              width: 120,
+              label: Container(
+                color: Colors.grey[100],
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                alignment: Alignment.center,
+                child: const Text(
+                  'Cut MM Meter',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            GridColumn(
+              columnName: 'Base',
+              width: 100,
+              label: Container(
+                color: Colors.grey[100],
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                alignment: Alignment.center,
+                child: const Text(
+                  'Base',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            GridColumn(
+              columnName: 'Mic',
+              width: 100,
+              label: Container(
+                color: Colors.grey[100],
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                alignment: Alignment.center,
+                child: const Text(
+                  'Mic',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            GridColumn(
+              columnName: 'Tape Length',
+              width: 120,
+              label: Container(
+                color: Colors.grey[100],
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                alignment: Alignment.center,
+                child: const Text(
+                  'Tape Length',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            GridColumn(
+              columnName: 'Tape Weight',
+              width: 120,
+              label: Container(
+                color: Colors.grey[100],
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                alignment: Alignment.center,
+                child: const Text(
+                  'Tape Weight',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            GridColumn(
+              columnName: 'Stretch Film Size',
               width: 150,
               label: Container(
                 color: Colors.grey[100],
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 alignment: Alignment.center,
                 child: const Text(
-                  'Film Type',
+                  'Stretch Film Size',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ),
+
             GridColumn(
-              columnName: 'Width (mm)',
+              columnName: 'Net Weight',
               width: 120,
               label: Container(
                 color: Colors.grey[100],
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 alignment: Alignment.center,
                 child: const Text(
-                  'Width (mm)',
+                  'Net Weight',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ),
             GridColumn(
-              columnName: 'Length (m)',
+              columnName: 'Gross Weight',
               width: 120,
               label: Container(
                 color: Colors.grey[100],
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 alignment: Alignment.center,
                 child: const Text(
-                  'Length (m)',
+                  'Gross Weight',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ),
             GridColumn(
-              columnName: 'Thickness (microns)',
-              width: 160,
+              columnName: 'Quantity',
+              width: 100,
               label: Container(
                 color: Colors.grey[100],
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 alignment: Alignment.center,
                 child: const Text(
-                  'Thickness (microns)',
+                  'Quantity',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ),
             GridColumn(
-              columnName: 'Material',
-              width: 120,
+              columnName: 'Remarks',
+              width: 150,
               label: Container(
                 color: Colors.grey[100],
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 alignment: Alignment.center,
                 child: const Text(
-                  'Material',
+                  'Remarks',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ),
-            GridColumn(
-              columnName: 'Stretch (%)',
-              width: 120,
-              label: Container(
-                color: Colors.grey[100],
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                alignment: Alignment.center,
-                child: const Text(
-                  'Stretch (%)',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-            GridColumn(
-              columnName: 'Supplier',
-              width: 180,
-              label: Container(
-                color: Colors.grey[100],
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                alignment: Alignment.center,
-                child: const Text(
-                  'Supplier',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-            GridColumn(
-              columnName: 'Batch Number',
-              width: 140,
-              label: Container(
-                color: Colors.grey[100],
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                alignment: Alignment.center,
-                child: const Text(
-                  'Batch Number',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-            GridColumn(
-              columnName: 'Date Received',
-              width: 140,
-              label: Container(
-                color: Colors.grey[100],
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                alignment: Alignment.center,
-                child: const Text(
-                  'Date Received',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-            GridColumn(
-              columnName: 'Quality',
-              width: 120,
-              label: Container(
-                color: Colors.grey[100],
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                alignment: Alignment.center,
-                child: const Text(
-                  'Quality',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-            // GridColumn(
-            //   columnName: 'Status',
-            //   width: 120,
-            //   label: Container(
-            //     color: Colors.grey[100],
-            //     padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            //     alignment: Alignment.center,
-            //     child: const Text(
-            //       'Status',
-            //       style: TextStyle(fontWeight: FontWeight.bold),
-            //     ),
-            //   ),
-            // ),
-            // GridColumn(
-            //   columnName: 'actions',
-            //   width: 120,
-            //   label: Container(
-            //     color: Colors.grey[100],
-            //     padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            //     alignment: Alignment.center,
-            //     child: const Text(
-            //       'Actions',
-            //       style: TextStyle(fontWeight: FontWeight.bold),
-            //     ),
-            //   ),
-            // ),
           ],
         ),
       ),

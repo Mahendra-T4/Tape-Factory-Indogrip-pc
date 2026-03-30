@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:indogrip/features/client/data/client_miss_record_datasource.dart';
+import 'package:indogrip/features/client/data/model/upload_client_model.dart';
 import 'package:indogrip/features/client/data/model/view_staff_modeld.dart';
 import 'package:indogrip/features/client/presentation/pages/client-miss-record/client_miss_record_panel.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
@@ -14,83 +15,25 @@ abstract class ClientMissRecordPanelBuilder
   late ClientMIssRecordDataSource? _dataSource;
   List<DataGridRow> selectedRows = [];
 
+  final TextEditingController reasonController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
+    reasonController.text = widget.record.message.toString();
     _dataSource = ClientMIssRecordDataSource(
       context: context,
       clientData: getDummyClientData(),
     );
   }
 
-  List<ClientRecord> getDummyClientData() {
-    return [
-      ClientRecord(
-        sNo: 1,
-        cCode: 'CC001',
-        cConsigneeName: 'John Doe',
-        cMobileNumber: '9876543210',
-        cGSTIN: '27AAPCI1234R0Z1',
-        cOwnerName: 'Mr. Smith',
-        cOwnerMobileNumber: '9876543210',
-        cOwnerAlternateNumber: '9876543211',
-        cPurchaseManagerName: 'Sarah Johnson',
-        cPurchaseManagerNumber: '9876543212',
-        cPurchaseManagerAlternateNumber: '9876543213',
-      ),
-      ClientRecord(
-        sNo: 2,
-        cCode: 'CC002',
-        cConsigneeName: 'Jane Smith',
-        cMobileNumber: '9876543214',
-        cGSTIN: '27AAPCI5678R0Z2',
-        cOwnerName: 'Mr. Wilson',
-        cOwnerMobileNumber: '9876543215',
-        cOwnerAlternateNumber: '9876543216',
-        cPurchaseManagerName: 'Mike Brown',
-        cPurchaseManagerNumber: '9876543217',
-        cPurchaseManagerAlternateNumber: '9876543218',
-      ),
-      ClientRecord(
-        sNo: 3,
-        cCode: 'CC003',
-        cConsigneeName: 'Robert Miller',
-        cMobileNumber: '9876543219',
-        cGSTIN: '27AAPCI9101R0Z3',
-        cOwnerName: 'Ms. Davis',
-        cOwnerMobileNumber: '9876543220',
-        cOwnerAlternateNumber: '9876543221',
-        cPurchaseManagerName: 'Emma Taylor',
-        cPurchaseManagerNumber: '9876543222',
-        cPurchaseManagerAlternateNumber: '9876543223',
-      ),
-      ClientRecord(
-        sNo: 4,
-        cCode: 'CC004',
-        cConsigneeName: 'Lisa Anderson',
-        cMobileNumber: '9876543224',
-        cGSTIN: '27AAPCI1112R0Z4',
-        cOwnerName: 'Mr. Thompson',
-        cOwnerMobileNumber: '9876543225',
-        cOwnerAlternateNumber: '9876543226',
-        cPurchaseManagerName: 'James Martinez',
-        cPurchaseManagerNumber: '9876543227',
-        cPurchaseManagerAlternateNumber: '9876543228',
-      ),
-      ClientRecord(
-        sNo: 5,
-        cCode: 'CC005',
-        cConsigneeName: 'Michael Garcia',
-        cMobileNumber: '9876543229',
-        cGSTIN: '27AAPCI3141R0Z5',
-        cOwnerName: 'Ms. Rodriguez',
-        cOwnerMobileNumber: '9876543230',
-        cOwnerAlternateNumber: '9876543231',
-        cPurchaseManagerName: 'Jennifer Lee',
-        cPurchaseManagerNumber: '9876543232',
-        cPurchaseManagerAlternateNumber: '9876543233',
-      ),
-    ];
+  List<ClientMissRecord> getDummyClientData() {
+    final List<ClientMissRecord> clientList = [];
+
+    for (var item in widget.record.missRecord!) {
+      clientList.add(item);
+    }
+    return clientList;
   }
 
   Widget get buildTableRecordWidget => Expanded(
@@ -133,14 +76,13 @@ abstract class ClientMissRecordPanelBuilder
         ),
       ),
       GridColumn(
-        columnName: 'Client Code',
-        // columnWidthMode: ColumnWidthMode.fill,
-        width: 180,
+        columnName: 'Reason',
+        width: 300,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Client Code')),
+          child: const Center(child: TextFieldlabelText('Reason')),
         ),
       ),
       GridColumn(
@@ -155,6 +97,66 @@ abstract class ClientMissRecordPanelBuilder
       ),
 
       GridColumn(
+        columnName: 'GSTIN',
+        width: 150,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('GSTIN')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Unit One',
+        width: 120,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Unit One')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Unit Two',
+        width: 120,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Unit Two')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Unit Three',
+        width: 120,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Unit Three')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Unit Four',
+        width: 120,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Unit Four')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Unit Five',
+        width: 120,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Unit Five')),
+        ),
+      ),
+      GridColumn(
         columnName: 'Mobile Number',
         width: 150,
         label: Container(
@@ -165,13 +167,13 @@ abstract class ClientMissRecordPanelBuilder
         ),
       ),
       GridColumn(
-        columnName: 'GSTIN',
+        columnName: 'Alternate Number',
         width: 150,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('GSTIN')),
+          child: const Center(child: TextFieldlabelText('Alternate Number')),
         ),
       ),
       GridColumn(
@@ -238,7 +240,6 @@ abstract class ClientMissRecordPanelBuilder
           ),
         ),
       ),
-     
     ];
   }
 }

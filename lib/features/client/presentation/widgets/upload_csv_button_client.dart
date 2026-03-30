@@ -8,6 +8,7 @@ import 'package:indogrip/core/service/file_picker.dart';
 import 'package:indogrip/core/utils/widgets/button.dart';
 import 'package:indogrip/core/utils/widgets/toast_service.dart';
 import 'package:indogrip/features/client/presentation/bloc/client_bloc.dart';
+import 'package:indogrip/features/client/presentation/pages/client-miss-record/client_miss_record_panel.dart';
 // removed unused imports
 
 class UploadClientFileButton extends StatefulWidget {
@@ -58,7 +59,7 @@ class _MyWidgetState extends State<UploadClientFileButton> {
             icon: const Icon(Icons.close, color: Colors.white, size: 20),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
-            onPressed: () => context.pop(),
+            onPressed: () => GoRouter.of(context).pop(),
           ),
         ],
       ),
@@ -70,7 +71,7 @@ class _MyWidgetState extends State<UploadClientFileButton> {
       Row(
         children: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => GoRouter.of(context).pop(),
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
@@ -108,6 +109,14 @@ class _MyWidgetState extends State<UploadClientFileButton> {
               context,
               state.successResponse.message.toString(),
             );
+
+            if (state.successResponse.missRecord != null) {
+              context.pushNamed(
+                ClientMissRecordPanel.routeName,
+                extra: state.successResponse,
+              );
+              context.pop();
+            }
           }
         } else if (state is UploadClientCSVFileFailureStatus) {
           if (!context.mounted) return;

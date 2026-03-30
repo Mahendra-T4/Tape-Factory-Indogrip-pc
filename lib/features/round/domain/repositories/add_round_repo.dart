@@ -27,7 +27,7 @@ class AddRoundRepository implements AddRoundMethodRepository {
     try {
       final formData = FormData.fromMap({
         'activity': apiParam.activity,
-        'jumboRoll': apiParam.jumboRoll,
+        'jumboRoll': apiParam.jumboRoll.join(','),
         'rollSize': apiParam.rollSize,
         'rollCore': apiParam.rollCore,
         'round': apiParam.round,
@@ -191,7 +191,7 @@ class AddRoundRepository implements AddRoundMethodRepository {
                 'filterBy': param.filterBy ?? '',
                 'sortBy': param.sortBy ?? '',
                 'orderBy': param.orderBy ?? '',
-                'pageNO': param.pageNo ?? 1,
+                'pageNo': param.pageNo ?? 1,
                 'cutMMMeterID': param.cutMMMeterID,
                 'micID': param.micID,
                 'baseID': param.baseID,
@@ -401,5 +401,39 @@ class AddRoundRepository implements AddRoundMethodRepository {
       developer.log(name: 'Fetch Batch Details Error', e.toString());
     }
     return batchDetailsModel;
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> loadRoundJsonData() async {
+    try {
+      final response = await DioService.dioPostApiCall(
+        data: FormData.fromMap({
+          'activity': 'view-round',
+          'userKey': HiveService.getUserId(),
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = response.data;
+
+        final roundList = jsonData is Map && jsonData['record'] is List
+            ? (jsonData['record'] as List)
+                  .where((item) => item is Map)
+                  .map((element) => Map<String, dynamic>.from(element as Map))
+                  .toList()
+            : <Map<String, dynamic>>[];
+
+        return roundList;
+      } else {
+        developer.log(
+          name: 'Load Round Json Data Failed',
+          'Failed to Load Data From Server',
+        );
+        throw Exception('Failed to Load Data From Server');
+      }
+    } catch (e) {
+      developer.log(name: 'Load Round Json Data Error', e.toString());
+      throw Exception('Error loading round JSON data: $e');
+    }
   }
 }

@@ -12,6 +12,7 @@ import 'package:indogrip/features/global/data/repositories/global_manager_repo.d
 import 'package:indogrip/features/global/presentation/bloc/global_bloc.dart';
 import 'package:indogrip/features/global/presentation/widget/base_filter_field.dart';
 import 'package:indogrip/features/global/presentation/widget/custom_field.dart';
+import 'package:indogrip/features/global/presentation/widget/file_export_button.dart';
 import 'package:indogrip/features/global/presentation/widget/multi_delete_button.dart';
 import 'package:indogrip/features/global/presentation/widget/refresh_button.dart';
 import 'package:indogrip/features/global/presentation/widget/search_field_round.dart';
@@ -19,6 +20,7 @@ import 'package:indogrip/features/jumbo%20roll/presentation/pages/widgets/micron
 import 'package:indogrip/features/print/print_sticker.dart';
 import 'package:indogrip/features/round/data/models/add_batch_param.dart';
 import 'package:indogrip/features/round/data/models/view_round_modeld.dart';
+import 'package:indogrip/features/round/data/round_file_exporter.dart';
 import 'package:indogrip/features/round/domain/repositories/add_round_repo.dart';
 import 'package:indogrip/features/round/presentation/bloc/round_bloc.dart';
 import 'package:indogrip/features/round/presentation/pages/view/view_round.dart';
@@ -33,6 +35,7 @@ abstract class ViewRoundBuilder extends State<ViewRoundPanel> {
   List<Map<String, dynamic>> selectedItems = [];
   int? pageNo = 1;
   int? pageQty;
+  bool isAbsorb = false;
   // late RoundBloc roundBloc;
   TextEditingController weightController = TextEditingController();
   TextEditingController displayMicController = TextEditingController();
@@ -324,6 +327,16 @@ abstract class ViewRoundBuilder extends State<ViewRoundPanel> {
       setState(() {
         entryValue = sortBy ?? 10;
       });
+
+      if (entryValue == '50' || entryValue == '100' || entryValue == '200') {
+        setState(() {
+          isAbsorb = true;
+        });
+      } else {
+        setState(() {
+          isAbsorb = false;
+        });
+      }
       callEvent();
     },
   );
@@ -485,6 +498,14 @@ abstract class ViewRoundBuilder extends State<ViewRoundPanel> {
         children: [
           refreshButton,
           if (isMultipleSelection) buildSelectionActions(),
+          SizedBox(width: 10),
+          FileExportButton(
+            onPressed: () async {
+              await RoundFileExporter.exportRoundDataExcelFile(
+                context: context,
+              );
+            },
+          ),
 
           Row(
             mainAxisAlignment: MainAxisAlignment.end,

@@ -185,6 +185,10 @@ class _MyWidgetState extends State<UploadFileButtonIn> {
       bloc: inventoryBloc,
       listener: (context, state) {
         if (state is InventoryInUploadCSVFileSuccessStatus) {
+          // if (state.response.missRecord != null &&
+          //     state.response.missRecord!.isNotEmpty) {
+
+          // }
           if (state.response.status == 1) {
             if (!context.mounted) return;
             ToastService.instance.showSuccess(
@@ -201,6 +205,27 @@ class _MyWidgetState extends State<UploadFileButtonIn> {
         } else if (state is InventoryInUploadCSVFileFailedErrorStatus) {
           if (!context.mounted) return;
           ToastService.instance.showError(context, state.message.toString());
+        } else if (state is InventoryInStretchUploadCSVFileSuccessStatus) {
+          if (state.response.status == 1) {
+            //    if (state.response.missRecord != null &&
+            //     state.response.missRecord!.isNotEmpty) {
+
+            // }
+            if (!context.mounted) return;
+            ToastService.instance.showSuccess(
+              context,
+              state.response.message.toString(),
+            );
+          } else {
+            if (!context.mounted) return;
+            ToastService.instance.showError(
+              context,
+              state.response.message.toString(),
+            );
+          }
+        } else if (state is InventoryInStretchUploadCSVFileFailedErrorStatus) {
+          if (!context.mounted) return;
+          ToastService.instance.showError(context, state.message.toString());
         }
       },
       builder: (context, state) {
@@ -210,15 +235,25 @@ class _MyWidgetState extends State<UploadFileButtonIn> {
         return TextButton(
           onPressed: () {
             if (widget.csvFile != null) {
-              inventoryBloc.add(
-                AddInventoryUploadCSVFileEvent(
-                  param: UploadFileParam(
-                    activity: '',
-                    productType: selectedProductType.toString(),
-                    csvFile: widget.csvFile!,
-                  ),
-                ),
-              );
+              widget.productType == '1'
+                  ? inventoryBloc.add(
+                      AddInventoryUploadCSVFileEvent(
+                        param: UploadFileParam(
+                          activity: '',
+                          productType: selectedProductType.toString(),
+                          csvFile: widget.csvFile!,
+                        ),
+                      ),
+                    )
+                  : inventoryBloc.add(
+                      AddInventoryStretchUploadCSVFileEvent(
+                        param: UploadFileParam(
+                          activity: '',
+                          productType: selectedProductType.toString(),
+                          csvFile: widget.csvFile!,
+                        ),
+                      ),
+                    );
             } else {
               ToastService.instance.showError(
                 context,

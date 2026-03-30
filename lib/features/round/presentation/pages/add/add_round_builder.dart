@@ -40,7 +40,7 @@ abstract class AddRoundBuilder extends State<AddRoundPanel> {
       _roundBloc.add(
         AddRoundONRecordEvent(
           addRoundParam: AddRoundParam(
-            jumboRoll: selectedJumbo.toString(),
+            jumboRoll: selectedJumbo,
             rollSize: selectedSize.toString(),
             rollCore: selectedCore.toString(),
             round: roundController.text,
@@ -181,7 +181,7 @@ abstract class AddRoundBuilder extends State<AddRoundPanel> {
 
   List<MJumboRollRecord> selectedJumboRolls = [];
 
-  String? selectedJumbo;
+  List<String> selectedJumbo = [];
 
   // Validation function
   bool validateForm() {
@@ -230,12 +230,11 @@ abstract class AddRoundBuilder extends State<AddRoundPanel> {
                     // flex: 2,
                     child: MasterJumboRoll(
                       filter: '1',
-                      selectedJumbo: selectedJumbo.toString(),
+                      selectedJumbo: selectedJumbo,
                       onChanged: (values) {
                         log(name: 'Roll Key', values.toString());
                         setState(() {
-                          selectedJumbo = values.toString();
-                          ;
+                          selectedJumbo = values;
                         });
                       },
                       controller: searchJumboController,
@@ -341,12 +340,11 @@ abstract class AddRoundBuilder extends State<AddRoundPanel> {
             Expanded(
               // flex: 2,
               child: MasterJumboRoll(
-                selectedJumbo: selectedJumbo.toString(),
+                selectedJumbo: selectedJumbo,
                 onChanged: (values) {
                   log(name: 'Roll Key', values.toString());
                   setState(() {
-                    selectedJumbo = values.toString();
-                    ;
+                    selectedJumbo = values;
                   });
                 },
                 controller: searchJumboController,

@@ -1,37 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:indogrip/features/outsource/data/model/tap_miss_record_model.dart';
+import 'package:indogrip/features/outsource/data/model/upload_tap_miss_record_model.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
-
-class TapeRecord {
-  int? sNo;
-  String? tapeCode;
-  String? tapeType;
-  String? width;
-  String? length;
-  String? thickness;
-  String? adhesiveType;
-  String? supplier;
-  String? batchNumber;
-  String? dateReceived;
-  String? quality;
-
-  TapeRecord({
-    this.sNo,
-    this.tapeCode,
-    this.tapeType,
-    this.width,
-    this.length,
-    this.thickness,
-    this.adhesiveType,
-    this.supplier,
-    this.batchNumber,
-    this.dateReceived,
-    this.quality,
-  });
-}
 
 class TapeMissRecordDataSource extends DataGridSource {
   List<DataGridRow> dataGridRows = [];
-  List<TapeRecord> tapeData = [];
+  List<TapMissRecord> tapeData = [];
   final BuildContext context;
 
   TapeMissRecordDataSource({required this.context, required this.tapeData}) {
@@ -41,51 +15,86 @@ class TapeMissRecordDataSource extends DataGridSource {
   void buildDataGridRows() {
     dataGridRows = tapeData.asMap().entries.map<DataGridRow>((entry) {
       final data = entry.value;
+      final index = entry.key + 1; // To start Sr No from 1 instead of 0
       return DataGridRow(
         cells: [
-          DataGridCell<String>(columnName: 'Sr No', value: data.sNo.toString()),
+          DataGridCell<String>(columnName: 'Sr No', value: index.toString()),
           DataGridCell<String>(
-            columnName: 'Tape Code',
-            value: data.tapeCode.toString(),
+            columnName: 'Reason',
+            value: data.reason?.toString() ?? '',
           ),
           DataGridCell<String>(
-            columnName: 'Tape Type',
-            value: data.tapeType.toString(),
+            columnName: 'Inventory Code',
+            value: data.inventoryCode?.toString() ?? '',
           ),
           DataGridCell<String>(
-            columnName: 'Width (mm)',
-            value: data.width.toString(),
+            columnName: 'Vendor Key',
+            value: data.vendorKey?.toString() ?? '',
           ),
           DataGridCell<String>(
-            columnName: 'Length (m)',
-            value: data.length.toString(),
+            columnName: 'Date',
+            value: data.date?.toString() ?? '',
           ),
           DataGridCell<String>(
-            columnName: 'Thickness (microns)',
-            value: data.thickness.toString(),
+            columnName: 'Bill Number',
+            value: data.billNumber?.toString() ?? '',
           ),
           DataGridCell<String>(
-            columnName: 'Adhesive Type',
-            value: data.adhesiveType.toString(),
+            columnName: 'Carton Price',
+            value: data.cartonPrice?.toString() ?? '',
           ),
           DataGridCell<String>(
-            columnName: 'Supplier',
-            value: data.supplier.toString(),
+            columnName: 'Transport Amount',
+            value: data.transportAmount?.toString() ?? '',
           ),
           DataGridCell<String>(
-            columnName: 'Batch Number',
-            value: data.batchNumber.toString(),
+            columnName: 'Product Type',
+            value: data.productType?.toString() ?? '',
           ),
           DataGridCell<String>(
-            columnName: 'Date Received',
-            value: data.dateReceived.toString(),
+            columnName: 'Cut MM Meter',
+            value: data.cutMMMeter?.toString() ?? '',
           ),
           DataGridCell<String>(
-            columnName: 'Quality',
-            value: data.quality.toString(),
+            columnName: 'Base',
+            value: data.base?.toString() ?? '',
           ),
-          // DataGridCell<String>(columnName: 'Status', value: 'Active'),
-          // DataGridCell<String>(columnName: 'actions', value: 'Edit'),
+          DataGridCell<String>(
+            columnName: 'Mic',
+            value: data.mic?.toString() ?? '',
+          ),
+          DataGridCell<String>(
+            columnName: 'Tape Length',
+            value: data.tapeLength?.toString() ?? '',
+          ),
+          DataGridCell<String>(
+            columnName: 'Tape Weight',
+            value: data.tapeWeight?.toString() ?? '',
+          ),
+          DataGridCell<String>(
+            columnName: 'Stretch Film Size',
+            value: data.stretchFilmSize?.toString() ?? '',
+          ),
+          DataGridCell<String>(
+            columnName: 'Core ID',
+            value: data.coreID?.toString() ?? '',
+          ),
+          DataGridCell<String>(
+            columnName: 'Net Weight',
+            value: data.netWeight?.toString() ?? '',
+          ),
+          DataGridCell<String>(
+            columnName: 'Gross Weight',
+            value: data.grossWeight?.toString() ?? '',
+          ),
+          DataGridCell<String>(
+            columnName: 'Quantity',
+            value: data.quantity?.toString() ?? '',
+          ),
+          DataGridCell<String>(
+            columnName: 'Remarks',
+            value: data.remarks?.toString() ?? '',
+          ),
         ],
       );
     }).toList();

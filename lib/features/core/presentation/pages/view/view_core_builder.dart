@@ -10,6 +10,7 @@ abstract class ViewCoreBuilder extends State<ViewCorePanel> {
   late CoreBloc coreBloc;
   bool isMultipleSelection = false;
   List<CoreDataRecord> selectedItems = [];
+  String pageText = '';
 
   int? currentPage = 1;
   int? pageQty;

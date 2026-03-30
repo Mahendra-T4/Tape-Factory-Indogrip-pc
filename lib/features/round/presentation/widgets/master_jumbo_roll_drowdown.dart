@@ -14,10 +14,10 @@ final masterJumboRollProvider = FutureProvider<ViewJumboRollModel>(
 );
 
 class MasterJumboRoll extends StatefulWidget {
-  final void Function(String?)? onChanged;
+  final void Function(List<String>)? onChanged;
   final InputDecoration? decoration;
   final TextEditingController controller;
-  final String selectedJumbo;
+  final List<String> selectedJumbo;
   final String? filter;
   MasterJumboRoll({
     Key? key,
@@ -37,6 +37,7 @@ class _MasterJumboRollState extends State<MasterJumboRoll> {
   late TextEditingController searchController;
   List<dynamic> filteredRecords = [];
   bool showResults = false;
+  Map<String, dynamic> selectedRecords = {}; // Map of rKey to record
 
   @override
   void initState() {
@@ -54,8 +55,7 @@ class _MasterJumboRollState extends State<MasterJumboRoll> {
   void didUpdateWidget(MasterJumboRoll oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.selectedJumbo != widget.selectedJumbo &&
-        widget.selectedJumbo.isNotEmpty &&
-        widget.selectedJumbo != 'null') {
+        widget.selectedJumbo.isNotEmpty) {
       // When selectedJumbo changes, we need to fetch and display the selected roll info
       // This will be handled by the BlocBuilder when it rebuilds
     }
@@ -95,6 +95,36 @@ class _MasterJumboRollState extends State<MasterJumboRoll> {
     });
   }
 
+  void _updateSearchFieldDisplay() {
+    if (selectedRecords.isEmpty) {
+      searchController.text = '';
+    } else {
+      final selectedTexts = selectedRecords.values
+          .map((record) {
+            return '${record.jRollNumber} , ${record.baseLabel} , ${record.micLabel} , ${record.jLength}(${record.availableLength})';
+          })
+          .join('\n');
+      searchController.text = selectedTexts;
+    }
+  }
+
+  void _toggleSelection(dynamic record) {
+    final rKey = record.rKey.toString();
+    setState(() {
+      if (selectedRecords.containsKey(rKey)) {
+        selectedRecords.remove(rKey);
+      } else {
+        selectedRecords[rKey] = record;
+      }
+      _updateSearchFieldDisplay();
+    });
+    widget.onChanged?.call(selectedRecords.keys.toList());
+    developer.log(
+      selectedRecords.keys.toList().toString(),
+      name: 'SelectedJumboKeys',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder(
@@ -106,20 +136,21 @@ class _MasterJumboRollState extends State<MasterJumboRoll> {
         if (state is FetchViewJumboRollRecordSuccessStatus) {
           final data = state.viewJumboRollModel;
 
-          // Initialize searchController with selected jumbo roll info if available
-          if (searchController.text.isEmpty &&
+          // Initialize selectedRecords with selected jumbo roll info if available
+          if (selectedRecords.isEmpty &&
               widget.selectedJumbo.isNotEmpty &&
-              widget.selectedJumbo != 'null' &&
               data.record != null) {
-            try {
-              final selectedRecord = data.record!.firstWhere(
-                (record) => record.rKey.toString() == widget.selectedJumbo,
-              );
-              searchController.text =
-                  '${selectedRecord.jRollNumber} , ${selectedRecord.baseLabel} , ${selectedRecord.micLabel} , ${selectedRecord.jLength}(${selectedRecord.availableLength})';
-            } catch (e) {
-              // Record not found, leave search field empty
+            for (final selectedKey in widget.selectedJumbo) {
+              try {
+                final selectedRecord = data.record!.firstWhere(
+                  (record) => record.rKey.toString() == selectedKey,
+                );
+                selectedRecords[selectedKey] = selectedRecord;
+              } catch (e) {
+                // Record not found, skip
+              }
             }
+            _updateSearchFieldDisplay();
           }
 
           return data.status != 1
@@ -128,7 +159,7 @@ class _MasterJumboRollState extends State<MasterJumboRoll> {
                   spacing: 10,
                   children: [
                     const Text(
-                      "Selected Jumbo Roll*",
+                      "Selected Jumbo Rolls*",
                       style: TextStyle(
                         color: Color(0xFF3D475C),
                         fontSize: 14,
@@ -152,7 +183,7 @@ class _MasterJumboRollState extends State<MasterJumboRoll> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      "Selected Jumbo Roll*",
+                      "Selected Jumbo Rolls*",
                       style: TextStyle(
                         color: Color(0xFF3D475C),
                         fontSize: 14,
@@ -228,49 +259,53 @@ class _MasterJumboRollState extends State<MasterJumboRoll> {
                                 itemCount: filteredRecords.length,
                                 itemBuilder: (context, index) {
                                   final record = filteredRecords[index];
+                                  final isSelected = selectedRecords
+                                      .containsKey(record.rKey.toString());
                                   return InkWell(
                                     onTap: () {
-                                      searchController.text =
-                                          '${record.jRollNumber} , ${record.baseLabel} , ${record.micLabel} , ${record.jLength}(${record.availableLength})';
-                                      widget.onChanged?.call(
-                                        record.rKey.toString(),
-                                      );
-                                      developer.log(
-                                        record.rKey.toString(),
-                                        name: 'JumboKey',
-                                      );
-                                      setState(() {
-                                        showResults = false;
-                                        filteredRecords = [];
-                                      });
+                                      _toggleSelection(record);
                                     },
                                     child: Padding(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 16,
                                         vertical: 12,
                                       ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                      child: Row(
                                         children: [
-                                          Text(
-                                            '${record.jRollNumber} , ${record.baseLabel} , ${record.micLabel} , ${record.jLength}(${record.availableLength})',
-                                            style: const TextStyle(
-                                              fontSize: 13,
-                                              color: Color(0xFF3D475C),
+                                          Checkbox(
+                                            value: isSelected,
+                                            onChanged: (_) {
+                                              _toggleSelection(record);
+                                            },
+                                          ),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  '${record.jRollNumber} , ${record.baseLabel} , ${record.micLabel} , ${record.jLength}(${record.availableLength})',
+                                                  style: const TextStyle(
+                                                    fontSize: 13,
+                                                    color: Color(0xFF3D475C),
+                                                  ),
+                                                ),
+                                                if (index <
+                                                    filteredRecords.length - 1)
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                          top: 8,
+                                                        ),
+                                                    child: Divider(
+                                                      height: 1,
+                                                      color:
+                                                          Colors.grey.shade300,
+                                                    ),
+                                                  ),
+                                              ],
                                             ),
                                           ),
-                                          if (index <
-                                              filteredRecords.length - 1)
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                top: 8,
-                                              ),
-                                              child: Divider(
-                                                height: 1,
-                                                color: Colors.grey.shade300,
-                                              ),
-                                            ),
                                         ],
                                       ),
                                     ),

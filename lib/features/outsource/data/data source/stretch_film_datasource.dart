@@ -44,6 +44,12 @@ class StretchFilmDataSource extends DataGridSource {
   // final Function() onDelete;
   // final Function() onProfile;
   final void Function(String?, StretchRecord) onChanged;
+  int? _highlightedRowIndex;
+  int? get highlightedRowIndex => _highlightedRowIndex;
+  set highlightedRowIndex(int? value) {
+    _highlightedRowIndex = value;
+    notifyListeners();
+  }
 
   StretchFilmDataSource({
     required this.stretchData,
@@ -56,6 +62,7 @@ class StretchFilmDataSource extends DataGridSource {
     required this.onChanged,
   }) {
     buildDataGridRows();
+    _highlightedRowIndex = highlightedRowIndex;
   }
 
   void buildDataGridRows() {
@@ -195,6 +202,8 @@ class StretchFilmDataSource extends DataGridSource {
   @override
   DataGridRowAdapter buildRow(DataGridRow row) {
     Color? rowBackgroundColor;
+    final rowIndex = dataGridRows.indexOf(row);
+    final isHighlighted = _highlightedRowIndex == rowIndex;
     try {
       final statusCell = row.getCells().firstWhere(
         (cell) => cell.columnName == StretchFilm.inventoryStatusLabel,
@@ -207,6 +216,10 @@ class StretchFilmDataSource extends DataGridSource {
       }
     } catch (e) {
       rowBackgroundColor = null;
+    }
+
+    if (isHighlighted) {
+      rowBackgroundColor = Colors.deepPurple.withOpacity(0.2);
     }
 
     return DataGridRowAdapter(

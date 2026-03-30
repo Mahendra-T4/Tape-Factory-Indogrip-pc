@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class CustomTextFieldExtra extends StatelessWidget {
   CustomTextFieldExtra({
@@ -6,10 +7,12 @@ class CustomTextFieldExtra extends StatelessWidget {
     required this.controller,
     this.labelText,
     this.validator,
+    this.inputFormatters,
   });
   final TextEditingController controller;
   final String? labelText;
   String? Function(String?)? validator;
+  final List<TextInputFormatter>? inputFormatters;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +25,7 @@ class CustomTextFieldExtra extends StatelessWidget {
           height: 60,
           child: TextFormField(
             controller: controller,
-
+            inputFormatters: inputFormatters,
             validator: validator,
             decoration: InputDecoration(
               border: OutlineInputBorder(

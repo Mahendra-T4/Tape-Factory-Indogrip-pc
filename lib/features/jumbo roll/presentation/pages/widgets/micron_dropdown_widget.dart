@@ -1,11 +1,11 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:core';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:indogrip/core/theme/color_conts.dart';
 import 'package:indogrip/core/utils/widgets/text_field.dart';
 import 'package:indogrip/features/jumbo%20roll/presentation/bloc/jumbo_roll_bloc.dart';
-
 
 class MicronDropdownWidget extends StatefulWidget {
   final InputDecoration? decoration;
@@ -13,13 +13,16 @@ class MicronDropdownWidget extends StatefulWidget {
   final String? value;
   final bool isFilter;
   final void Function(String?) onChanged;
-  const MicronDropdownWidget({
+  final void Function(String?)? onLabelChanged;
+
+  MicronDropdownWidget({
     Key? key,
     this.value,
     this.decoration,
     this.size,
     this.isFilter = false,
     required this.onChanged,
+    this.onLabelChanged,
   }) : super(key: key);
 
   @override
@@ -96,7 +99,17 @@ class _MicronDropdownWidgetState extends State<MicronDropdownWidget> {
                                   fontWeight: FontWeight.w500,
                                 )
                               : null,
-                          onChanged: widget.onChanged,
+                          onChanged: (value) {
+                            final selectedRecord = data.record?.firstWhere(
+                              (r) => r.mMicId.toString() == value,
+                              orElse: () => data.record!.first,
+                            );
+
+                            widget.onLabelChanged?.call(
+                              selectedRecord?.mMicName,
+                            );
+                            widget.onChanged.call(value);
+                          },
                           decoration: widget.isFilter
                               ? InputDecoration(
                                   filled: true,

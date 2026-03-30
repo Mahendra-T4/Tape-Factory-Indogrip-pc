@@ -1,37 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:indogrip/features/vendor/data/models/upload_vendor_button.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
-
-class VendorRecord {
-  int? sNo;
-  String? vCode;
-  String? vName;
-  String? vMobileNumber;
-  String? vGSTIN;
-  String? vContactPersonName;
-  String? vContactPersonMobile;
-  String? vContactPersonAlternate;
-  String? vBankAccountName;
-  String? vBankAccountNumber;
-  String? vBankIFSC;
-
-  VendorRecord({
-    this.sNo,
-    this.vCode,
-    this.vName,
-    this.vMobileNumber,
-    this.vGSTIN,
-    this.vContactPersonName,
-    this.vContactPersonMobile,
-    this.vContactPersonAlternate,
-    this.vBankAccountName,
-    this.vBankAccountNumber,
-    this.vBankIFSC,
-  });
-}
 
 class VendorMissRecordDataSource extends DataGridSource {
   List<DataGridRow> dataGridRows = [];
-  List<VendorRecord> vendorData = [];
+  List<VendorMissRecord> vendorData = [];
   final BuildContext context;
 
   VendorMissRecordDataSource({
@@ -43,49 +16,57 @@ class VendorMissRecordDataSource extends DataGridSource {
 
   void buildDataGridRows() {
     dataGridRows = vendorData.asMap().entries.map<DataGridRow>((entry) {
+      final index = entry.key;
       final data = entry.value;
       return DataGridRow(
         cells: [
-          DataGridCell<String>(columnName: 'Sr No', value: data.sNo.toString()),
           DataGridCell<String>(
-            columnName: 'Vendor Code',
-            value: data.vCode.toString(),
+            columnName: 'Sr No',
+            value: (index + 1).toString(),
           ),
           DataGridCell<String>(
-            columnName: 'Vendor Name',
-            value: data.vName.toString(),
+            columnName: 'Reason',
+            value: data.reason.toString(),
           ),
           DataGridCell<String>(
-            columnName: 'Mobile Number',
-            value: data.vMobileNumber.toString(),
+            columnName: 'Company Name',
+            value: data.vCompanyName.toString(),
           ),
           DataGridCell<String>(
             columnName: 'GSTIN',
             value: data.vGSTIN.toString(),
           ),
           DataGridCell<String>(
-            columnName: 'Contact Person',
-            value: data.vContactPersonName.toString(),
+            columnName: 'Mobile Number',
+            value: data.vMobileNumber.toString(),
           ),
           DataGridCell<String>(
-            columnName: 'Contact Mobile',
-            value: data.vContactPersonMobile.toString(),
+            columnName: 'Alternate Number',
+            value: data.vAlternateNumber.toString(),
           ),
           DataGridCell<String>(
-            columnName: 'Alternate Mobile',
-            value: data.vContactPersonAlternate.toString(),
+            columnName: 'Owner Name',
+            value: data.vOwnerName.toString(),
           ),
           DataGridCell<String>(
-            columnName: 'Bank Account Name',
-            value: data.vBankAccountName.toString(),
+            columnName: 'Owner Mobile Number',
+            value: data.vOwnerMobileNumber.toString(),
           ),
           DataGridCell<String>(
-            columnName: 'Bank Account Number',
-            value: data.vBankAccountNumber.toString(),
+            columnName: 'Owner Alternate Number',
+            value: data.vOwnerAlternateNumber.toString(),
           ),
           DataGridCell<String>(
-            columnName: 'Bank IFSC',
-            value: data.vBankIFSC.toString(),
+            columnName: 'Representative Name',
+            value: data.vRepresentativeName.toString(),
+          ),
+          DataGridCell<String>(
+            columnName: 'Representative Number',
+            value: data.vRepresentativeNumber.toString(),
+          ),
+          DataGridCell<String>(
+            columnName: 'Representative Alternate',
+            value: data.vRepresentativeAlternate.toString(),
           ),
           // DataGridCell<String>(columnName: 'Status', value: 'Active'),
           // DataGridCell<String>(columnName: 'actions', value: 'Edit'),

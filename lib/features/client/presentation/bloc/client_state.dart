@@ -44,7 +44,7 @@ final class UpdateClientDetailsOnRecordFailureStatus extends ClientState {
 }
 
 final class UploadClientCSVFileSuccessStatus extends ClientState {
-  final SuccessResponse successResponse;
+  final UploadClientResponse successResponse;
 
   UploadClientCSVFileSuccessStatus({required this.successResponse});
 }

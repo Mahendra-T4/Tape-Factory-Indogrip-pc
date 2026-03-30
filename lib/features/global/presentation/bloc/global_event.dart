@@ -29,6 +29,12 @@ final class GlobalUploadCsvFileEvent extends GlobalEvent {
   GlobalUploadCsvFileEvent({required this.param});
 }
 
+final class GlobalRoundRecordUploadCsvFileEvent extends GlobalEvent {
+  final UploadFileParam param;
+
+  GlobalRoundRecordUploadCsvFileEvent({required this.param});
+}
+
 final class GlobalMasterMicronEvent extends GlobalEvent {}
 
 final class FetchMasterStockStatusEvent extends GlobalEvent {}
@@ -58,3 +64,21 @@ final class UpdateDefaultSettingEvent extends GlobalEvent {
 }
 
 final class FetchUserSettingsEvent extends GlobalEvent {}
+
+final class VerifyChallanProductEvent extends GlobalEvent {
+  final VerifyProductParam param;
+
+  VerifyChallanProductEvent({required this.param});
+}
+
+final class UnVerifyProductEvent extends GlobalEvent {
+  final String productKey;
+
+  UnVerifyProductEvent({required this.productKey});
+}
+
+final class ReturnChallanProductEvent extends GlobalEvent {
+  final ReturnProduct param;
+
+  ReturnChallanProductEvent({required this.param});
+}

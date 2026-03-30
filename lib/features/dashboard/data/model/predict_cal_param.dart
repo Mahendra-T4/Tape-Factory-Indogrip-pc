@@ -1,17 +1,21 @@
 class PredictCalParam {
-  final String rollSize;
+  final String? rollSize;
   final dynamic tapeLength;
   final dynamic ratePerSquareMeter;
+  final dynamic amountPerKG;
   final dynamic wastagePercentage;
   final dynamic conversionRate;
   final dynamic margin;
+  final String? micID;
 
   PredictCalParam({
-    required this.rollSize,
-    required this.tapeLength,
-    required this.ratePerSquareMeter,
-    required this.wastagePercentage,
-    required this.conversionRate,
-    required this.margin,
+    this.rollSize,
+    this.tapeLength,
+    this.ratePerSquareMeter,
+    this.amountPerKG,
+    this.wastagePercentage,
+    this.conversionRate,
+    this.margin,
+    this.micID,
   });
 }

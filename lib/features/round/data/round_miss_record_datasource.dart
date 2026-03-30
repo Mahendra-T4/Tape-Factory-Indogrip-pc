@@ -1,37 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:indogrip/features/round/data/models/upload_round_record_model.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
-
-class RoundRecord {
-  int? sNo;
-  String? roundCode;
-  String? roundDescription;
-  String? diameter;
-  String? thickness;
-  String? weight;
-  String? material;
-  String? supplier;
-  String? batchNumber;
-  String? dateReceived;
-  String? quality;
-
-  RoundRecord({
-    this.sNo,
-    this.roundCode,
-    this.roundDescription,
-    this.diameter,
-    this.thickness,
-    this.weight,
-    this.material,
-    this.supplier,
-    this.batchNumber,
-    this.dateReceived,
-    this.quality,
-  });
-}
 
 class RoundMissRecordDataSource extends DataGridSource {
   List<DataGridRow> dataGridRows = [];
-  List<RoundRecord> roundData = [];
+  List<RoundMissRecord> roundData = [];
   final BuildContext context;
 
   RoundMissRecordDataSource({required this.context, required this.roundData}) {
@@ -40,52 +13,70 @@ class RoundMissRecordDataSource extends DataGridSource {
 
   void buildDataGridRows() {
     dataGridRows = roundData.asMap().entries.map<DataGridRow>((entry) {
+      final index = entry.key;
       final data = entry.value;
       return DataGridRow(
         cells: [
-          DataGridCell<String>(columnName: 'Sr No', value: data.sNo.toString()),
           DataGridCell<String>(
-            columnName: 'Round Code',
-            value: data.roundCode.toString(),
+            columnName: 'Sr No',
+            value: (index + 1).toString(),
           ),
           DataGridCell<String>(
-            columnName: 'Description',
-            value: data.roundDescription.toString(),
+            columnName: 'Reason',
+            value: data.msg?.toString() ?? '',
           ),
           DataGridCell<String>(
-            columnName: 'Diameter (mm)',
-            value: data.diameter.toString(),
+            columnName: 'Bill Date',
+            value: data.billDate?.toString() ?? '',
           ),
           DataGridCell<String>(
-            columnName: 'Thickness (mm)',
-            value: data.thickness.toString(),
+            columnName: 'Bill Number',
+            value: data.billNumber?.toString() ?? '',
           ),
           DataGridCell<String>(
-            columnName: 'Weight (kg)',
-            value: data.weight.toString(),
+            columnName: 'Roll Number',
+            value: data.rollNumber?.toString() ?? '',
           ),
           DataGridCell<String>(
-            columnName: 'Material',
-            value: data.material.toString(),
+            columnName: 'Base',
+            value: data.base?.toString() ?? '',
           ),
           DataGridCell<String>(
-            columnName: 'Supplier',
-            value: data.supplier.toString(),
+            columnName: 'Mic',
+            value: data.mic?.toString() ?? '',
           ),
           DataGridCell<String>(
-            columnName: 'Batch Number',
-            value: data.batchNumber.toString(),
+            columnName: 'Length',
+            value: data.length?.toString() ?? '',
           ),
           DataGridCell<String>(
-            columnName: 'Date Received',
-            value: data.dateReceived.toString(),
+            columnName: 'Width',
+            value: data.width?.toString() ?? '',
           ),
           DataGridCell<String>(
-            columnName: 'Quality',
-            value: data.quality.toString(),
+            columnName: 'Net Weight',
+            value: data.netWeight?.toString() ?? '',
           ),
-          // DataGridCell<String>(columnName: 'Status', value: 'Active'),
-          // DataGridCell<String>(columnName: 'actions', value: 'Edit'),
+          DataGridCell<String>(
+            columnName: 'Total Square Mtr',
+            value: data.totalSquareMtr?.toString() ?? '',
+          ),
+          DataGridCell<String>(
+            columnName: 'Amount Per KG',
+            value: data.amountPerKG?.toString() ?? '',
+          ),
+          DataGridCell<String>(
+            columnName: 'Roll Cost',
+            value: data.rollCost?.toString() ?? '',
+          ),
+          DataGridCell<String>(
+            columnName: 'Remark',
+            value: data.remark?.toString() ?? '',
+          ),
+          DataGridCell<String>(
+            columnName: 'R Key',
+            value: data.rKey?.toString() ?? '',
+          ),
         ],
       );
     }).toList();

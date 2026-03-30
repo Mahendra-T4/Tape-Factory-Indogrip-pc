@@ -1,5 +1,9 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
+import 'package:indogrip/features/chalan/data/model/challan_product_verify_model.dart';
+import 'package:indogrip/features/chalan/data/model/return_product.dart';
+import 'package:indogrip/features/chalan/data/model/verify_challan_product_param.dart';
+import 'package:indogrip/features/chalan/domain/repositories/chalan_repo.dart';
 import 'package:indogrip/features/global/data/model/change_status_model.dart';
 import 'package:indogrip/features/global/data/model/change_status_param.dart';
 import 'package:indogrip/features/global/data/model/delete_record_model.dart';
@@ -13,6 +17,7 @@ import 'package:indogrip/features/notifications/model/notification_model.dart';
 import 'package:indogrip/features/notifications/model/notification_status_model.dart';
 import 'package:indogrip/features/notifications/repository/notification_repo.dart';
 import 'package:indogrip/features/outsource/data/model/upload_file_param.dart';
+import 'package:indogrip/features/round/data/models/upload_round_record_model.dart';
 import 'package:meta/meta.dart';
 
 part 'global_event.dart';
@@ -30,8 +35,14 @@ class GlobalBloc extends Bloc<GlobalEvent, GlobalState> {
     on<ReadUnReadNotificationMasterStatusEvent>(
       readUnReadNotificationMasterStatusEvent,
     );
+    on<GlobalRoundRecordUploadCsvFileEvent>(
+      globalRoundRecordUploadCsvFileEvent,
+    );
     on<UpdateDefaultSettingEvent>(updateDefaultSettingEvent);
     on<FetchUserSettingsEvent>(fetchUserSettingsEvent);
+    on<VerifyChallanProductEvent>(verifyChallanProductEvent);
+    on<UnVerifyProductEvent>(unVerifyProductEvent);
+    on<ReturnChallanProductEvent>(returnChallanProductEvent);
   }
 
   FutureOr<void> _globalChangeUserStatusEvent(
@@ -174,6 +185,69 @@ class GlobalBloc extends Bloc<GlobalEvent, GlobalState> {
       emit(FetchUserSettingsSuccessStatus(model: model));
     } catch (e) {
       emit(FetchUserSettingsErrorStatus(message: e.toString()));
+    }
+  }
+
+  FutureOr<void> globalRoundRecordUploadCsvFileEvent(
+    GlobalRoundRecordUploadCsvFileEvent event,
+    Emitter<GlobalState> emit,
+  ) async {
+    emit(GlobalLoadingStatus());
+    try {
+      final response = await globalRepository.uploadRoundRecordCsvFile(
+        param: event.param,
+      );
+      emit(
+        GlobalRoundRecordUploadCsvFileSuccessStatus(successResponse: response),
+      );
+    } catch (e) {
+      emit(GlobalRoundRecordUploadCsvFileErrorStatus(message: e.toString()));
+    }
+  }
+
+  FutureOr<void> verifyChallanProductEvent(
+    VerifyChallanProductEvent event,
+    Emitter<GlobalState> emit,
+  ) async {
+    emit(GlobalLoadingStatus());
+
+    try {
+      final model = await ChallanRepository.verifyChallanProduct(
+        param: event.param,
+      );
+      emit(ChallanProductVerifySuccessState(model: model));
+    } catch (e) {
+      emit(ChallanProductVerifyFailureState(errorMessage: e.toString()));
+    }
+  }
+
+  FutureOr<void> unVerifyProductEvent(
+    UnVerifyProductEvent event,
+    Emitter<GlobalState> emit,
+  ) async {
+    emit(GlobalLoadingStatus2());
+
+    try {
+      final model = await ChallanRepository.unverifyProduct(
+        productKey: event.productKey,
+      );
+      emit(UnVerifyProductSuccessState(model: model));
+    } catch (e) {
+      emit(UnVerifyProductFailureState(errorMessage: e.toString()));
+    }
+  }
+
+  FutureOr<void> returnChallanProductEvent(
+    ReturnChallanProductEvent event,
+    Emitter<GlobalState> emit,
+  ) async {
+    emit(GlobalLoadingStatus3());
+
+    try {
+      final model = await ChallanRepository.returnProduct(param: event.param);
+      emit(ReturnChallanProductSuccessState(model: model));
+    } catch (e) {
+      emit(ReturnChallanProductFailureState(errorMessage: e.toString()));
     }
   }
 }

@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:indogrip/core/service/connectivity/internate%20connectivity-checker.dart';
 import 'package:indogrip/core/service/connectivity/not_connected.dart';
 import 'package:indogrip/core/utils/appbar/desktop_appbar.dart';
+import 'package:indogrip/features/outsource/data/model/stretch_missrecord_model.dart';
 import 'stretch_film_miss_record_panel_builder.dart';
 
 class StretchFilmMissRecordPanel extends StatefulWidget {
-  const StretchFilmMissRecordPanel({super.key});
+  const StretchFilmMissRecordPanel({super.key, required this.record});
+  final StretchMissRecordResponse record;
   static const String routeName = '/stretch-film-miss-record-panel';
 
   @override
@@ -16,11 +18,10 @@ class StretchFilmMissRecordPanel extends StatefulWidget {
 class _StretchFilmMissRecordPanelState
     extends StretchFilmMissRecordPanelBuilder {
   final GlobalKey<ScaffoldState> _statekey = GlobalKey<ScaffoldState>();
-  final TextEditingController _reasonController = TextEditingController();
-
+ 
   @override
   void dispose() {
-    _reasonController.dispose();
+    reasonController.dispose();
     super.dispose();
   }
 
@@ -75,7 +76,7 @@ class _StretchFilmMissRecordPanelState
                     SizedBox(
                       width: MediaQuery.of(context).size.width,
                       child: TextFormField(
-                        controller: _reasonController,
+                        controller: reasonController,
                         readOnly: true,
                         maxLines: 4,
                         decoration: InputDecoration(

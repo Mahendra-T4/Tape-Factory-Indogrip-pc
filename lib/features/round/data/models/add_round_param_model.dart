@@ -1,6 +1,6 @@
 class AddRoundParam {
   final String activity = 'add-round';
-  final String jumboRoll;
+  final List<String> jumboRoll;
   final String rollSize;
   final String rollCore;
   final String round;
@@ -22,7 +22,7 @@ class AddRoundParam {
     required this.round,
     required this.meters,
     required this.cartonType,
-   
+
     this.rKey,
   });
 }

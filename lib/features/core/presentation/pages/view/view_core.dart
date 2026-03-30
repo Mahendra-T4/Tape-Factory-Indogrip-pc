@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +7,7 @@ import 'package:indogrip/core/service/connectivity/internate%20connectivity-chec
 import 'package:indogrip/core/service/connectivity/not_connected.dart';
 import 'package:indogrip/core/utils/appbar/desktop_appbar.dart';
 import 'package:indogrip/core/utils/appbar/mobile_appbar.dart';
+import 'package:indogrip/core/utils/scroll_behavier.dart';
 import 'package:indogrip/core/utils/sidebar.dart';
 import 'package:indogrip/core/utils/widgets/textfield_label.dart';
 import 'package:indogrip/core/utils/widgets/toast_service.dart';
@@ -70,322 +69,304 @@ class _ViewCorePanelState extends ViewCoreBuilder {
   }
 
   Widget _buildDesktopView() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // if (Responsive.isDesktop(context)) const SideMenuWidget(),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (Responsive.isDesktop(context))
-                DesktopAppBar(context, _stateKey, 'View Cores', false),
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          BlocListener<GlobalBloc, GlobalState>(
+            bloc: globalBloc,
+            listener: (context, state) {
+              if (state is GlobalChangeUserStatusSuccessStatus) {
+                // Handle status change success (for approved, rejected, blocked, etc.)
+                if (state.changeStatusEntity.status == 1) {
+                  ToastService.instance.showSuccess(
+                    context,
+                    state.changeStatusEntity.message.toString(),
+                  );
 
-              BlocListener<GlobalBloc, GlobalState>(
-                bloc: globalBloc,
-                listener: (context, state) {
-                  if (state is GlobalChangeUserStatusSuccessStatus) {
-                    // Handle status change success (for approved, rejected, blocked, etc.)
-                    if (state.changeStatusEntity.status == 1) {
-                      ToastService.instance.showSuccess(
-                        context,
-                        state.changeStatusEntity.message.toString(),
-                      );
-
-                      // Refresh list after status change
-                      coreBloc.add(
-                        ViewCoreRecordEvent(
-                          param: ViewRecordApiParam(
-                            keyword: searchController.text,
-                            filterBy: recordValue ?? '',
-                            orderBy: filterValue.toString(),
-                            pageNo: currentPage.toString(),
-                            sortBy: entryValue.toString(),
-                            fromDate: fromDateController.text,
-                            toDate: toDateController.text,
-                          ),
-                        ),
-                      );
-                    } else {
-                      ToastService.instance.showError(
-                        context,
-                        state.changeStatusEntity.message.toString(),
-                      );
-                    }
-                  } else if (state is GlobalChangeUserStatusErrorStatus) {
-                    ToastService.instance.showError(
-                      context,
-                      state.message.toString(),
-                    );
-                  } else if (state is GlobalDeleteRecordSuccessStatus) {
-                    ToastService.instance.showSuccess(
-                      context,
-                      state.deleteRecordEntity.message.toString(),
-                    );
-                    // Refresh list after single delete
-                    coreBloc.add(
-                      ViewCoreRecordEvent(
-                        param: ViewRecordApiParam(
-                          keyword: searchController.text,
-                          filterBy: recordValue ?? '',
-                          orderBy: filterValue.toString(),
-                          pageNo: currentPage.toString(),
-                          sortBy: entryValue.toString(),
-                          fromDate: fromDateController.text,
-                          toDate: toDateController.text,
-                        ),
+                  // Refresh list after status change
+                  coreBloc.add(
+                    ViewCoreRecordEvent(
+                      param: ViewRecordApiParam(
+                        keyword: searchController.text,
+                        filterBy: recordValue ?? '',
+                        orderBy: filterValue.toString(),
+                        pageNo: currentPage.toString(),
+                        sortBy: entryValue.toString(),
+                        fromDate: fromDateController.text,
+                        toDate: toDateController.text,
                       ),
-                    );
-                  } else if (state is GlobalDeleteRecordErrorStatus) {
-                    ToastService.instance.showError(
-                      context,
-                      state.message.toString(),
-                    );
-                  } else if (state
-                      is GlobalDeleteMultipleRecordsSuccessStatus) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          state.deleteRecordEntity.message ?? 'Records deleted',
-                        ),
-                      ),
-                    );
-                    // Refresh list after bulk delete
-                    coreBloc.add(
-                      ViewCoreRecordEvent(
-                        param: ViewRecordApiParam(
-                          keyword: searchController.text,
-                          filterBy: recordValue ?? '',
-                          orderBy: filterValue.toString(),
-                          pageNo: currentPage.toString(),
-                          sortBy: entryValue.toString(),
-                          fromDate: fromDateController.text,
-                          toDate: toDateController.text,
-                        ),
-                      ),
-                    );
-                    // Clear selection
-                    setState(() {
-                      selectedRows.clear();
-                      selectedItems.clear();
-                      isMultipleSelection = false;
-                    });
-                  } else if (state is GlobalDeleteMultipleRecordsErrorStatus) {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text(state.message)));
-                  }
-                },
-                child: Column(
-                  children: [
-                    DateFiltration(
-                      fromDateController: fromDateController,
-                      toDateController: toDateController,
                     ),
-                    searchFields,
-                  ],
+                  );
+                } else {
+                  ToastService.instance.showError(
+                    context,
+                    state.changeStatusEntity.message.toString(),
+                  );
+                }
+              } else if (state is GlobalChangeUserStatusErrorStatus) {
+                ToastService.instance.showError(
+                  context,
+                  state.message.toString(),
+                );
+              } else if (state is GlobalDeleteRecordSuccessStatus) {
+                ToastService.instance.showSuccess(
+                  context,
+                  state.deleteRecordEntity.message.toString(),
+                );
+                // Refresh list after single delete
+                coreBloc.add(
+                  ViewCoreRecordEvent(
+                    param: ViewRecordApiParam(
+                      keyword: searchController.text,
+                      filterBy: recordValue ?? '',
+                      orderBy: filterValue.toString(),
+                      pageNo: currentPage.toString(),
+                      sortBy: entryValue.toString(),
+                      fromDate: fromDateController.text,
+                      toDate: toDateController.text,
+                    ),
+                  ),
+                );
+              } else if (state is GlobalDeleteRecordErrorStatus) {
+                ToastService.instance.showError(
+                  context,
+                  state.message.toString(),
+                );
+              } else if (state is GlobalDeleteMultipleRecordsSuccessStatus) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      state.deleteRecordEntity.message ?? 'Records deleted',
+                    ),
+                  ),
+                );
+                // Refresh list after bulk delete
+                coreBloc.add(
+                  ViewCoreRecordEvent(
+                    param: ViewRecordApiParam(
+                      keyword: searchController.text,
+                      filterBy: recordValue ?? '',
+                      orderBy: filterValue.toString(),
+                      pageNo: currentPage.toString(),
+                      sortBy: entryValue.toString(),
+                      fromDate: fromDateController.text,
+                      toDate: toDateController.text,
+                    ),
+                  ),
+                );
+                // Clear selection
+                setState(() {
+                  selectedRows.clear();
+                  selectedItems.clear();
+                  isMultipleSelection = false;
+                });
+              } else if (state is GlobalDeleteMultipleRecordsErrorStatus) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(state.message)));
+              }
+            },
+            child: Column(
+              children: [
+                DateFiltration(
+                  fromDateController: fromDateController,
+                  toDateController: toDateController,
                 ),
-              ),
+                searchFields,
+              ],
+            ),
+          ),
 
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: refreshButton,
-                    ),
-                    SizedBox(height: 15),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [_buildPaginationWidget],
-                    ),
-                    BlocBuilder(
-                      bloc: coreBloc,
-                      builder: (context, state) {
-                        switch (state.runtimeType) {
-                          case const (CoreLoadingStatus):
-                            return const Center(
-                              child: CircularProgressIndicator.adaptive(),
-                            );
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: refreshButton,
+          ),
+          SizedBox(height: 15),
+          SingleChildScrollView(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [_buildPaginationWidget],
+            ),
+          ),
+          SizedBox(
+            height: MediaQuery.sizeOf(context).height,
+            child: BlocConsumer(
+              listener: (context, state) {
+                if (state is FetchViewCoreRecordSuccessStatus) {
+                  pageText = state.viewCoreModel.pageText.toString();
+                }
+              },
+              bloc: coreBloc,
+              builder: (context, state) {
+                switch (state.runtimeType) {
+                  case const (CoreLoadingStatus):
+                    return const Center(
+                      child: CircularProgressIndicator.adaptive(),
+                    );
 
-                          case const (FetchViewCoreRecordSuccessStatus):
-                            final successState =
-                                (state as FetchViewCoreRecordSuccessStatus)
-                                    .viewCoreModel;
+                  case const (FetchViewCoreRecordSuccessStatus):
+                    final successState =
+                        (state as FetchViewCoreRecordSuccessStatus)
+                            .viewCoreModel;
 
-                            _dataSource = CoreDataSource(
-                              coreData: successState.record ?? [],
-                              isAllChecked: isChecked,
-                              onStatusChanged: (value) {
-                                setState(() {
-                                  isChecked = value;
-                                  if (value) {
-                                    selectedRows = List.from(_dataSource!.rows);
-                                  } else {
-                                    selectedRows.clear();
-                                  }
-                                  handleSelectionChanged(
-                                    value
-                                        ? List.from(successState.record!)
-                                        : [],
-                                  );
-                                });
-                              },
-                              onCheckboxChanged: (checked, index) {
-                                setState(() {
-                                  if (checked) {
-                                    selectedRows.add(_dataSource!.rows[index]);
-                                  } else {
-                                    selectedRows.remove(
-                                      _dataSource!.rows[index],
+                    _dataSource = CoreDataSource(
+                      coreData: successState.record ?? [],
+                      isAllChecked: isChecked,
+                      onStatusChanged: (value) {
+                        setState(() {
+                          isChecked = value;
+                          if (value) {
+                            selectedRows = List.from(_dataSource!.rows);
+                          } else {
+                            selectedRows.clear();
+                          }
+                          handleSelectionChanged(
+                            value ? List.from(successState.record!) : [],
+                          );
+                        });
+                      },
+                      onCheckboxChanged: (checked, index) {
+                        setState(() {
+                          if (checked) {
+                            selectedRows.add(_dataSource!.rows[index]);
+                          } else {
+                            selectedRows.remove(_dataSource!.rows[index]);
+                          }
+                          handleSelectionChanged(
+                            selectedRows.map((row) {
+                              final idx = _dataSource!.rows.indexOf(row);
+                              return successState.record![idx];
+                            }).toList(),
+                          );
+                        });
+                      },
+                      onEdit: (value) {
+                        final editCarton = CartonApiParams(
+                          cartonType: value.coreType.toString(),
+                          cartonDate: value.coreDateText.toString(),
+                          cartonQuantity: value.coreQuantity.toString(),
+                          billNumber: value.coreBillNumber.toString(),
+                          rKey: value.rKey.toString(),
+                          context: context,
+                        );
+
+                        context.pushNamed(
+                          EditCorePanel.routeName,
+                          extra: editCarton,
+                        );
+                      },
+                      onDelete: (p0) {},
+                      onProfile: (p0) {},
+                      onChanged: (statusValue, CoreRecord) {
+                        globalBloc.add(
+                          GlobalChangeUserStatusEvent(
+                            param: ChangeStaffParam(
+                              rKey: CoreRecord.rKey.toString(),
+                              rPanel: 'view-core',
+                              rStatus: statusValue.toString(),
+                              statusReason: '',
+                            ),
+                          ),
+                        );
+                        coreBloc.add(
+                          ViewCoreRecordEvent(
+                            param: ViewRecordApiParam(
+                              keyword: searchController.text,
+                              filterBy: recordValue ?? '',
+                              orderBy: filterValue.toString(),
+                              pageNo: currentPage.toString(),
+                              sortBy: entryValue.toString(),
+                              fromDate: fromDateController.text,
+                              toDate: toDateController.text,
+                            ),
+                          ),
+                        );
+                      },
+                    );
+
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      setState(() {
+                        pageQty = successState.pageQty ?? 1;
+                      });
+                    });
+
+                    return successState.status == 1
+                        ? Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                            ),
+                            child: ScrollConfiguration(
+                              behavior: HorizontalMouseScrollBehavior(),
+                              child: SfDataGrid(
+                                showHorizontalScrollbar: true,
+                                key: _key,
+                                rowsPerPage: 4,
+                                allowPullToRefresh: true,
+                                allowColumnsResizing: true,
+                                columnResizeMode: ColumnResizeMode.onResizeEnd,
+                                isScrollbarAlwaysShown: true,
+                                showVerticalScrollbar: true,
+                                showCheckboxColumn: isMultipleSelection,
+                                selectionMode: isMultipleSelection
+                                    ? SelectionMode.multiple
+                                    : SelectionMode.single,
+                                onSelectionChanged: (addedRows, removedRows) {
+                                  setState(() {
+                                    selectedRows.addAll(addedRows);
+                                    selectedRows.removeWhere(
+                                      (row) => removedRows.contains(row),
                                     );
-                                  }
-                                  handleSelectionChanged(
-                                    selectedRows.map((row) {
-                                      final idx = _dataSource!.rows.indexOf(
+
+                                    final selectedData = selectedRows.map((
+                                      row,
+                                    ) {
+                                      final index = _dataSource!.rows.indexOf(
                                         row,
                                       );
-                                      return successState.record![idx];
-                                    }).toList(),
-                                  );
-                                });
-                              },
-                              onEdit: (value) {
-                                final editCarton = CartonApiParams(
-                                  cartonType: value.coreType.toString(),
-                                  cartonDate: value.coreDateText.toString(),
-                                  cartonQuantity: value.coreQuantity.toString(),
-                                  billNumber: value.coreBillNumber.toString(),
-                                  rKey: value.rKey.toString(),
-                                  context: context,
-                                );
-
-                                context.pushNamed(
-                                  EditCorePanel.routeName,
-                                  extra: editCarton,
-                                );
-                              },
-                              onDelete: (p0) {},
-                              onProfile: (p0) {},
-                              onChanged: (statusValue, CoreRecord) {
-                                globalBloc.add(
-                                  GlobalChangeUserStatusEvent(
-                                    param: ChangeStaffParam(
-                                      rKey: CoreRecord.rKey.toString(),
-                                      rPanel: 'view-core',
-                                      rStatus: statusValue.toString(),
-                                      statusReason: '',
-                                    ),
-                                  ),
-                                );
-                                coreBloc.add(
-                                  ViewCoreRecordEvent(
-                                    param: ViewRecordApiParam(
-                                      keyword: searchController.text,
-                                      filterBy: recordValue ?? '',
-                                      orderBy: filterValue.toString(),
-                                      pageNo: currentPage.toString(),
-                                      sortBy: entryValue.toString(),
-                                      fromDate: fromDateController.text,
-                                      toDate: toDateController.text,
-                                    ),
-                                  ),
-                                );
-                              },
-                            );
-
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              setState(() {
-                                pageQty = successState.pageQty ?? 1;
-                              });
-                            });
-
-                            return successState.status == 1
-                                ? Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16.0,
-                                      ),
-                                      child: SfDataGrid(
-                                        showHorizontalScrollbar: true,
-                                        key: _key,
-                                        rowsPerPage: 4,
-                                        allowPullToRefresh: true,
-                                        allowColumnsResizing: true,
-                                        columnResizeMode:
-                                            ColumnResizeMode.onResizeEnd,
-                                        isScrollbarAlwaysShown: true,
-                                        showVerticalScrollbar: true,
-                                        showCheckboxColumn: isMultipleSelection,
-                                        selectionMode: isMultipleSelection
-                                            ? SelectionMode.multiple
-                                            : SelectionMode.single,
-                                        onSelectionChanged:
-                                            (addedRows, removedRows) {
-                                              setState(() {
-                                                selectedRows.addAll(addedRows);
-                                                selectedRows.removeWhere(
-                                                  (row) =>
-                                                      removedRows.contains(row),
-                                                );
-
-                                                final selectedData =
-                                                    selectedRows.map((row) {
-                                                      final index = _dataSource!
-                                                          .rows
-                                                          .indexOf(row);
-                                                      return successState
-                                                          .record![index];
-                                                    }).toList();
-                                                handleSelectionChanged(
-                                                  selectedData,
-                                                );
-                                              });
-                                            },
-                                        onColumnResizeUpdate: (details) {
-                                          setState(() {
-                                            columnWidths[details
-                                                    .column
-                                                    .columnName] =
-                                                details.width;
-                                          });
-                                          return true;
-                                        },
-                                        source: _dataSource!,
-                                        columns: buildGridColumns(),
-                                      ),
-                                    ),
-                                  )
-                                : Expanded(
-                                    child: Center(
-                                      child: Text(
-                                        successState.message ??
-                                            'Refresh to load data',
-                                      ),
-                                    ),
-                                  );
-
-                          case (FetchViewCoreRecordFailureStatus):
-                            return Center(
-                              child: Text(
-                                (state as FetchViewCoreRecordFailureStatus)
-                                    .errorMessage,
+                                      return successState.record![index];
+                                    }).toList();
+                                    handleSelectionChanged(selectedData);
+                                  });
+                                },
+                                onColumnResizeUpdate: (details) {
+                                  setState(() {
+                                    columnWidths[details.column.columnName] =
+                                        details.width;
+                                  });
+                                  return true;
+                                },
+                                source: _dataSource!,
+                                columns: buildGridColumns(),
                               ),
-                            );
-                          default:
-                            return const SizedBox.shrink();
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ],
+                            ),
+                          )
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(height: 200),
+                              Text(
+                                successState.message ?? 'Refresh to load data',
+                              ),
+                            ],
+                          );
+
+                  case (FetchViewCoreRecordFailureStatus):
+                    return Center(
+                      child: Text(
+                        (state as FetchViewCoreRecordFailureStatus)
+                            .errorMessage,
+                      ),
+                    );
+                  default:
+                    return const SizedBox.shrink();
+                }
+              },
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -495,7 +476,7 @@ class _ViewCorePanelState extends ViewCoreBuilder {
           key: _stateKey,
           appBar: !Responsive.isDesktop(context)
               ? MobileAppBar(context, _stateKey, 'View Cores')
-              : null,
+              : DesktopAppBar(context, _stateKey, 'View Cores', false),
           drawer: !Responsive.isDesktop(context)
               ? const SideMenuWidget()
               : null,
@@ -506,6 +487,7 @@ class _ViewCorePanelState extends ViewCoreBuilder {
   }
 
   Widget get _buildPaginationWidget => TableBottomWidget(
+    pageText: pageText,
     currentPage: currentPage,
     pageQty: pageQty,
     onPagePressed: (pageNumber) {

@@ -20,6 +20,12 @@ class RoundDataSource extends DataGridSource {
   final Function(RoundRecord) onProfile;
   final Function(RoundRecord) stickerPopup;
   final void Function(String?, RoundRecord) onChanged;
+  int? _highlightedRowIndex;
+  int? get highlightedRowIndex => _highlightedRowIndex;
+  set highlightedRowIndex(int? value) {
+    _highlightedRowIndex = value;
+    notifyListeners();
+  }
 
   RoundDataSource({
     required this.context,
@@ -34,6 +40,7 @@ class RoundDataSource extends DataGridSource {
     required this.onChanged,
   }) {
     buildDataGridRows();
+    _highlightedRowIndex = highlightedRowIndex;
   }
 
   void buildDataGridRows() {
@@ -144,6 +151,10 @@ class RoundDataSource extends DataGridSource {
             value: data.totalCarton.toString(),
           ),
           DataGridCell<String>(
+            columnName: RoundTableColumn.availableCarton,
+            value: data.availableCarton.toString(),
+          ),
+          DataGridCell<String>(
             columnName: RoundTableColumn.roundStatusLabel,
             value: data.roundStatusLabel.toString(),
           ),
@@ -163,6 +174,9 @@ class RoundDataSource extends DataGridSource {
   @override
   DataGridRowAdapter buildRow(DataGridRow row) {
     Color? rowBackgroundColor;
+    final rowIndex = dataGridRows.indexOf(row);
+    final isHighlighted = _highlightedRowIndex == rowIndex;
+
     try {
       final statusCell = row.getCells().firstWhere(
         (cell) => cell.columnName == RoundTableColumn.roundStatusLabel,
@@ -175,6 +189,10 @@ class RoundDataSource extends DataGridSource {
       }
     } catch (e) {
       rowBackgroundColor = null;
+    }
+
+    if (isHighlighted) {
+      rowBackgroundColor = Colors.deepPurple.withOpacity(0.2);
     }
     return DataGridRowAdapter(
       cells: row.getCells().map<Widget>((cell) {

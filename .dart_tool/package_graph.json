@@ -15,7 +15,9 @@
         "custom_pop_up_menu",
         "dio",
         "encrypt",
+        "excel",
         "file_picker",
+        "file_saver",
         "file_selector",
         "fl_chart",
         "flutter",
@@ -250,7 +252,7 @@
     },
     {
       "name": "lottie",
-      "version": "3.3.1",
+      "version": "3.3.0",
       "dependencies": [
         "archive",
         "flutter",
@@ -270,7 +272,7 @@
     },
     {
       "name": "image",
-      "version": "4.5.4",
+      "version": "4.3.0",
       "dependencies": [
         "archive",
         "meta",
@@ -459,6 +461,20 @@
       ]
     },
     {
+      "name": "file_saver",
+      "version": "0.3.1",
+      "dependencies": [
+        "collection",
+        "dio",
+        "flutter",
+        "flutter_web_plugins",
+        "path_provider",
+        "path_provider_linux",
+        "path_provider_windows",
+        "web"
+      ]
+    },
+    {
       "name": "file_picker",
       "version": "10.3.7",
       "dependencies": [
@@ -472,6 +488,16 @@
         "plugin_platform_interface",
         "web",
         "win32"
+      ]
+    },
+    {
+      "name": "excel",
+      "version": "4.0.6",
+      "dependencies": [
+        "archive",
+        "collection",
+        "equatable",
+        "xml"
       ]
     },
     {
@@ -968,11 +994,10 @@
     },
     {
       "name": "archive",
-      "version": "4.0.7",
+      "version": "3.6.1",
       "dependencies": [
         "crypto",
-        "path",
-        "posix"
+        "path"
       ]
     },
     {
@@ -1283,15 +1308,6 @@
       "name": "xdg_directories",
       "version": "1.1.0",
       "dependencies": [
-        "meta",
-        "path"
-      ]
-    },
-    {
-      "name": "posix",
-      "version": "6.0.3",
-      "dependencies": [
-        "ffi",
         "meta",
         "path"
       ]

@@ -1,39 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:indogrip/features/outsource/data/model/stretch_missrecord_model.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
-
-class StretchFilmRecord {
-  int? sNo;
-  String? filmCode;
-  String? filmType;
-  String? width;
-  String? length;
-  String? thickness;
-  String? material;
-  String? stretchPercentage;
-  String? supplier;
-  String? batchNumber;
-  String? dateReceived;
-  String? quality;
-
-  StretchFilmRecord({
-    this.sNo,
-    this.filmCode,
-    this.filmType,
-    this.width,
-    this.length,
-    this.thickness,
-    this.material,
-    this.stretchPercentage,
-    this.supplier,
-    this.batchNumber,
-    this.dateReceived,
-    this.quality,
-  });
-}
 
 class StretchFilmMissRecordDataSource extends DataGridSource {
   List<DataGridRow> dataGridRows = [];
-  List<StretchFilmRecord> stretchFilmData = [];
+  List<StretchMissRecord> stretchFilmData = [];
   final BuildContext context;
 
   StretchFilmMissRecordDataSource({
@@ -45,56 +16,84 @@ class StretchFilmMissRecordDataSource extends DataGridSource {
 
   void buildDataGridRows() {
     dataGridRows = stretchFilmData.asMap().entries.map<DataGridRow>((entry) {
+      final index = entry.key;
       final data = entry.value;
       return DataGridRow(
         cells: [
-          DataGridCell<String>(columnName: 'Sr No', value: data.sNo.toString()),
           DataGridCell<String>(
-            columnName: 'Film Code',
-            value: data.filmCode.toString(),
+            columnName: 'Sr No',
+            value: (index + 1).toString(),
           ),
           DataGridCell<String>(
-            columnName: 'Film Type',
-            value: data.filmType.toString(),
+            columnName: 'Reason',
+            value: data.reason?.toString() ?? '',
           ),
           DataGridCell<String>(
-            columnName: 'Width (mm)',
-            value: data.width.toString(),
+            columnName: 'Inventory Code',
+            value: data.inventoryCode?.toString() ?? '',
+          ),
+
+          DataGridCell<String>(
+            columnName: 'Date',
+            value: data.date?.toString() ?? '',
           ),
           DataGridCell<String>(
-            columnName: 'Length (m)',
-            value: data.length.toString(),
+            columnName: 'Bill Number',
+            value: data.billNumber?.toString() ?? '',
           ),
           DataGridCell<String>(
-            columnName: 'Thickness (microns)',
-            value: data.thickness.toString(),
+            columnName: 'Carton Price',
+            value: data.cartonPrice?.toString() ?? '',
           ),
           DataGridCell<String>(
-            columnName: 'Material',
-            value: data.material.toString(),
+            columnName: 'Transport Amount',
+            value: data.transportAmount?.toString() ?? '',
           ),
           DataGridCell<String>(
-            columnName: 'Stretch (%)',
-            value: data.stretchPercentage.toString(),
+            columnName: 'Product Type',
+            value: data.productType?.toString() ?? '',
           ),
           DataGridCell<String>(
-            columnName: 'Supplier',
-            value: data.supplier.toString(),
+            columnName: 'Cut MM Meter',
+            value: data.cutMMMeter?.toString() ?? '',
           ),
           DataGridCell<String>(
-            columnName: 'Batch Number',
-            value: data.batchNumber.toString(),
+            columnName: 'Base',
+            value: data.base?.toString() ?? '',
           ),
           DataGridCell<String>(
-            columnName: 'Date Received',
-            value: data.dateReceived.toString(),
+            columnName: 'Mic',
+            value: data.mic?.toString() ?? '',
           ),
           DataGridCell<String>(
-            columnName: 'Quality',
-            value: data.quality.toString(),
+            columnName: 'Tape Length',
+            value: data.tapeLength?.toString() ?? '',
           ),
-          // DataGridCell<String>(columnName: 'Status', value: 'Active'),
-          // DataGridCell<String>(columnName: 'actions', value: 'Edit'),
+          DataGridCell<String>(
+            columnName: 'Tape Weight',
+            value: data.tapeWeight?.toString() ?? '',
+          ),
+          DataGridCell<String>(
+            columnName: 'Stretch Film Size',
+            value: data.stretchFilmSize?.toString() ?? '',
+          ),
+
+          DataGridCell<String>(
+            columnName: 'Net Weight',
+            value: data.netWeight?.toString() ?? '',
+          ),
+          DataGridCell<String>(
+            columnName: 'Gross Weight',
+            value: data.grossWeight?.toString() ?? '',
+          ),
+          DataGridCell<String>(
+            columnName: 'Quantity',
+            value: data.quantity?.toString() ?? '',
+          ),
+          DataGridCell<String>(
+            columnName: 'Remarks',
+            value: data.remarks?.toString() ?? '',
+          ),
         ],
       );
     }).toList();

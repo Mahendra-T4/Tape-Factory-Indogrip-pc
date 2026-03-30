@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:indogrip/features/round/data/models/upload_round_record_model.dart';
 import 'package:indogrip/features/round/data/round_miss_record_datasource.dart';
 import 'package:indogrip/features/round/presentation/pages/round-miss-record/round_miss_record_panel.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
@@ -11,84 +12,43 @@ abstract class RoundMissRecordPanelBuilder extends State<RoundMissRecordPanel> {
   final GlobalKey _key = GlobalKey();
   late RoundMissRecordDataSource? _dataSource;
   List<DataGridRow> selectedRows = [];
+  final TextEditingController reasonController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    reasonController.text = widget.record.message.toString();
     _dataSource = RoundMissRecordDataSource(
       context: context,
-      roundData: getDummyRoundData(),
+      roundData: _getMissRecordData(),
     );
   }
 
-  List<RoundRecord> getDummyRoundData() {
-    return [
-      RoundRecord(
-        sNo: 1,
-        roundCode: 'RD001',
-        roundDescription: 'Steel Round Bar',
-        diameter: '25',
-        thickness: '25',
-        weight: '15',
-        material: 'Stainless Steel',
-        supplier: 'ABC Steel Ltd',
-        batchNumber: 'BATCH001',
-        dateReceived: '2024-01-15',
-        quality: 'A Grade',
-      ),
-      RoundRecord(
-        sNo: 2,
-        roundCode: 'RD002',
-        roundDescription: 'Aluminum Round Rod',
-        diameter: '32',
-        thickness: '32',
-        weight: '8',
-        material: 'Aluminum',
-        supplier: 'Global Metals Co',
-        batchNumber: 'BATCH002',
-        dateReceived: '2024-01-16',
-        quality: 'A Grade',
-      ),
-      RoundRecord(
-        sNo: 3,
-        roundCode: 'RD003',
-        roundDescription: 'Copper Round Bar',
-        diameter: '20',
-        thickness: '20',
-        weight: '18',
-        material: 'Copper',
-        supplier: 'Premium Metals',
-        batchNumber: 'BATCH003',
-        dateReceived: '2024-01-17',
-        quality: 'B Grade',
-      ),
-      RoundRecord(
-        sNo: 4,
-        roundCode: 'RD004',
-        roundDescription: 'Iron Round Rod',
-        diameter: '28',
-        thickness: '28',
-        weight: '12',
-        material: 'Cast Iron',
-        supplier: 'Indian Steel Mills',
-        batchNumber: 'BATCH004',
-        dateReceived: '2024-01-18',
-        quality: 'A Grade',
-      ),
-      RoundRecord(
-        sNo: 5,
-        roundCode: 'RD005',
-        roundDescription: 'Brass Round Bar',
-        diameter: '24',
-        thickness: '24',
-        weight: '16',
-        material: 'Brass',
-        supplier: 'Quality Metals Ltd',
-        batchNumber: 'BATCH005',
-        dateReceived: '2024-01-19',
-        quality: 'A Grade',
-      ),
-    ];
+  List<RoundMissRecord> _getMissRecordData() {
+    final List<RoundMissRecord> recordList = [];
+
+    if (widget.record.missRecord != null) {
+      recordList.add(
+        RoundMissRecord(
+          msg: widget.record.missRecord!.msg,
+          billDate: widget.record.missRecord!.billDate,
+          billNumber: widget.record.missRecord!.billNumber,
+          rollNumber: widget.record.missRecord!.rollNumber,
+          base: widget.record.missRecord!.base,
+          mic: widget.record.missRecord!.mic,
+          length: widget.record.missRecord!.length,
+          width: widget.record.missRecord!.width,
+          netWeight: widget.record.missRecord!.netWeight,
+          totalSquareMtr: widget.record.missRecord!.totalSquareMtr,
+          amountPerKG: widget.record.missRecord!.amountPerKG,
+          rollCost: widget.record.missRecord!.rollCost,
+          remark: widget.record.missRecord!.remark,
+          rKey: widget.record.missRecord!.rKey,
+        ),
+      );
+    }
+
+    return recordList;
   }
 
   Widget get buildTableRecordWidget => Expanded(
@@ -129,106 +89,145 @@ abstract class RoundMissRecordPanelBuilder extends State<RoundMissRecordPanel> {
         ),
       ),
       GridColumn(
-        columnName: 'Round Code',
-        width: 130,
+        columnName: 'Reason',
+        width: 120,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Round Code')),
+          child: const Center(child: TextFieldlabelText('Reason')),
         ),
       ),
       GridColumn(
-        columnName: 'Description',
-        width: 200,
+        columnName: 'Bill Date',
+        width: 120,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Description')),
+          child: const Center(child: TextFieldlabelText('Bill Date')),
         ),
       ),
       GridColumn(
-        columnName: 'Diameter (mm)',
-        width: 130,
+        columnName: 'Bill Number',
+        width: 120,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Diameter (mm)')),
+          child: const Center(child: TextFieldlabelText('Bill Number')),
         ),
       ),
       GridColumn(
-        columnName: 'Thickness (mm)',
+        columnName: 'Roll Number',
+        width: 120,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Roll Number')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Base',
+        width: 100,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Base')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Mic',
+        width: 100,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Mic')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Length',
+        width: 120,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Length')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Width',
+        width: 120,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Width')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Net Weight',
+        width: 120,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Net Weight')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Total Square Mtr',
         width: 140,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Thickness (mm)')),
+          child: const Center(child: TextFieldlabelText('Total Square Mtr')),
         ),
       ),
       GridColumn(
-        columnName: 'Weight (kg)',
+        columnName: 'Amount Per KG',
         width: 120,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Weight (kg)')),
+          child: const Center(child: TextFieldlabelText('Amount Per KG')),
         ),
       ),
       GridColumn(
-        columnName: 'Material',
-        width: 150,
-        label: Container(
-          color: Colors.grey[100],
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Material')),
-        ),
-      ),
-      GridColumn(
-        columnName: 'Supplier',
-        width: 180,
-        label: Container(
-          color: Colors.grey[100],
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Supplier')),
-        ),
-      ),
-      GridColumn(
-        columnName: 'Batch Number',
-        width: 150,
-        label: Container(
-          color: Colors.grey[100],
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Batch Number')),
-        ),
-      ),
-      GridColumn(
-        columnName: 'Date Received',
-        width: 150,
-        label: Container(
-          color: Colors.grey[100],
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Date Received')),
-        ),
-      ),
-      GridColumn(
-        columnName: 'Quality',
+        columnName: 'Roll Cost',
         width: 120,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Quality')),
+          child: const Center(child: TextFieldlabelText('Roll Cost')),
         ),
       ),
-     
+      GridColumn(
+        columnName: 'Remark',
+        width: 120,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Remark')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'R Key',
+        width: 120,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('R Key')),
+        ),
+      ),
     ];
   }
 }

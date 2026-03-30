@@ -10,6 +10,7 @@ class RoundTableColumn {
   static final String cutMMMeter = 'Cut MM Meter';
   static final String roundCount = 'Round Count';
   static final String totalCarton = 'Total Carton';
+  static final String availableCarton = 'Available Carton';
   static final String tapeLength = 'Tape Length';
   static final String damagePieces = 'Damage Pieces';
   static final String wastagePercentage = 'Wastage Percentage';

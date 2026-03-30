@@ -7,6 +7,7 @@ import 'package:indogrip/core/service/connectivity/internate%20connectivity-chec
 import 'package:indogrip/core/service/connectivity/not_connected.dart';
 import 'package:indogrip/core/utils/appbar/desktop_appbar.dart';
 import 'package:indogrip/core/utils/appbar/mobile_appbar.dart';
+import 'package:indogrip/core/utils/scroll_behavier.dart';
 import 'package:indogrip/core/utils/sidebar.dart';
 import 'package:indogrip/core/utils/widgets/textfield_label.dart';
 import 'package:indogrip/core/utils/widgets/toast_service.dart';
@@ -21,6 +22,7 @@ import 'package:indogrip/features/round/presentation/pages/edit/edit_round.dart'
 import 'package:indogrip/features/round/presentation/pages/profile/round_profile.dart';
 import 'package:indogrip/features/round/presentation/pages/view/view_round_builder.dart';
 import 'package:indogrip/features/round/data/round_data_source.dart';
+import 'package:indogrip/features/round/presentation/widgets/round_details_box.dart';
 import 'package:indogrip/features/staff/data/models/view_staff_api_param.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
@@ -39,6 +41,7 @@ class _ViewRoundPanelState extends ViewRoundBuilder {
   bool isChecked = false;
   RoundDataSource? _dataSource;
   List<DataGridRow> selectedRows = [];
+  String pageText = '';
 
   @override
   void dispose() {
@@ -47,268 +50,289 @@ class _ViewRoundPanelState extends ViewRoundBuilder {
   }
 
   Widget _buildDesktopView() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (Responsive.isDesktop(context))
-                DesktopAppBar(context, _stateKey, 'View Round', false),
-              // buildFilterWidget,
-              DateFiltration(
-                fromDateController: fromDateController,
-                toDateController: toDateController,
-                onFromChanged: (value) {
-                  setState(() {
-                    fromDateController.text = value;
-                  });
-                  callEvent();
-                },
-                onToChanged: (value) {
-                  setState(() {
-                    toDateController.text = value;
-                  });
-                  callEvent();
-                },
-              ),
-              searchFields,
+    return CustomScrollView(
+      // crossAxisAlignment: CrossAxisAlignment.stretch,
+      slivers: [
+        SliverToBoxAdapter(
+          child: DateFiltration(
+            fromDateController: fromDateController,
+            toDateController: toDateController,
+            onFromChanged: (value) {
+              setState(() {
+                fromDateController.text = value;
+              });
+              callEvent();
+            },
+            onToChanged: (value) {
+              setState(() {
+                toDateController.text = value;
+              });
+              callEvent();
+            },
+          ),
+        ),
+        SliverToBoxAdapter(child: searchFields),
 
-              BlocListener<GlobalBloc, GlobalState>(
-                bloc: globalBloc,
-                listener: (context, state) {
-                  if (state is GlobalChangeUserStatusSuccessStatus) {
-                    // Handle status change success (for approved, rejected, blocked, etc.)
-                    if (state.changeStatusEntity.status == 1) {
-                      ToastService.instance.showSuccess(
-                        context,
-                        state.changeStatusEntity.message.toString(),
-                      );
+        SliverToBoxAdapter(
+          child: BlocListener<GlobalBloc, GlobalState>(
+            bloc: globalBloc,
+            listener: (context, state) {
+              if (state is GlobalChangeUserStatusSuccessStatus) {
+                // Handle status change success (for approved, rejected, blocked, etc.)
+                if (state.changeStatusEntity.status == 1) {
+                  ToastService.instance.showSuccess(
+                    context,
+                    state.changeStatusEntity.message.toString(),
+                  );
 
-                      // Refresh list after status change
-                       callEvent();
-                    } else {
-                      ToastService.instance.showError(
-                        context,
-                        state.changeStatusEntity.message.toString(),
-                      );
-                    }
-                  } else if (state is GlobalChangeUserStatusErrorStatus) {
-                    ToastService.instance.showError(
-                      context,
-                      state.message.toString(),
-                    );
-                  } else if (state is GlobalDeleteRecordSuccessStatus) {
-                    ToastService.instance.showSuccess(
-                      context,
-                      state.deleteRecordEntity.message.toString(),
-                    );
-                    // Refresh list after single delete
-                     callEvent();
-                  } else if (state is GlobalDeleteRecordErrorStatus) {
-                    ToastService.instance.showError(
-                      context,
-                      state.message.toString(),
-                    );
-                  } else if (state
-                      is GlobalDeleteMultipleRecordsSuccessStatus) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          state.deleteRecordEntity.message ?? 'Records deleted',
-                        ),
-                      ),
-                    );
-                    // Refresh list after bulk delete
-                    callEvent();
-                    // Clear selection
-                    setState(() {
-                      selectedRows.clear();
-                      selectedItems.clear();
-                      isMultipleSelection = false;
-                    });
-                  } else if (state is GlobalDeleteMultipleRecordsErrorStatus) {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text(state.message)));
-                  }
-                },
-                child: buildFilterFieldsDesktop,
-              ),
-              SizedBox(height: 15),
-              Row(
+                  // Refresh list after status change
+                  callEvent();
+                } else {
+                  ToastService.instance.showError(
+                    context,
+                    state.changeStatusEntity.message.toString(),
+                  );
+                }
+              } else if (state is GlobalChangeUserStatusErrorStatus) {
+                ToastService.instance.showError(
+                  context,
+                  state.message.toString(),
+                );
+              } else if (state is GlobalDeleteRecordSuccessStatus) {
+                ToastService.instance.showSuccess(
+                  context,
+                  state.deleteRecordEntity.message.toString(),
+                );
+                // Refresh list after single delete
+                callEvent();
+              } else if (state is GlobalDeleteRecordErrorStatus) {
+                ToastService.instance.showError(
+                  context,
+                  state.message.toString(),
+                );
+              } else if (state is GlobalDeleteMultipleRecordsSuccessStatus) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      state.deleteRecordEntity.message ?? 'Records deleted',
+                    ),
+                  ),
+                );
+                // Refresh list after bulk delete
+                callEvent();
+                // Clear selection
+                setState(() {
+                  selectedRows.clear();
+                  selectedItems.clear();
+                  isMultipleSelection = false;
+                });
+              } else if (state is GlobalDeleteMultipleRecordsErrorStatus) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(state.message)));
+              }
+            },
+            child: buildFilterFieldsDesktop,
+          ),
+        ),
+        SliverToBoxAdapter(child: SizedBox(height: 15)),
+        SliverToBoxAdapter(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 mainAxisSize: MainAxisSize.min,
                 children: [_buildPaginationWidget],
               ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      BlocConsumer(
-                        bloc: roundBloc,
-                        listener: (context, state) {
-                          if (state is ViewRoundRecordsLoadedSuccessStatus) {
-                            _dataSource = null;
-                          }
-                          if (state is ViewRoundRecordsLoadedSuccessStatus &&
-                              state.viewRoundModel.status == 1 &&
-                              state.viewRoundModel.record != null &&
-                              state.viewRoundModel.record!.isNotEmpty) {
-                            // fetchBatchDetails(
-                            //   state.viewRoundModel.record!.first.rKey,
-                            // );
-                          }
-                          if (state is ViewRoundRecordsErrorStatus) {
-                            ToastService.instance.showError(
-                              context,
-                              state.errorMessage.toString(),
-                            );
-                          }
-                        },
-                        buildWhen: (previous, current) {
-                          // Always rebuild to handle state changes
-                          return true;
-                        },
-                        builder: (context, state) {
-                          if (state is RoundLoadingStatus) {
-                            return const Center(
-                              child: CircularProgressIndicator.adaptive(),
-                            );
-                          } else if (state
-                              is ViewRoundRecordsLoadedSuccessStatus) {
-                            final successData = state.viewRoundModel;
+            ),
+          ),
+        ),
+        // Padding(
+        //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        //   child: RoundDetailBox(),
+        // ),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: SizedBox(
+              height: MediaQuery.sizeOf(context).height,
+              child: BlocConsumer(
+                bloc: roundBloc,
+                listener: (context, state) {
+                  if (state is ViewRoundRecordsLoadedSuccessStatus) {
+                    pageText = state.viewRoundModel.pageText.toString();
+                    _dataSource = null;
+                  }
+                  if (state is ViewRoundRecordsLoadedSuccessStatus &&
+                      state.viewRoundModel.status == 1 &&
+                      state.viewRoundModel.record != null &&
+                      state.viewRoundModel.record!.isNotEmpty) {
+                    // fetchBatchDetails(
+                    //   state.viewRoundModel.record!.first.rKey,
+                    // );
+                  }
+                  if (state is ViewRoundRecordsErrorStatus) {
+                    ToastService.instance.showError(
+                      context,
+                      state.errorMessage.toString(),
+                    );
+                  }
+                },
+                buildWhen: (previous, current) {
+                  // Always rebuild to handle state changes
+                  return true;
+                },
+                builder: (context, state) {
+                  if (state is RoundLoadingStatus) {
+                    return const Center(
+                      child: CircularProgressIndicator.adaptive(),
+                    );
+                  } else if (state is ViewRoundRecordsLoadedSuccessStatus) {
+                    final successData = state.viewRoundModel;
 
-                            if (state.viewRoundModel.status == 1) {
-                              // Lazy initialization - create data source only once
-                              _dataSource ??= RoundDataSource(
-                                context: context,
-                                roundData: successData.record!,
-                                isAllChecked: isChecked,
-                                onStatusChanged: (value) {
-                                  setState(() {
-                                    isChecked = value;
-                                    if (value) {
-                                      selectedRows = List.from(
-                                        _dataSource?.rows ?? [],
-                                      );
-                                    } else {
-                                      selectedRows.clear();
-                                    }
-                                    final selectedData = value
-                                        ? (state.viewRoundModel.record ?? [])
-                                              .map((record) => record.toJson())
-                                              .cast<Map<String, dynamic>>()
-                                              .toList()
-                                        : <Map<String, dynamic>>[];
-                                    handleSelectionChanged(selectedData);
-                                  });
-                                },
-                                onCheckboxChanged: (checked, index) {
-                                  if (_dataSource == null) return;
-                                  setState(() {
-                                    if (checked) {
-                                      selectedRows.add(
-                                        _dataSource!.rows[index],
-                                      );
-                                    } else {
-                                      selectedRows.remove(
-                                        _dataSource!.rows[index],
-                                      );
-                                    }
-                                    final selectedRecords = selectedRows
-                                        .map((row) {
-                                          final idx = _dataSource!.rows.indexOf(
-                                            row,
-                                          );
-                                          if (idx != -1 &&
-                                              idx <
-                                                  (state
-                                                          .viewRoundModel
-                                                          .record
-                                                          ?.length ??
-                                                      0)) {
-                                            final record = state
-                                                .viewRoundModel
-                                                .record![idx];
-                                            return record.toJson();
-                                          }
-                                          return null;
-                                        })
-                                        .where((record) => record != null)
-                                        .cast<Map<String, dynamic>>()
-                                        .toList();
-                                    handleSelectionChanged(selectedRecords);
-                                  });
-                                },
-                                onEdit: (value) {
-                                  context.pushNamed(
-                                    EditRoundPanel.routeName,
-                                    extra: value,
-                                  );
-                                  print('Carton Type ID : ${value.cartonType}');
-                                },
-                                onDelete: (value) {
-                                  callEvent();
-                                },
-                                onProfile: (value) {
-                                  context.pushNamed(
-                                    RoundProfile.routeName,
-                                    extra: value,
-                                  );
-                                },
-                                stickerPopup: (value) {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return customAlertBoxWidget(
-                                        value,
-                                        successData,
-                                      );
-                                    },
-                                  );
-                                  // print(successData);
-                                },
-
-                                onChanged: (statusValue, record) {
-                                  globalBloc.add(
-                                    GlobalChangeUserStatusEvent(
-                                      param: ChangeStaffParam(
-                                        rKey: record.rKey.toString(),
-                                        rPanel: 'view-round',
-                                        rStatus: statusValue.toString(),
-                                        statusReason: '',
-                                      ),
-                                    ),
-                                  );
-                                  callEvent();
-                                },
-                              );
+                    if (state.viewRoundModel.status == 1) {
+                      // Lazy initialization - create data source only once
+                      _dataSource ??= RoundDataSource(
+                        context: context,
+                        roundData: successData.record!,
+                        isAllChecked: isChecked,
+                        onStatusChanged: (value) {
+                          setState(() {
+                            isChecked = value;
+                            if (value) {
+                              selectedRows = List.from(_dataSource?.rows ?? []);
+                            } else {
+                              selectedRows.clear();
                             }
+                            final selectedData = value
+                                ? (state.viewRoundModel.record ?? [])
+                                      .map((record) => record.toJson())
+                                      .cast<Map<String, dynamic>>()
+                                      .toList()
+                                : <Map<String, dynamic>>[];
+                            handleSelectionChanged(selectedData);
+                          });
+                        },
+                        onCheckboxChanged: (checked, index) {
+                          if (_dataSource == null) return;
+                          setState(() {
+                            if (checked) {
+                              selectedRows.add(_dataSource!.rows[index]);
+                            } else {
+                              selectedRows.remove(_dataSource!.rows[index]);
+                            }
+                            final selectedRecords = selectedRows
+                                .map((row) {
+                                  final idx = _dataSource!.rows.indexOf(row);
+                                  if (idx != -1 &&
+                                      idx <
+                                          (state
+                                                  .viewRoundModel
+                                                  .record
+                                                  ?.length ??
+                                              0)) {
+                                    final record =
+                                        state.viewRoundModel.record![idx];
+                                    return record.toJson();
+                                  }
+                                  return null;
+                                })
+                                .where((record) => record != null)
+                                .cast<Map<String, dynamic>>()
+                                .toList();
+                            handleSelectionChanged(selectedRecords);
+                          });
+                        },
+                        onEdit: (value) {
+                          context.pushNamed(
+                            EditRoundPanel.routeName,
+                            extra: value,
+                          );
+                          print('Carton Type ID : ${value.cartonType}');
+                        },
+                        onDelete: (value) {
+                          callEvent();
+                        },
+                        onProfile: (value) {
+                          context.pushNamed(
+                            RoundProfile.routeName,
+                            extra: value,
+                          );
+                        },
+                        stickerPopup: (value) {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return customAlertBoxWidget(value, successData);
+                            },
+                          );
+                          // print(successData);
+                        },
 
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              setState(() {
-                                pageQty = state.viewRoundModel.pageQty ?? 1;
-                              });
-                            });
+                        onChanged: (statusValue, record) {
+                          globalBloc.add(
+                            GlobalChangeUserStatusEvent(
+                              param: ChangeStaffParam(
+                                rKey: record.rKey.toString(),
+                                rPanel: 'view-round',
+                                rStatus: statusValue.toString(),
+                                statusReason: '',
+                              ),
+                            ),
+                          );
+                          callEvent();
+                        },
+                      );
+                    }
 
-                            return state.viewRoundModel.status == 1
-                                ? Expanded(
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      setState(() {
+                        pageQty = state.viewRoundModel.pageQty ?? 1;
+                      });
+                    });
+
+                    return state.viewRoundModel.status == 1
+                        ? Column(
+                            children: [
+                              RoundDetailBox(
+                                availableCarton: state
+                                    .viewRoundModel
+                                    .availableCarton
+                                    .toString(),
+                                totalPieces: state.viewRoundModel.totalPieces
+                                    .toString(),
+                              ),
+                              SizedBox(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.8,
+                                child: ScrollConfiguration(
+                                  behavior: HorizontalMouseScrollBehavior(),
+                                  child: AbsorbPointer(
+                                    absorbing: isAbsorb,
                                     child: SfDataGrid(
                                       showHorizontalScrollbar: true,
                                       key: _key,
-                                      rowsPerPage: 4,
-                                      allowPullToRefresh: true,
+                                      rowsPerPage: 50,
+                                      // allowPullToRefresh: true,
                                       allowColumnsResizing: true,
                                       columnResizeMode:
                                           ColumnResizeMode.onResizeEnd,
                                       isScrollbarAlwaysShown: true,
+
                                       showVerticalScrollbar: true,
                                       showCheckboxColumn: isMultipleSelection,
+                                      onCellTap:
+                                          (DataGridCellTapDetails details) {
+                                            if (_dataSource != null) {
+                                              _dataSource!.highlightedRowIndex =
+                                                  details
+                                                      .rowColumnIndex
+                                                      .rowIndex -
+                                                  1;
+                                            }
+                                          },
                                       selectionMode: isMultipleSelection
                                           ? SelectionMode.multiple
                                           : SelectionMode.single,
@@ -364,40 +388,41 @@ class _ViewRoundPanelState extends ViewRoundBuilder {
                                       source: _dataSource!,
                                       columns: buildGridColumns(),
                                     ),
-                                  )
-                                : Expanded(
-                                    child: Center(
-                                      child: Text(
-                                        state.viewRoundModel.message ??
-                                            'Refresh to load data',
-                                        style: const TextStyle(fontSize: 16),
-                                      ),
-                                    ),
-                                  );
-                          } else if (state is ViewRoundRecordsErrorStatus) {
-                            developer.log(
-                              name: 'Error Status',
-                              state.errorMessage.toString(),
-                            );
-                            return Center(
-                              child: RefreshButton(
-                                onPressed: () {
-                                   callEvent();
-                                },
+                                  ),
+                                ),
                               ),
-                            );
-                          } else {
-                            return SizedBox.shrink();
-                          }
+                            ],
+                          )
+                        : Expanded(
+                            child: Center(
+                              child: Text(
+                                state.viewRoundModel.message ??
+                                    'Refresh to load data',
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                            ),
+                          );
+                  } else if (state is ViewRoundRecordsErrorStatus) {
+                    developer.log(
+                      name: 'Error Status',
+                      state.errorMessage.toString(),
+                    );
+                    return Center(
+                      child: RefreshButton(
+                        onPressed: () {
+                          callEvent();
                         },
                       ),
-                    ],
-                  ),
-                ),
+                    );
+                  } else {
+                    return SizedBox.shrink();
+                  }
+                },
               ),
-            ],
+            ),
           ),
         ),
+        SliverToBoxAdapter(child: SizedBox(height: 100)),
       ],
     );
   }
@@ -638,6 +663,15 @@ class _ViewRoundPanelState extends ViewRoundBuilder {
         ),
       ),
       GridColumn(
+        columnName: RoundTableColumn.availableCarton,
+        columnWidthMode: ColumnWidthMode.fill,
+        width: 150,
+        label: Container(
+          color: Colors.grey[100],
+          child: const Center(child: TextFieldlabelText('Available Carton')),
+        ),
+      ),
+      GridColumn(
         columnName: RoundTableColumn.roundStatusLabel,
         width: 150,
         label: Container(
@@ -645,7 +679,7 @@ class _ViewRoundPanelState extends ViewRoundBuilder {
           child: Center(child: TextFieldlabelText("Status")),
         ),
       ),
-      
+
       GridColumn(
         columnName: 'actions',
         columnWidthMode: ColumnWidthMode.fitByColumnName,
@@ -682,7 +716,7 @@ class _ViewRoundPanelState extends ViewRoundBuilder {
           key: _stateKey,
           appBar: !Responsive.isDesktop(context)
               ? MobileAppBar(context, _stateKey, 'View Round')
-              : null,
+              : DesktopAppBar(context, _stateKey, 'View Round', false),
           drawer: !Responsive.isDesktop(context)
               ? const SideMenuWidget()
               : null,
@@ -693,6 +727,7 @@ class _ViewRoundPanelState extends ViewRoundBuilder {
   }
 
   Widget get _buildPaginationWidget => TableBottomWidget(
+    pageText: pageText,
     currentPage: pageNo,
     pageQty: pageQty,
     onPagePressed: (pageNumber) {

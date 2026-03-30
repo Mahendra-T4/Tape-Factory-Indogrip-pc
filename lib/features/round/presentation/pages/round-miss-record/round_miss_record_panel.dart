@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:indogrip/core/service/connectivity/internate%20connectivity-checker.dart';
 import 'package:indogrip/core/service/connectivity/not_connected.dart';
 import 'package:indogrip/core/utils/appbar/desktop_appbar.dart';
+import 'package:indogrip/features/round/data/models/upload_round_record_model.dart';
 import 'package:indogrip/features/round/presentation/pages/round-miss-record/round_miss_record_panel_builder.dart';
 
 class RoundMissRecordPanel extends StatefulWidget {
-  const RoundMissRecordPanel({super.key});
+  const RoundMissRecordPanel({super.key, required this.record});
+  final UploadRoundRecordModel record;
   static const String routeName = '/round-miss-record-panel';
 
   @override
@@ -15,11 +17,10 @@ class RoundMissRecordPanel extends StatefulWidget {
 class _RoundMissRecordPanelState extends RoundMissRecordPanelBuilder {
   final GlobalKey<ScaffoldState> _statekey = GlobalKey<ScaffoldState>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _reasonController = TextEditingController();
 
   @override
   void dispose() {
-    _reasonController.dispose();
+    reasonController.dispose();
     super.dispose();
   }
 
@@ -68,7 +69,7 @@ class _RoundMissRecordPanelState extends RoundMissRecordPanelBuilder {
                     SizedBox(
                       width: MediaQuery.sizeOf(context).width,
                       child: TextFormField(
-                        controller: _reasonController,
+                        controller: reasonController,
                         maxLines: 4,
                         decoration: InputDecoration(
                           hintText:

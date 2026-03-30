@@ -3,9 +3,7 @@ import 'dart:developer' as developer;
 
 class EnvConfig {
   static String get indoGripBaseUrl => dotenv.env['IndoGrip_BASE_URL2'] ?? '';
-  // static String get accountSureBaseUrl =>
-  //     dotenv.env['IndoGrip_BASE_URL2'] ?? '';
-  //  ?? 'http://accountsure.in/development/app/inventory/TFour/software-api/'dindex.php';
+
   static String get apiKey => dotenv.env['API_KEY'] ?? 'tfour2444666668888888';
   static String get appName => dotenv.env['APP_NAME'] ?? 'TFour PC';
   static String get environment => dotenv.env['ENV'] ?? 'development';

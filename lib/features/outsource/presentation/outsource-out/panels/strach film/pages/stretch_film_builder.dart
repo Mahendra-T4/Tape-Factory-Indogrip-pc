@@ -37,6 +37,7 @@ abstract class StretchFilmBuilder extends State<StretchFilmPanel> {
   late final InventoryOutBloc inventoryOutBloc;
   late final GlobalBloc globalBloc;
   late final InventoryBloc inventoryBloc;
+  String? pageText;
   bool isMultipleSelection = false;
   List<StretchRecord> selectedItems = [];
   String? vendorKey, coreID, filmSizeID, stockStatus;
@@ -525,6 +526,7 @@ abstract class StretchFilmBuilder extends State<StretchFilmPanel> {
     listener: (context, state) {
       if (state is InventoryInRecordAddedSuccessStatus) {
         if (state.response.status == 1) {
+         
           context.pushNamed(PrintStretchFilmSticker.routeName, extra: rKey);
           context.pop();
           callEvent();

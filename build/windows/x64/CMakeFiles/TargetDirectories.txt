@@ -11,6 +11,9 @@ D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/runner/CMakeFiles/ALL_BUIL
 D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/plugins/connectivity_plus/CMakeFiles/connectivity_plus_plugin.dir
 D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/plugins/connectivity_plus/CMakeFiles/INSTALL.dir
 D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/plugins/connectivity_plus/CMakeFiles/ALL_BUILD.dir
+D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/plugins/file_saver/CMakeFiles/file_saver_plugin.dir
+D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/plugins/file_saver/CMakeFiles/INSTALL.dir
+D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/plugins/file_saver/CMakeFiles/ALL_BUILD.dir
 D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/plugins/file_selector_windows/CMakeFiles/file_selector_windows_plugin.dir
 D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/plugins/file_selector_windows/CMakeFiles/INSTALL.dir
 D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/plugins/file_selector_windows/CMakeFiles/ALL_BUILD.dir

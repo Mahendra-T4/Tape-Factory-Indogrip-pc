@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:developer' as develper;
 import 'dart:developer' as developer;
@@ -243,5 +244,41 @@ class JumboRollRepository {
       );
     }
     return successResponse;
+  }
+
+  static Future<List<Map<String, dynamic>>> getJumboRollJsonData() async {
+    try {
+      final response = await DioService.dioPostApiCall(
+        data: FormData.fromMap({
+          'activity': 'view-jumbo-roll',
+          'userKey': HiveService.getUserId(),
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = response.data;
+
+        final jumboList = jsonData is Map && jsonData['record'] is List
+            ? (jsonData['record'] as List)
+                  .where((item) => item is Map)
+                  .map((item) => Map<String, dynamic>.from(item as Map))
+                  .toList()
+            : <Map<String, dynamic>>[];
+
+        return jumboList;
+      } else {
+        log(
+          'Failed to fetch Jumbo Roll JSON data',
+          name: 'Fetch Jumbo Roll JSON',
+        );
+        throw Exception('Failed to fetch Jumbo Roll JSON data');
+      }
+    } catch (e) {
+      log(
+        'Error fetching Jumbo Roll JSON data: $e',
+        name: 'Fetch Jumbo Roll JSON',
+      );
+      throw Exception('Error fetching Jumbo Roll JSON data: $e');
+    }
   }
 }

@@ -66,6 +66,7 @@ class HomeRepository implements HomeManagerRepository {
                 "wastagePercentage": param.wastagePercentage,
                 "conversionRate": param.conversionRate,
                 "margin": param.margin,
+                // 'micID': param.micID,
               }),
             ).timeout(
               const Duration(seconds: 5),
@@ -81,6 +82,55 @@ class HomeRepository implements HomeManagerRepository {
         developer.log(
           'Predict Calculation Data: ${response.data}',
           name: 'Predict Calculation',
+        );
+      } else {
+        developer.log(
+          'Failed to load predict calculation data',
+          name: 'Predict Calculation Failed',
+        );
+      }
+    } catch (e) {
+      developer.log(e.toString(), name: 'Predict Calculation Error');
+    }
+    return model;
+  }
+
+  @override
+  Future<PredictCalculationModel> predictCalculationByMic({
+    required PredictCalParam param,
+  }) async {
+    PredictCalculationModel model = PredictCalculationModel();
+    try {
+      final formData = FormData.fromMap({
+        'activity': 'predict-calculation-by-mic',
+        'userKey': HiveService.getUserId(),
+        "rollSize": param.rollSize,
+        "tapeLength": param.tapeLength,
+        "amountPerKG": param.amountPerKG,
+        "wastagePercentage": param.wastagePercentage,
+        "conversionRate": param.conversionRate,
+        "margin": param.margin,
+        'micID': param.micID,
+      });
+      final response = await retry(
+        () => DioService.dioPostApiCall(data: formData).timeout(
+          const Duration(seconds: 5),
+          onTimeout: () => throw TimeoutException('Request timed out'),
+        ),
+        retryIf: (e) => e is TimeoutException || e is DioException,
+        maxAttempts: 3,
+        delayFactor: const Duration(seconds: 1),
+      );
+
+      if (response.statusCode == 200) {
+        model = PredictCalculationModel.fromJson(response.data);
+        developer.log(
+          'Predict Calculation Data: ${response.data}',
+          name: 'Predict Calculation',
+        );
+        developer.log(
+          formData.fields.toString(),
+          name: 'Predict Calculation FormData',
         );
       } else {
         developer.log(

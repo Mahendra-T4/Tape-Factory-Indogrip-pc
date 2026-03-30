@@ -7,6 +7,8 @@ final class HomeInitial extends HomeState {}
 
 final class HomeLoadingStatus extends HomeState {}
 
+final class HomeLoadingStatus2 extends HomeState {}
+
 final class HomeDashboardStaticsSuccessStatus extends HomeState {
   final ShowStaticModel showStaticModel;
 
@@ -25,11 +27,22 @@ final class PredictCalculationSuccessStatus extends HomeState {
   PredictCalculationSuccessStatus({required this.predictCalculationModel});
 }
 
-
 final class PredictCalculationErrorStatus extends HomeState {
   final String message;
 
   PredictCalculationErrorStatus({required this.message});
+}
+
+final class PredictCalculationByMicSuccessStatus extends HomeState {
+  final PredictCalculationModel predictCalculationModel;
+
+  PredictCalculationByMicSuccessStatus({required this.predictCalculationModel});
+}
+
+final class PredictCalculationByMicErrorStatus extends HomeState {
+  final String message;
+
+  PredictCalculationByMicErrorStatus({required this.message});
 }
 
 final class CoreListSuccessStatus extends HomeState {

@@ -12,6 +12,7 @@ import 'package:indogrip/features/global/data/model/ustatus_param.dart';
 import 'package:indogrip/features/global/data/model/view_master_user_status_model.dart';
 import 'package:indogrip/features/global/data/repositories/global_manager_repo.dart';
 import 'package:indogrip/features/outsource/data/model/upload_file_param.dart';
+import 'package:indogrip/features/round/data/models/upload_round_record_model.dart';
 
 final settingProvider = FutureProvider<SettingModel>((ref) {
   return GlobalManagerRepository().fetchSettings();
@@ -35,6 +36,10 @@ abstract class GlobalRepository {
   Future<UserStatusModel> masterUserStatus();
 
   Future<SuccessResponse> uploadCsvFile({required UploadFileParam param});
+
+  Future<UploadRoundRecordModel> uploadRoundRecordCsvFile({
+    required UploadFileParam param,
+  });
 
   Future<SettingModel> fetchSettings();
 

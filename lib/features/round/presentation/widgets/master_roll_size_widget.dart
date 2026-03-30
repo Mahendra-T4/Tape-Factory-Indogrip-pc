@@ -4,19 +4,22 @@ import 'package:indogrip/core/theme/color_conts.dart';
 import 'package:indogrip/features/round/domain/repositories/add_round_repo.dart';
 import 'package:indogrip/features/round/presentation/bloc/round_bloc.dart';
 
-
 class MasterRoleSizeSelector extends StatefulWidget {
   final String? selectedRole;
   final Function(String?) onChanged;
   final bool isFilter;
   final double? size;
+  final bool isValidate;
+  final void Function(String?)? onLabelChanged;
 
-  const MasterRoleSizeSelector({
+  MasterRoleSizeSelector({
     Key? key,
     this.selectedRole,
     required this.onChanged,
     this.isFilter = false,
     this.size,
+    this.isValidate = true,
+    this.onLabelChanged,
   }) : super(key: key);
 
   @override
@@ -187,13 +190,25 @@ class _MasterRoleSizeSelectorState extends State<MasterRoleSizeSelector> {
                                   fontWeight: FontWeight.w500,
                                 )
                               : null,
-                          onChanged: widget.onChanged,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return "Please select a Size";
-                            }
-                            return null;
+                          onChanged: (value) {
+                            final selectedRecord = data.record?.firstWhere(
+                              (r) => r.mId.toString() == value,
+                              orElse: () => data.record!.first,
+                            );
+
+                            widget.onLabelChanged?.call(
+                              selectedRecord?.cutMmMeter.toString(),
+                            );
+                            widget.onChanged(value);
                           },
+                          validator: widget.isValidate
+                              ? (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return "Please select a Size";
+                                  }
+                                  return null;
+                                }
+                              : null,
                         ),
                       );
               case MasterRollSizeErrorFailedStatus:

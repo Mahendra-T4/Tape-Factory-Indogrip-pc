@@ -1,16 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:indogrip/core/utils/widgets/custom_date_picker.dart';
+import 'package:indogrip/core/utils/widgets/toast_service.dart';
 import 'package:indogrip/features/chalan/data/model/challan_details_model.dart';
+import 'package:indogrip/features/chalan/data/model/return_product.dart';
+import 'package:indogrip/features/chalan/data/model/verify_challan_product_param.dart';
 import 'package:indogrip/features/chalan/presentation/bloc/challan_bloc.dart';
 import 'package:indogrip/features/chalan/presentation/page/bill/bill_formate.dart';
+import 'package:indogrip/features/global/data/repositories/global_manager_repo.dart';
+import 'package:indogrip/features/global/presentation/bloc/global_bloc.dart';
 
 abstract class BillFormatBuilder extends State<BillFormate> {
   late final ChallanBloc challanBloc;
+  late final GlobalBloc globalBloc;
   final unitPriceController = TextEditingController();
   final remarkController = TextEditingController();
   final chalanDateController = TextEditingController();
-  String? unitPrice;
-  String? remark;
-  String? displayQuantity;
+  final List<TextEditingController> rowUnitPriceControllers = [];
+  final List<TextEditingController> rowDisplayQuantityControllers = [];
+  final List<TextEditingController> rowRemarkControllers = [];
+  final List<FocusNode> rowUnitPriceFocusNodes = [];
+  final List<FocusNode> rowDisplayQuantityFocusNodes = [];
+  final List<FocusNode> rowRemarkFocusNodes = [];
+  final List<double> rowDisplayPrices = [];
 
   TextStyle _testTextStyle = TextStyle(
     // fontSize: 14,
@@ -21,7 +34,36 @@ abstract class BillFormatBuilder extends State<BillFormate> {
   void initState() {
     super.initState();
     challanBloc = ChallanBloc();
+    globalBloc = GlobalBloc(globalRepository: GlobalManagerRepository());
     challanBloc.add(FetchChallanDetailsInBillEvent(orderKey: widget.orderKey));
+  }
+
+  @override
+  void dispose() {
+    for (final focusNode in rowUnitPriceFocusNodes) {
+      focusNode.dispose();
+    }
+    for (final focusNode in rowDisplayQuantityFocusNodes) {
+      focusNode.dispose();
+    }
+    for (final focusNode in rowRemarkFocusNodes) {
+      focusNode.dispose();
+    }
+    for (final controller in rowUnitPriceControllers) {
+      controller.dispose();
+    }
+    for (final controller in rowDisplayQuantityControllers) {
+      controller.dispose();
+    }
+    for (final controller in rowRemarkControllers) {
+      controller.dispose();
+    }
+    unitPriceController.dispose();
+    remarkController.dispose();
+    chalanDateController.dispose();
+    challanBloc.close();
+    globalBloc.close();
+    super.dispose();
   }
 
   Widget get topHeaderRow => Row(
@@ -139,8 +181,22 @@ abstract class BillFormatBuilder extends State<BillFormate> {
   );
 
   Widget dataTableWidget(List<ChallanRecord>? record) {
-    // unitPriceController.text = record!.first.orderProduct!.first.unitPrice
-    // .toString();
+    final products = record?.expand((r) => r.orderProduct ?? []).toList() ?? [];
+
+    if (rowUnitPriceControllers.length < products.length) {
+      for (var i = rowUnitPriceControllers.length; i < products.length; i++) {
+        rowUnitPriceControllers.add(
+          TextEditingController(text: products[i].unitPrice?.toString() ?? '0'),
+        );
+        rowDisplayQuantityControllers.add(TextEditingController());
+        rowRemarkControllers.add(TextEditingController());
+        rowUnitPriceFocusNodes.add(FocusNode());
+        rowDisplayQuantityFocusNodes.add(FocusNode());
+        rowRemarkFocusNodes.add(FocusNode());
+        rowDisplayPrices.add(0);
+      }
+    }
+
     return SizedBox(
       width: MediaQuery.sizeOf(context).width * 0.9,
       child: Table(
@@ -175,58 +231,71 @@ abstract class BillFormatBuilder extends State<BillFormate> {
                 padding: EdgeInsets.all(8),
                 child: Text('Display Quantity'),
               ),
-              Padding(
-                padding: EdgeInsets.all(8),
-                child: Text('Actual Quantity'),
-              ),
+              Padding(padding: EdgeInsets.all(8), child: Text('Quantity')),
               Padding(padding: EdgeInsets.all(8), child: Text('Display Price')),
               Padding(padding: EdgeInsets.all(8), child: Text('Price')),
+
               Padding(padding: EdgeInsets.all(8), child: Text('Remark')),
+              Padding(padding: EdgeInsets.all(8), child: Text('Return Date')),
+              Padding(padding: EdgeInsets.all(8), child: Text('Return Qty')),
+              Padding(padding: EdgeInsets.all(8), child: Text('Return Reason')),
+
               Padding(padding: EdgeInsets.all(8), child: Text('Action')),
             ],
           ),
           ...List<TableRow>.generate(
-            record!.first.orderProduct!.length,
+            products.length,
             (index) => TableRow(
               children: [
                 Padding(
                   padding: EdgeInsets.all(8),
                   child: Text('${index + 1}'),
                 ),
-                Padding(padding: EdgeInsets.all(8), child: Text('')),
                 Padding(
                   padding: EdgeInsets.all(8),
-                  child: Text(
-                    record.first.orderProduct![index].productInformation
-                        .toString(),
-                  ),
+                  child: Text(products[index].displayInformation.toString()),
                 ),
                 Padding(
                   padding: EdgeInsets.all(8),
-                  child: Text(
-                    record.first.orderProduct![index].hsnCode.toString(),
-                  ),
+                  child: Text(products[index].productInformation.toString()),
                 ),
                 Padding(
                   padding: EdgeInsets.all(8),
-                  child: Container(
-                    padding: const EdgeInsets.only(bottom: 15),
-                    height: 30,
-                    child: Center(
+                  child: Text(products[index].hsnCode.toString()),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(8),
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: () {
+                      rowUnitPriceFocusNodes[index].requestFocus();
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: TextFormField(
-                        initialValue: record
-                            .first
-                            .orderProduct![index]
-                            .unitPrice
-                            .toString(),
+                        focusNode: rowUnitPriceFocusNodes[index],
+                        controller: rowUnitPriceControllers[index],
+                        textAlignVertical: TextAlignVertical.center,
+                        maxLines: 5,
                         onChanged: (value) {
                           setState(() {
-                            unitPrice = value;
+                            final unit = double.tryParse(value) ?? 0;
+                            final qty =
+                                double.tryParse(
+                                  rowDisplayQuantityControllers[index].text,
+                                ) ??
+                                0;
+                            rowDisplayPrices[index] = unit * qty;
                           });
                         },
                         decoration: InputDecoration(
                           border: InputBorder.none,
-                          focusColor: Colors.blueAccent,
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 8,
+                            horizontal: 4,
+                          ),
                         ),
                       ),
                     ),
@@ -234,20 +303,37 @@ abstract class BillFormatBuilder extends State<BillFormate> {
                 ),
                 Padding(
                   padding: EdgeInsets.all(8),
-                  child: Container(
-                    padding: const EdgeInsets.only(bottom: 15),
-                    height: 30,
-                    child: Center(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: () {
+                      rowDisplayQuantityFocusNodes[index].requestFocus();
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: TextFormField(
-                        initialValue: '',
+                        focusNode: rowDisplayQuantityFocusNodes[index],
+                        controller: rowDisplayQuantityControllers[index],
+                        textAlignVertical: TextAlignVertical.center,
+                        maxLines: 5,
                         onChanged: (value) {
                           setState(() {
-                            displayQuantity = value;
+                            final unit =
+                                double.tryParse(
+                                  rowUnitPriceControllers[index].text,
+                                ) ??
+                                0;
+                            final qty = double.tryParse(value) ?? 0;
+                            rowDisplayPrices[index] = unit * qty;
                           });
                         },
                         decoration: InputDecoration(
                           border: InputBorder.none,
-                          focusColor: Colors.blueAccent,
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 8,
+                            horizontal: 4,
+                          ),
                         ),
                       ),
                     ),
@@ -261,33 +347,50 @@ abstract class BillFormatBuilder extends State<BillFormate> {
                 // ),
                 Padding(
                   padding: EdgeInsets.all(8),
-                  child: Text(
-                    record.first.orderProduct![index].quantity.toString(),
-                  ),
-                ),
-                Padding(padding: EdgeInsets.all(8), child: Text('')),
-                Padding(
-                  padding: EdgeInsets.all(8),
-                  child: Text(
-                    record.first.orderProduct![index].productPrice.toString(),
-                  ),
+                  child: Text(products[index].quantity.toString()),
                 ),
                 Padding(
                   padding: EdgeInsets.all(8),
-                  child: Container(
-                    padding: const EdgeInsets.only(bottom: 15),
-                    height: 30,
-                    child: Center(
+                  child: Text(rowDisplayPrices[index].toString()),
+                ),
+
+                Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Text(
+                    ((double.tryParse(rowUnitPriceControllers[index].text) ??
+                                0) *
+                            (double.tryParse(
+                                  products[index].quantity?.toString() ?? '',
+                                ) ??
+                                0))
+                        .toString(),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(8),
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: () {
+                      rowRemarkFocusNodes[index].requestFocus();
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: TextFormField(
-                        initialValue: '',
+                        focusNode: rowRemarkFocusNodes[index],
+                        controller: rowRemarkControllers[index],
+                        textAlignVertical: TextAlignVertical.center,
+                        maxLines: 5,
                         onChanged: (value) {
-                          setState(() {
-                            remark = value;
-                          });
+                          setState(() {});
                         },
                         decoration: InputDecoration(
                           border: InputBorder.none,
-                          focusColor: Colors.blueAccent,
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 8,
+                            horizontal: 4,
+                          ),
                         ),
                       ),
                     ),
@@ -295,50 +398,52 @@ abstract class BillFormatBuilder extends State<BillFormate> {
                 ),
                 Padding(
                   padding: EdgeInsets.all(8),
+                  child: Text(products[index].returnDate ?? ''),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Text(products[index].returnQty?.toString() ?? ''),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Text(products[index].returnReason ?? ''),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(8),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          // Handle verify action
-                        },
-                        style:
-                            ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green.shade600,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
+                      products[index].productStatus == 2
+                          ? buildVerifyProductButton(
+                              VerifyProductParam(
+                                productKey: products[index].productKey
+                                    .toString(),
+                                unitPrice:
+                                    rowUnitPriceControllers[index]
+                                        .text
+                                        .isNotEmpty
+                                    ? rowUnitPriceControllers[index].text
+                                    : products[index].unitPrice.toString(),
+                                displayQty:
+                                    rowDisplayQuantityControllers[index]
+                                        .text
+                                        .isNotEmpty
+                                    ? rowDisplayQuantityControllers[index].text
+                                    : products[index].quantity.toString(),
+                                prRemarks: rowRemarkControllers[index].text,
                               ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              elevation: 0,
-                              minimumSize: Size(60, 30),
-                            ).copyWith(
-                              overlayColor:
-                                  MaterialStateProperty.resolveWith<Color?>((
-                                    Set<MaterialState> states,
-                                  ) {
-                                    if (states.contains(
-                                      MaterialState.hovered,
-                                    )) {
-                                      return Colors.green.shade700;
-                                    }
-                                    if (states.contains(
-                                      MaterialState.pressed,
-                                    )) {
-                                      return Colors.green.shade800;
-                                    }
-                                    return null;
-                                  }),
+                            )
+                          : buildUnVerifyProductButton(
+                              products[index].productKey.toString(),
                             ),
-                        child: Text('Verify', style: TextStyle(fontSize: 10)),
-                      ),
                       SizedBox(height: 4),
                       ElevatedButton(
                         onPressed: () {
-                          showReturnReasonDialog(context);
+                          showReturnReasonDialog(
+                            context,
+                            products[index].productKey.toString(),
+                          );
+                          // context.pop();
                         },
                         style:
                             ElevatedButton.styleFrom(
@@ -378,20 +483,278 @@ abstract class BillFormatBuilder extends State<BillFormate> {
                 ),
               ],
             ),
+            growable: true,
           ),
         ],
       ),
     );
   }
 
-  void showReturnReasonDialog(BuildContext context) {
+  Widget buildVerifyProductButton(VerifyProductParam data) {
+    final buttonBloc = GlobalBloc(globalRepository: GlobalManagerRepository());
+    return BlocConsumer(
+      bloc: buttonBloc,
+      listenWhen: (previous, current) =>
+          current is ChallanProductVerifySuccessState ||
+          current is ChallanProductVerifyFailureState,
+      listener: (context, state) {
+        if (state is ChallanProductVerifySuccessState) {
+          if (state.model.status == 1) {
+            ToastService.instance.showSuccess(
+              context,
+              state.model.message.toString(),
+            );
+            challanBloc.add(
+              FetchChallanDetailsInBillEvent(orderKey: widget.orderKey),
+            );
+          } else {
+            ToastService.instance.showError(
+              context,
+              state.model.message.toString(),
+            );
+          }
+        } else if (state is ChallanProductVerifyFailureState) {
+          ToastService.instance.showError(
+            context,
+            state.errorMessage.toString(),
+          );
+        }
+      },
+      buildWhen: (previous, current) =>
+          current is GlobalLoadingStatus ||
+          current is ChallanProductVerifySuccessState ||
+          current is ChallanProductVerifyFailureState,
+      builder: (context, state) {
+        if (state is GlobalLoadingStatus) {
+          return Center(
+            child: SizedBox(
+              width: 30,
+              height: 30,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          );
+        }
+        return ElevatedButton(
+          onPressed: () {
+            buttonBloc.add(VerifyChallanProductEvent(param: data));
+          },
+          style:
+              ElevatedButton.styleFrom(
+                backgroundColor: Colors.green.shade600,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                elevation: 0,
+                minimumSize: Size(60, 30),
+              ).copyWith(
+                overlayColor: MaterialStateProperty.resolveWith<Color?>((
+                  Set<MaterialState> states,
+                ) {
+                  if (states.contains(MaterialState.hovered)) {
+                    return Colors.green.shade700;
+                  }
+                  if (states.contains(MaterialState.pressed)) {
+                    return Colors.green.shade800;
+                  }
+                  return null;
+                }),
+              ),
+          child: Text('Verify', style: TextStyle(fontSize: 10)),
+        );
+      },
+    );
+  }
+
+  Widget buildUnVerifyProductButton(productKey) {
+    final buttonBloc = GlobalBloc(globalRepository: GlobalManagerRepository());
+    return BlocConsumer(
+      bloc: buttonBloc,
+      listenWhen: (previous, current) =>
+          current is UnVerifyProductSuccessState ||
+          current is UnVerifyProductFailureState,
+      listener: (context, state) {
+        if (state is UnVerifyProductSuccessState) {
+          if (state.model.status == 1) {
+            ToastService.instance.showSuccess(
+              context,
+              state.model.message.toString(),
+            );
+            challanBloc.add(
+              FetchChallanDetailsInBillEvent(orderKey: widget.orderKey),
+            );
+          } else {
+            ToastService.instance.showError(
+              context,
+              state.model.message.toString(),
+            );
+          }
+        } else if (state is UnVerifyProductFailureState) {
+          ToastService.instance.showError(
+            context,
+            state.errorMessage.toString(),
+          );
+        }
+      },
+      buildWhen: (previous, current) =>
+          current is GlobalLoadingStatus2 ||
+          current is UnVerifyProductSuccessState ||
+          current is UnVerifyProductFailureState,
+      builder: (context, state) {
+        if (state is GlobalLoadingStatus2) {
+          return Center(
+            child: SizedBox(
+              width: 30,
+              height: 30,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          );
+        }
+        return ElevatedButton(
+          onPressed: () {
+            buttonBloc.add(UnVerifyProductEvent(productKey: productKey));
+          },
+          style:
+              ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade600,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                elevation: 0,
+                minimumSize: Size(60, 30),
+              ).copyWith(
+                overlayColor: MaterialStateProperty.resolveWith<Color?>((
+                  Set<MaterialState> states,
+                ) {
+                  if (states.contains(MaterialState.hovered)) {
+                    return Colors.red.shade700;
+                  }
+                  if (states.contains(MaterialState.pressed)) {
+                    return Colors.red.shade800;
+                  }
+                  return null;
+                }),
+              ),
+          child: Icon(Icons.close, size: 16, color: Colors.white),
+        );
+      },
+    );
+  }
+
+  Widget buildReturnProductButton({
+    required String productKey,
+    required TextEditingController returnQtyController,
+    required TextEditingController returnReasonController,
+    required TextEditingController returnDateController,
+  }) {
+    final buttonBloc = GlobalBloc(globalRepository: GlobalManagerRepository());
+    return BlocConsumer(
+      bloc: buttonBloc,
+      listenWhen: (previous, current) =>
+          current is ReturnChallanProductSuccessState ||
+          current is ReturnChallanProductFailureState,
+      listener: (context, state) {
+        if (state is ReturnChallanProductSuccessState) {
+          if (state.model.status == 1) {
+            ToastService.instance.showSuccess(
+              context,
+              state.model.message.toString(),
+            );
+            challanBloc.add(
+              FetchChallanDetailsInBillEvent(orderKey: widget.orderKey),
+            );
+            context.pop();
+          } else {
+            ToastService.instance.showError(
+              context,
+              state.model.message.toString(),
+            );
+          }
+        } else if (state is ReturnChallanProductFailureState) {
+          ToastService.instance.showError(
+            context,
+            state.errorMessage.toString(),
+          );
+        }
+      },
+      buildWhen: (previous, current) =>
+          current is GlobalLoadingStatus3 ||
+          current is ReturnChallanProductSuccessState ||
+          current is ReturnChallanProductFailureState,
+      builder: (context, state) {
+        if (state is GlobalLoadingStatus3) {
+          return Center(
+            child: SizedBox(
+              width: 30,
+              height: 30,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          );
+        }
+        return ElevatedButton(
+          onPressed: () {
+            buttonBloc.add(
+              ReturnChallanProductEvent(
+                param: ReturnProduct(
+                  productKey: productKey,
+                  returnQty: returnQtyController.text,
+                  returnReason: returnReasonController.text,
+                  returnDate: returnDateController.text,
+                ),
+              ),
+            );
+          },
+          style:
+              ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade600,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                elevation: 0,
+                minimumSize: Size(60, 30),
+              ).copyWith(
+                overlayColor: MaterialStateProperty.resolveWith<Color?>((
+                  Set<MaterialState> states,
+                ) {
+                  if (states.contains(MaterialState.hovered)) {
+                    return Colors.red.shade700;
+                  }
+                  if (states.contains(MaterialState.pressed)) {
+                    return Colors.red.shade800;
+                  }
+                  return null;
+                }),
+              ),
+          child: Text('Return', style: TextStyle(fontSize: 10)),
+        );
+      },
+    );
+  }
+
+  void showReturnReasonDialog(BuildContext context, productKey) {
     TextEditingController reasonController = TextEditingController();
+    TextEditingController returnQtyController = TextEditingController();
+    TextEditingController returnDateController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return SizedBox(
-          width: MediaQuery.sizeOf(context).width * 0.4,
+          width: 120,
           child: AlertDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(15),
@@ -403,52 +766,55 @@ abstract class BillFormatBuilder extends State<BillFormate> {
                 color: Colors.red.shade600,
               ),
             ),
-            content: TextField(
-              controller: reasonController,
-              decoration: InputDecoration(
-                hintText: 'Enter reason for return',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 16,
+              children: [
+                CustomDatePicker(
+                  controller: returnDateController,
+                  labelText: 'Return Date',
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.red.shade600),
-                  borderRadius: BorderRadius.circular(10),
+                TextField(
+                  controller: returnQtyController,
+                  decoration: InputDecoration(
+                    hintText: 'Enter return quantity',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.red.shade600),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
                 ),
-              ),
-              maxLines: 3,
+                TextField(
+                  controller: reasonController,
+                  decoration: InputDecoration(
+                    hintText: 'Enter reason for return',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.red.shade600),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  maxLines: 3,
+                ),
+              ],
             ),
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop();
+                  context.pop();
                 },
                 child: Text('Cancel', style: TextStyle(color: Colors.grey)),
               ),
-              ElevatedButton(
-                onPressed: () {
-                  String reason = reasonController.text.trim();
-                  if (reason.isNotEmpty) {
-                    // Handle the reason, e.g., send to server or update state
-                    print('Return reason: $reason');
-                    // You can add logic here to process the reason
-                    Navigator.of(context).pop();
-                  } else {
-                    // Show error if reason is empty
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Please enter a reason'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red.shade600,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: Text('Submit'),
+              buildReturnProductButton(
+                productKey: productKey,
+                returnQtyController: returnQtyController,
+                returnReasonController: reasonController,
+                returnDateController: returnDateController,
               ),
             ],
           ),

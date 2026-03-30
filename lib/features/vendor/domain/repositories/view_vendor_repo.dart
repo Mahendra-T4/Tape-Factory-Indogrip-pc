@@ -28,7 +28,7 @@ abstract class ViewVendorRepository {
             'filterBy': param.filterBy,
             'sortBy': param.sortBy,
             'orderBy': param.orderBy,
-            'pageNO': param.pageNo,
+            'pageNo': param.pageNo,
             'fromDate': param.fromDate ?? '',
             'toDate': param.toDate ?? '',
           }),
@@ -90,5 +90,38 @@ abstract class ViewVendorRepository {
       developer.log(e.toString(), name: 'Edit Vendor');
     }
     return successResponse;
+  }
+
+  static Future<List<Map<String, dynamic>>> loadViewVendorJsonData() async {
+    try {
+      final response = await DioService.dioPostApiCall(
+        data: FormData.fromMap({
+          'activity': 'view-vendor',
+          'userKey': HiveService.getUserId(),
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = response.data;
+
+        var vendorList = jsonData is Map && jsonData['record'] is List
+            ? (jsonData['record'] as List)
+                  .where((vendor) => vendor is Map)
+                  .map((vendor) => Map<String, dynamic>.from(vendor))
+                  .toList()
+            : <Map<String, dynamic>>[];
+
+        return vendorList;
+      } else {
+        developer.log(
+          response.data.toString(),
+          name: 'Load View Vendor JSON Failed Response',
+        );
+        throw Exception('Failed to load vendor data');
+      }
+    } catch (e) {
+      developer.log(e.toString(), name: 'Load View Vendor JSON');
+      throw Exception('Failed to load vendor data: $e');
+    }
   }
 }

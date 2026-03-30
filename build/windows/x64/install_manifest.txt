@@ -1,6 +1,7 @@
 D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/runner/Release/data/icudtl.dat
 D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/runner/Release/flutter_windows.dll
 D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/runner/Release/connectivity_plus_plugin.dll
+D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/runner/Release/file_saver_plugin.dll
 D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/runner/Release/file_selector_windows_plugin.dll
 D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/runner/Release/printing_plugin.dll
 D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/runner/Release/pdfium.dll
@@ -22,6 +23,7 @@ D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/runner/Release/data/flutte
 D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/runner/Release/data/flutter_assets/assets/images/electricity.svg
 D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/runner/Release/data/flutter_assets/assets/images/export.png
 D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/runner/Release/data/flutter_assets/assets/images/exportfile.png
+D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/runner/Release/data/flutter_assets/assets/images/file.png
 D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/runner/Release/data/flutter_assets/assets/images/home.svg
 D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/runner/Release/data/flutter_assets/assets/images/importfile.png
 D:/CodeWithMax/PC Projects/indogrip/build/windows/x64/runner/Release/data/flutter_assets/assets/images/importing-files.png

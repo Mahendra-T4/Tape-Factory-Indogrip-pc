@@ -20,6 +20,7 @@ import 'package:indogrip/features/client/presentation/widgets/upload_csv_button_
 import 'package:indogrip/features/vendor/presentation/bloc/vendor_bloc.dart';
 import 'package:indogrip/features/vendor/presentation/pages/add/add_vendor_builder.dart';
 import 'package:indogrip/features/vendor/presentation/pages/view/view_vendor.dart';
+import 'package:indogrip/features/vendor/presentation/widgets/upload_vendor_button.dart';
 
 class AddVendorPanel extends StatefulWidget {
   const AddVendorPanel({super.key});
@@ -66,23 +67,23 @@ class _AddVendorPanelState extends AddVendorPanelBuilder {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-     stream: InternetConnectionService().connectionStream,
-        initialData: true, // Assume connected initially
-        builder: (context, snapshot) {
-          // Handle error state
-          if (snapshot.hasError) {
-            return const NoInternetConnection();
-          }
+      stream: InternetConnectionService().connectionStream,
+      initialData: true, // Assume connected initially
+      builder: (context, snapshot) {
+        // Handle error state
+        if (snapshot.hasError) {
+          return const NoInternetConnection();
+        }
 
-          // Handle disconnected state
-          if (snapshot.data == false) {
-            return const NoInternetConnection();
-          }
+        // Handle disconnected state
+        if (snapshot.data == false) {
+          return const NoInternetConnection();
+        }
 
-          // Handle loading state
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
+        // Handle loading state
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
         return Scaffold(
           key: _statekey,
           appBar: !Responsive.isDesktop(context)
@@ -90,10 +91,12 @@ class _AddVendorPanelState extends AddVendorPanelBuilder {
               : null,
           drawer: !Responsive.isDesktop(context) ? SideMenuWidget() : null,
           body: SafeArea(
-            child: Responsive.isDesktop(context) ? _desktopView() : _tabletView(),
+            child: Responsive.isDesktop(context)
+                ? _desktopView()
+                : _tabletView(),
           ),
         );
-      }
+      },
     );
   }
 
@@ -134,7 +137,7 @@ class _AddVendorPanelState extends AddVendorPanelBuilder {
                           ),
                           SizedBox(
                             width: MediaQuery.sizeOf(context).width * .18,
-                            child: UploadClientFileButton(
+                            child: UploadVendorFileButton(
                               activity: 'import-vendor',
                               csvFile: csvFile,
                             ),

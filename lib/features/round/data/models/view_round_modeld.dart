@@ -3,8 +3,18 @@ class ViewRoundModel {
   String? message;
   List<RoundRecord>? record;
   int? pageQty;
+  String? pageText;
+  int? totalPieces;
+  int? availableCarton;
 
-  ViewRoundModel({this.status, this.message, this.record, this.pageQty});
+  ViewRoundModel({
+    this.status,
+    this.message,
+    this.record,
+    this.pageQty,
+    this.totalPieces,
+    this.availableCarton,
+  });
 
   ViewRoundModel.fromJson(Map<String, dynamic> json) {
     status = json['status'];
@@ -16,6 +26,9 @@ class ViewRoundModel {
       });
     }
     pageQty = json['pageQty'];
+    pageText = json['pageText'];
+    totalPieces = json['totalPieces'];
+    availableCarton = json['availableCarton'];
   }
 
   Map<String, dynamic> toJson() {
@@ -26,6 +39,9 @@ class ViewRoundModel {
       data['record'] = this.record!.map((v) => v.toJson()).toList();
     }
     data['pageQty'] = this.pageQty;
+    data['pageText'] = this.pageText;
+    data['totalPieces'] = this.totalPieces;
+    data['availableCarton'] = this.availableCarton;
     return data;
   }
 }
@@ -54,6 +70,7 @@ class RoundRecord {
   dynamic usedLength;
   dynamic piecesPerCarton;
   dynamic usedSquareMeter;
+  int? availableCarton;
   dynamic rollCost;
   dynamic totalSquareMtr;
   dynamic ratePerSquareMeter;
@@ -85,6 +102,7 @@ class RoundRecord {
     this.cartonType,
     this.roundCount,
     this.tapeLength,
+    this.availableCarton,
     this.damagePieces,
     this.wastagePercentage,
     this.conversionRate,
@@ -123,6 +141,7 @@ class RoundRecord {
     coreLabel = json['coreLabel'];
     cartonType = json['cartonType'];
     roundCount = json['roundCount'];
+    availableCarton = json['availableCarton'];
     tapeLength = json['tapeLength'];
     damagePieces = json['damagePieces'];
     wastagePercentage = json['wastagePercentage'];
@@ -165,6 +184,7 @@ class RoundRecord {
     data['coreLabel'] = this.coreLabel;
     data['cartonType'] = this.cartonType;
     data['roundCount'] = this.roundCount;
+    data['availableCarton'] = this.availableCarton;
     data['tapeLength'] = this.tapeLength;
     data['damagePieces'] = this.damagePieces;
     data['wastagePercentage'] = this.wastagePercentage;

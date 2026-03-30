@@ -11,6 +11,9 @@
       <FullPath>D:\CodeWithMax\PC Projects\indogrip\build\windows\x64\plugins\connectivity_plus\Release\connectivity_plus_plugin.dll</FullPath>
     </ProjectOutput>
     <ProjectOutput>
+      <FullPath>D:\CodeWithMax\PC Projects\indogrip\build\windows\x64\plugins\file_saver\Release\file_saver_plugin.dll</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
       <FullPath>D:\CodeWithMax\PC Projects\indogrip\build\windows\x64\plugins\file_selector_windows\Release\file_selector_windows_plugin.dll</FullPath>
     </ProjectOutput>
     <ProjectOutput>

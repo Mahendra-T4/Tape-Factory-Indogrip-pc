@@ -11,6 +11,7 @@ abstract class ViewCartonBuilder extends State<ViewCartonPanel> {
   late CartonBloc cartonBloc;
   bool isMultipleSelection = false;
   List<ViewCartonRecord> selectedItems = [];
+  String pageText = '';
   int? currentPage = 1;
   int? pageQty;
   final TextEditingController searchController = TextEditingController();
@@ -28,8 +29,6 @@ abstract class ViewCartonBuilder extends State<ViewCartonPanel> {
   List filterList = ["Newest", "Oldest"];
   List entryList = ["10", "25", "50", "100", "500"];
   var recordValue, filterValue, entryValue;
-
-
 
   void handleSelectionChanged(List<ViewCartonRecord> items) {
     setState(() {

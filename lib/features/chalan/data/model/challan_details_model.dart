@@ -84,13 +84,26 @@ class ClientInformation {
   String? cCode;
   String? cConsigneeName;
   String? unitName;
+  String? cMobileNumber;
+  String? cAlternateNumber;
+  String? cGSTIN;
 
-  ClientInformation({this.cCode, this.cConsigneeName, this.unitName});
+  ClientInformation({
+    this.cCode,
+    this.cConsigneeName,
+    this.unitName,
+    this.cMobileNumber,
+    this.cAlternateNumber,
+    this.cGSTIN,
+  });
 
   ClientInformation.fromJson(Map<String, dynamic> json) {
     cCode = json['cCode'];
     cConsigneeName = json['cConsigneeName'];
     unitName = json['unitName'];
+    cMobileNumber = json['cMobileNumber'];
+    cAlternateNumber = json['cAlternateNumber'];
+    cGSTIN = json['cGSTIN'];
   }
 
   Map<String, dynamic> toJson() {
@@ -98,6 +111,9 @@ class ClientInformation {
     data['cCode'] = this.cCode;
     data['cConsigneeName'] = this.cConsigneeName;
     data['unitName'] = this.unitName;
+    data['cMobileNumber'] = this.cMobileNumber;
+    data['cAlternateNumber'] = this.cAlternateNumber;
+    data['cGSTIN'] = this.cGSTIN;
     return data;
   }
 }
@@ -122,47 +138,95 @@ class StaffInformation {
 }
 
 class OrderProduct {
+  int? sNo;
   VendortInformation? vendortInformation;
+  String? displayInformation;
   String? productInformation;
-  int? hsnCode;
-  int? unitPrice;
-  int? quantity;
-  int? productPrice;
+  dynamic hsnCode;
+  dynamic unitPrice;
+  dynamic quantity;
+  dynamic displayQty;
+  dynamic productPrice;
+  dynamic displayPrice;
+  String? prRemarks;
+  dynamic returnQty;
+  String? returnReason;
+  String? returnDate;
+  String? manageName;
+  String? prManager;
   String? productKey;
+  dynamic productStatus;
+  String? productStatusText;
 
   OrderProduct({
+    this.sNo,
     this.vendortInformation,
+    this.displayInformation,
     this.productInformation,
     this.hsnCode,
     this.unitPrice,
     this.quantity,
+    this.displayQty,
     this.productPrice,
+    this.displayPrice,
+    this.prRemarks,
+    this.returnQty,
+    this.returnReason,
+    this.returnDate,
+    this.manageName,
+    this.prManager,
     this.productKey,
+    this.productStatus,
+    this.productStatusText,
   });
 
   OrderProduct.fromJson(Map<String, dynamic> json) {
+    sNo = json['sNo'];
     vendortInformation = json['vendortInformation'] != null
         ? new VendortInformation.fromJson(json['vendortInformation'])
         : null;
+    displayInformation = json['displayInformation'];
     productInformation = json['productInformation'];
     hsnCode = json['hsnCode'];
-    unitPrice = json['unitPrice'] ?? 0;
-    quantity = json['quantity'] ?? 0;
-    productPrice = json['productPrice'] ?? 0;
+    unitPrice = json['unitPrice'];
+    quantity = json['quantity'];
+    displayQty = json['displayQty'];
+    productPrice = json['productPrice'];
+    displayPrice = json['displayPrice'];
+    prRemarks = json['prRemarks'];
+    returnQty = json['returnQty'];
+    returnReason = json['returnReason'];
+    returnDate = json['returnDate'];
+    manageName = json['manageName'];
+    prManager = json['prManager'];
     productKey = json['productKey'];
+    productStatus = json['productStatus'];
+    productStatusText = json['productStatusText'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['sNo'] = this.sNo;
     if (this.vendortInformation != null) {
       data['vendortInformation'] = this.vendortInformation!.toJson();
     }
+    data['displayInformation'] = this.displayInformation;
     data['productInformation'] = this.productInformation;
     data['hsnCode'] = this.hsnCode;
     data['unitPrice'] = this.unitPrice;
     data['quantity'] = this.quantity;
+    data['displayQty'] = this.displayQty;
     data['productPrice'] = this.productPrice;
+    data['displayPrice'] = this.displayPrice;
+    data['prRemarks'] = this.prRemarks;
+    data['returnQty'] = this.returnQty;
+    data['returnReason'] = this.returnReason;
+    data['returnDate'] = this.returnDate;
+    data['manageName'] = this.manageName;
+    data['prManager'] = this.prManager;
     data['productKey'] = this.productKey;
+    data['productStatus'] = this.productStatus;
+    data['productStatusText'] = this.productStatusText;
     return data;
   }
 }

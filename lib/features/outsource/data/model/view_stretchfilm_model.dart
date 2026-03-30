@@ -3,8 +3,18 @@ class ViewStretchFilmModel {
   String? message;
   List<StretchRecord>? record;
   int? pageQty;
+  String? pageText;
+  int? totalPieces;
+  int? availableCarton;
 
-  ViewStretchFilmModel({this.status, this.message, this.record, this.pageQty});
+  ViewStretchFilmModel({
+    this.status,
+    this.message,
+    this.record,
+    this.pageQty,
+    this.totalPieces,
+    this.availableCarton,
+  });
 
   ViewStretchFilmModel.fromJson(Map<String, dynamic> json) {
     status = json['status'];
@@ -16,6 +26,9 @@ class ViewStretchFilmModel {
       });
     }
     pageQty = json['pageQty'];
+    pageText = json['pageText'];
+    totalPieces = json['totalPieces'];
+    availableCarton = json['availableCarton'];
   }
 
   Map<String, dynamic> toJson() {
@@ -26,6 +39,9 @@ class ViewStretchFilmModel {
       data['record'] = this.record!.map((v) => v.toJson()).toList();
     }
     data['pageQty'] = this.pageQty;
+    data['pageText'] = this.pageText;
+    data['totalPieces'] = this.totalPieces;
+    data['availableCarton'] = this.availableCarton;
     return data;
   }
 }

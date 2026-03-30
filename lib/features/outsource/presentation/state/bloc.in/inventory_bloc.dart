@@ -4,6 +4,8 @@ import 'package:bloc/bloc.dart';
 import 'package:indogrip/features/global/data/model/success_reponse.dart';
 import 'package:indogrip/features/outsource/data/model/inventory_in_param.dart';
 import 'package:indogrip/features/outsource/data/model/upload_file_param.dart';
+import 'package:indogrip/features/outsource/data/model/upload_stretch_record_model.dart';
+import 'package:indogrip/features/outsource/data/model/upload_tap_miss_record_model.dart';
 import 'package:indogrip/features/outsource/data/repositories/in_out_manager_repo.dart';
 import 'package:indogrip/features/outsource/data/repositories/inventory_in_manager_repo.dart';
 import 'package:indogrip/features/outsource/domain/repositories/in_out_repo.dart';
@@ -70,5 +72,16 @@ class InventoryBloc extends Bloc<InventoryEvent, InventoryState> {
   FutureOr<void> addInventoryStretchUploadCSVFileEvent(
     AddInventoryStretchUploadCSVFileEvent event,
     Emitter<InventoryState> emit,
-  ) {}
+  ) async {
+    emit(InventoryLoadingStatus());
+    try {
+      final response = await InventoryOutManagerRepository()
+          .uploadStretchCSVFileInventoryIN(event.param);
+      emit(InventoryInStretchUploadCSVFileSuccessStatus(response: response));
+    } catch (e) {
+      emit(
+        InventoryInStretchUploadCSVFileFailedErrorStatus(message: e.toString()),
+      );
+    }
+  }
 }

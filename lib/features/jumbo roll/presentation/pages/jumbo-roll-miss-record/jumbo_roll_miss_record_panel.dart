@@ -18,17 +18,17 @@ class JumboRollMissRecordPanel extends StatefulWidget {
 
 class _JumboRollMissRecordPanelState extends JumboRollMissRecordPanelBuilder {
   final GlobalKey<ScaffoldState> _statekey = GlobalKey<ScaffoldState>();
-  final TextEditingController _reasonController = TextEditingController();
+  final TextEditingController reasonController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _reasonController.text = widget.missRecord.missRecord!.msg!;
+    reasonController.text = widget.missRecord.message.toString();
   }
 
   @override
   void dispose() {
-    _reasonController.dispose();
+    reasonController.dispose();
     super.dispose();
   }
 
@@ -83,7 +83,7 @@ class _JumboRollMissRecordPanelState extends JumboRollMissRecordPanelBuilder {
                       width: MediaQuery.sizeOf(context).width,
                       child: TextFormField(
                         readOnly: true,
-                        controller: _reasonController,
+                        controller: reasonController,
                         maxLines: 4,
                         decoration: InputDecoration(
                           hintText:

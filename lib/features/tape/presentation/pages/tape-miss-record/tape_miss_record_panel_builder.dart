@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:indogrip/features/outsource/data/model/tap_miss_record_model.dart';
+import 'package:indogrip/features/outsource/data/model/upload_tap_miss_record_model.dart';
 import 'package:indogrip/features/tape/data/tape_miss_record_datasource.dart';
 import 'package:indogrip/features/tape/presentation/pages/tape-miss-record/tape_miss_record_panel.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
@@ -11,84 +13,28 @@ abstract class TapeMissRecordPanelBuilder extends State<TapeMissRecordPanel> {
   final GlobalKey _key = GlobalKey();
   late TapeMissRecordDataSource? _dataSource;
   List<DataGridRow> selectedRows = [];
+  final TextEditingController reasonController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    reasonController.text = widget.record.message.toString();
     _dataSource = TapeMissRecordDataSource(
       context: context,
-      tapeData: getDummyTapeData(),
+      tapeData: _getMissRecordData(),
     );
   }
 
-  List<TapeRecord> getDummyTapeData() {
-    return [
-      TapeRecord(
-        sNo: 1,
-        tapeCode: 'TP001',
-        tapeType: 'Packing Tape',
-        width: '50',
-        length: '100',
-        thickness: '45',
-        adhesiveType: 'Acrylic',
-        supplier: 'ABC Tape Industries',
-        batchNumber: 'BATCH001',
-        dateReceived: '2024-01-15',
-        quality: 'A Grade',
-      ),
-      TapeRecord(
-        sNo: 2,
-        tapeCode: 'TP002',
-        tapeType: 'Masking Tape',
-        width: '24',
-        length: '50',
-        thickness: '35',
-        adhesiveType: 'Natural Rubber',
-        supplier: 'Global Tape Co',
-        batchNumber: 'BATCH002',
-        dateReceived: '2024-01-16',
-        quality: 'A Grade',
-      ),
-      TapeRecord(
-        sNo: 3,
-        tapeCode: 'TP003',
-        tapeType: 'Double Sided Tape',
-        width: '12',
-        length: '25',
-        thickness: '50',
-        adhesiveType: 'Acrylic',
-        supplier: 'Premium Tapes Ltd',
-        batchNumber: 'BATCH003',
-        dateReceived: '2024-01-17',
-        quality: 'B Grade',
-      ),
-      TapeRecord(
-        sNo: 4,
-        tapeCode: 'TP004',
-        tapeType: 'Bopp Tape',
-        width: '48',
-        length: '100',
-        thickness: '40',
-        adhesiveType: 'Hot Melt',
-        supplier: 'Indian Tape Mills',
-        batchNumber: 'BATCH004',
-        dateReceived: '2024-01-18',
-        quality: 'A Grade',
-      ),
-      TapeRecord(
-        sNo: 5,
-        tapeCode: 'TP005',
-        tapeType: 'Foam Tape',
-        width: '30',
-        length: '75',
-        thickness: '60',
-        adhesiveType: 'Acrylic',
-        supplier: 'Quality Tape Co',
-        batchNumber: 'BATCH005',
-        dateReceived: '2024-01-19',
-        quality: 'A Grade',
-      ),
-    ];
+  List<TapMissRecord> _getMissRecordData() {
+    final List<TapMissRecord> recordList = [];
+
+    if (widget.record.missRecord != null) {
+      for (var item in widget.record.missRecord!) {
+        recordList.add(item);
+      }
+    }
+
+    return recordList;
   }
 
   Widget get buildTableRecordWidget => Expanded(
@@ -119,8 +65,7 @@ abstract class TapeMissRecordPanelBuilder extends State<TapeMissRecordPanel> {
     return [
       GridColumn(
         columnName: 'Sr No',
-        columnWidthMode: ColumnWidthMode.fitByCellValue,
-        width: 70,
+        width: 120,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -129,121 +74,195 @@ abstract class TapeMissRecordPanelBuilder extends State<TapeMissRecordPanel> {
         ),
       ),
       GridColumn(
-        columnName: 'Tape Code',
+        columnName: 'Reason',
         width: 120,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Tape Code')),
+          child: const Center(child: TextFieldlabelText('Reason')),
         ),
       ),
       GridColumn(
-        columnName: 'Tape Type',
-        width: 150,
-        label: Container(
-          color: Colors.grey[100],
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Tape Type')),
-        ),
-      ),
-      GridColumn(
-        columnName: 'Width (mm)',
+        columnName: 'Inventory Code',
         width: 120,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Width (mm)')),
+          child: const Center(child: TextFieldlabelText('Inventory Code')),
         ),
       ),
       GridColumn(
-        columnName: 'Length (m)',
+        columnName: 'Vendor Key',
+        width: 150,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Vendor Key')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Date',
         width: 120,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Length (m)')),
+          child: const Center(child: TextFieldlabelText('Date')),
         ),
       ),
       GridColumn(
-        columnName: 'Thickness (microns)',
-        width: 160,
-        label: Container(
-          color: Colors.grey[100],
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Thickness (microns)')),
-        ),
-      ),
-      GridColumn(
-        columnName: 'Adhesive Type',
-        width: 150,
-        label: Container(
-          color: Colors.grey[100],
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Adhesive Type')),
-        ),
-      ),
-      GridColumn(
-        columnName: 'Supplier',
-        width: 180,
-        label: Container(
-          color: Colors.grey[100],
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Supplier')),
-        ),
-      ),
-      GridColumn(
-        columnName: 'Batch Number',
-        width: 150,
-        label: Container(
-          color: Colors.grey[100],
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Batch Number')),
-        ),
-      ),
-      GridColumn(
-        columnName: 'Date Received',
-        width: 150,
-        label: Container(
-          color: Colors.grey[100],
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Date Received')),
-        ),
-      ),
-      GridColumn(
-        columnName: 'Quality',
+        columnName: 'Bill Number',
         width: 120,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Quality')),
+          child: const Center(child: TextFieldlabelText('Bill Number')),
         ),
       ),
-      // GridColumn(
-      //   columnName: 'Status',
-      //   width: 120,
-      //   label: Container(
-      //     color: Colors.grey[100],
-      //     child: const Center(child: TextFieldlabelText('Status')),
-      //   ),
-      // ),
-      // GridColumn(
-      //   columnName: 'actions',
-      //   width: 120,
-      //   label: Container(
-      //     color: Colors.grey[100],
-      //     child: const Center(child: TextFieldlabelText('Actions')),
-      //   ),
-      // ),
+      GridColumn(
+        columnName: 'Carton Price',
+        width: 120,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Carton Price')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Transport Amount',
+        width: 140,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Transport Amount')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Product Type',
+        width: 120,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Product Type')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Cut MM Meter',
+        width: 120,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Cut MM Meter')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Base',
+        width: 100,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Base')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Mic',
+        width: 100,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Mic')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Tape Length',
+        width: 120,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Tape Length')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Tape Weight',
+        width: 120,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Tape Weight')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Stretch Film Size',
+        width: 150,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Stretch Film Size')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Core ID',
+        width: 100,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Core ID')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Net Weight',
+        width: 120,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Net Weight')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Gross Weight',
+        width: 120,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Gross Weight')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Quantity',
+        width: 100,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Quantity')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Remarks',
+        width: 150,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Remarks')),
+        ),
+      ),
     ];
   }
 }

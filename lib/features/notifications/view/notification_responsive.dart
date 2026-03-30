@@ -8,6 +8,7 @@ import 'package:indogrip/core/service/connectivity/internate%20connectivity-chec
 import 'package:indogrip/core/service/connectivity/not_connected.dart';
 import 'package:indogrip/core/utils/appbar/desktop_appbar.dart';
 import 'package:indogrip/core/utils/appbar/mobile_appbar.dart';
+import 'package:indogrip/core/utils/scroll_behavier.dart';
 import 'package:indogrip/core/utils/sidebar.dart';
 import 'package:indogrip/features/global/presentation/bloc/global_bloc.dart';
 import 'package:indogrip/features/global/presentation/widget/data_filtration.dart';
@@ -101,7 +102,8 @@ class _NotificationsState extends NotificationBuilder {
                       if (state.deleteRecordEntity.status == 1) {
                         setState(() {
                           selectedItems.clear();
-                          selectedIndices.clear(); // Clear indices instead of rows
+                          selectedIndices
+                              .clear(); // Clear indices instead of rows
                           isChecked = false;
                           globalBloc.add(LoadNotificationsEvent());
                         });
@@ -210,62 +212,110 @@ class _NotificationsState extends NotificationBuilder {
                                     // if (selectedItems.isNotEmpty)
                                     //   buildSelectionActions(),
                                     Expanded(
-                                      child: SfDataGrid(
-                                        showHorizontalScrollbar: true,
-                                        key: key,
-                                        rowsPerPage: 4,
-                                        allowPullToRefresh: true,
-                                        allowColumnsResizing: true,
-                                        columnResizeMode:
-                                            ColumnResizeMode.onResizeEnd,
-                                        isScrollbarAlwaysShown: true,
-                                        showVerticalScrollbar: true,
-                                        showCheckboxColumn: isMultipleSelection,
-                                        selectionMode: isMultipleSelection
-                                            ? SelectionMode.multiple
-                                            : SelectionMode.single,
-                                        onSelectionChanged: isMultipleSelection
-                                            ? (List<DataGridRow> addedRows, List<DataGridRow> removedRows) {
-                                                developer.log('Selection changed: added=${addedRows.length}, removed=${removedRows.length}');
-                                                setState(() {
-                                                  // Handle added rows
-                                                  for (var row in addedRows) {
-                                                    final rowIndex = dataSource!.rows.indexOf(row);
-                                                    if (rowIndex != -1 && !selectedIndices.contains(rowIndex)) {
-                                                      selectedIndices.add(rowIndex);
-                                                      developer.log('Added row index: $rowIndex');
+                                      child: ScrollConfiguration(
+                                        behavior:
+                                            HorizontalMouseScrollBehavior(),
+                                        child: SfDataGrid(
+                                          showHorizontalScrollbar: true,
+                                          key: key,
+                                          rowsPerPage: 4,
+                                          allowPullToRefresh: true,
+                                          allowColumnsResizing: true,
+                                          columnResizeMode:
+                                              ColumnResizeMode.onResizeEnd,
+                                          isScrollbarAlwaysShown: true,
+                                          showVerticalScrollbar: true,
+                                          showCheckboxColumn:
+                                              isMultipleSelection,
+                                          selectionMode: isMultipleSelection
+                                              ? SelectionMode.multiple
+                                              : SelectionMode.single,
+                                          onSelectionChanged:
+                                              isMultipleSelection
+                                              ? (
+                                                  List<DataGridRow> addedRows,
+                                                  List<DataGridRow> removedRows,
+                                                ) {
+                                                  developer.log(
+                                                    'Selection changed: added=${addedRows.length}, removed=${removedRows.length}',
+                                                  );
+                                                  setState(() {
+                                                    // Handle added rows
+                                                    for (var row in addedRows) {
+                                                      final rowIndex =
+                                                          dataSource!.rows
+                                                              .indexOf(row);
+                                                      if (rowIndex != -1 &&
+                                                          !selectedIndices
+                                                              .contains(
+                                                                rowIndex,
+                                                              )) {
+                                                        selectedIndices.add(
+                                                          rowIndex,
+                                                        );
+                                                        developer.log(
+                                                          'Added row index: $rowIndex',
+                                                        );
+                                                      }
                                                     }
-                                                  }
-                                                  
-                                                  // Handle removed rows
-                                                  for (var row in removedRows) {
-                                                    final rowIndex = dataSource!.rows.indexOf(row);
-                                                    if (rowIndex != -1) {
-                                                      selectedIndices.remove(rowIndex);
-                                                      developer.log('Removed row index: $rowIndex');
-                                                    }
-                                                  }
-                                                  
-                                                  developer.log('Current selectedIndices: $selectedIndices');
-                                                  
-                                                  // Convert selected indices to record data
-                                                  final selectedRecords = selectedIndices
-                                                      .where((idx) => idx >= 0 && idx < (state.notifications.record?.length ?? 0))
-                                                      .map((idx) {
-                                                        final record = state.notifications.record![idx];
-                                                        developer.log('Converting index $idx to record: ${record.notificationKey}');
-                                                        return record.toJson();
-                                                      })
-                                                      .toList();
-                                                  
-                                                  developer.log('Selected records count: ${selectedRecords.length}');
-                                                  handleSelectionChanged(selectedRecords);
-                                                });
-                                              }
-                                            : null,
 
-                                        source: dataSource!,
-                                        columns: buildGridColumns(),
+                                                    // Handle removed rows
+                                                    for (var row
+                                                        in removedRows) {
+                                                      final rowIndex =
+                                                          dataSource!.rows
+                                                              .indexOf(row);
+                                                      if (rowIndex != -1) {
+                                                        selectedIndices.remove(
+                                                          rowIndex,
+                                                        );
+                                                        developer.log(
+                                                          'Removed row index: $rowIndex',
+                                                        );
+                                                      }
+                                                    }
+
+                                                    developer.log(
+                                                      'Current selectedIndices: $selectedIndices',
+                                                    );
+
+                                                    // Convert selected indices to record data
+                                                    final selectedRecords = selectedIndices
+                                                        .where(
+                                                          (idx) =>
+                                                              idx >= 0 &&
+                                                              idx <
+                                                                  (state
+                                                                          .notifications
+                                                                          .record
+                                                                          ?.length ??
+                                                                      0),
+                                                        )
+                                                        .map((idx) {
+                                                          final record = state
+                                                              .notifications
+                                                              .record![idx];
+                                                          developer.log(
+                                                            'Converting index $idx to record: ${record.notificationKey}',
+                                                          );
+                                                          return record
+                                                              .toJson();
+                                                        })
+                                                        .toList();
+
+                                                    developer.log(
+                                                      'Selected records count: ${selectedRecords.length}',
+                                                    );
+                                                    handleSelectionChanged(
+                                                      selectedRecords,
+                                                    );
+                                                  });
+                                                }
+                                              : null,
+
+                                          source: dataSource!,
+                                          columns: buildGridColumns(),
+                                        ),
                                       ),
                                     ),
                                   ],

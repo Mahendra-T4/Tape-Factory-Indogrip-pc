@@ -38,6 +38,13 @@ class TapDataSource extends DataGridSource {
   // final Function() onProfile;
   final void Function(String?, TapRecord) onChanged;
 
+  int? _highlightedRowIndex;
+  int? get highlightedRowIndex => _highlightedRowIndex;
+  set highlightedRowIndex(int? value) {
+    _highlightedRowIndex = value;
+    notifyListeners();
+  }
+
   TapDataSource({
     required this.TapData,
     required this.isAllChecked,
@@ -51,6 +58,7 @@ class TapDataSource extends DataGridSource {
     required this.onChanged,
   }) {
     buildDataGridRows();
+    _highlightedRowIndex = highlightedRowIndex;
   }
 
   void buildDataGridRows() {
@@ -132,6 +140,8 @@ class TapDataSource extends DataGridSource {
   DataGridRowAdapter buildRow(DataGridRow row) {
     int rowIndex = dataGridRows.indexOf(row);
     Color? rowBackgroundColor;
+
+    final isHighlighted = _highlightedRowIndex == rowIndex;
     try {
       final statusCell = row.getCells().firstWhere(
         (cell) => cell.columnName == Tap.inventoryStatusLabel,
@@ -144,6 +154,10 @@ class TapDataSource extends DataGridSource {
       }
     } catch (e) {
       rowBackgroundColor = null;
+    }
+
+    if (isHighlighted) {
+      rowBackgroundColor = Colors.deepPurple.withOpacity(0.2);
     }
 
     return DataGridRowAdapter(

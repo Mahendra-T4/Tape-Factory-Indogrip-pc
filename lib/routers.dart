@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:indogrip/features/client/data/model/upload_client_model.dart';
+import 'package:indogrip/features/outsource/data/model/stretch_missrecord_model.dart';
+import 'package:indogrip/features/outsource/data/model/tap_miss_record_model.dart';
 import 'package:indogrip/core/utils/shell_scaffold.dart';
 import 'package:indogrip/features/auth/presentation/view/forgot_password.dart';
 import 'package:indogrip/features/auth/presentation/view/login_panel.dart';
@@ -30,6 +33,7 @@ import 'package:indogrip/features/jumbo%20roll/presentation/pages/edit/edit_jump
 import 'package:indogrip/features/jumbo%20roll/presentation/pages/jumbo-roll-miss-record/jumbo_roll_miss_record_panel.dart';
 import 'package:indogrip/features/jumbo%20roll/presentation/pages/view/view_jumbo_roll.dart';
 import 'package:indogrip/features/notifications/view/notification_responsive.dart';
+import 'package:indogrip/features/outsource/data/model/upload_tap_miss_record_model.dart';
 import 'package:indogrip/features/outsource/data/model/view_stretchfilm_model.dart';
 import 'package:indogrip/features/outsource/data/model/view_tap_in_model.dart';
 import 'package:indogrip/features/outsource/presentation/outside-in/edit%20-%20stretch/edit_stretch_in.dart';
@@ -43,6 +47,7 @@ import 'package:indogrip/features/outsource/presentation/outsource-out/panels/ta
 import 'package:indogrip/features/outsource/presentation/outsource-out/panels/tap/page/tape_sticker.dart';
 import 'package:indogrip/features/print/print_sticker.dart';
 import 'package:indogrip/features/profile/profile.dart';
+import 'package:indogrip/features/round/data/models/upload_round_record_model.dart';
 import 'package:indogrip/features/round/data/models/view_round_modeld.dart';
 import 'package:indogrip/features/round/presentation/pages/add/add_round.dart';
 import 'package:indogrip/features/round/presentation/pages/edit/edit_round.dart';
@@ -56,6 +61,7 @@ import 'package:indogrip/features/staff/presentation/pages/edit/edit_add_staff_p
 import 'package:indogrip/features/staff/presentation/pages/view/view_staff.dart';
 import 'package:indogrip/features/stretch-film-miss-record/presentation/stretch_film_miss_record_panel.dart';
 import 'package:indogrip/features/tape/presentation/pages/tape-miss-record/tape_miss_record_panel.dart';
+import 'package:indogrip/features/vendor/data/models/upload_vendor_button.dart';
 import 'package:indogrip/features/vendor/data/models/view_vendor_model.dart';
 import 'package:indogrip/features/vendor/presentation/pages/add/add_vendor.dart';
 import 'package:indogrip/features/vendor/presentation/pages/edit/edit_vendor.dart';
@@ -120,9 +126,12 @@ GoRouter routers = GoRouter(
           path: ClientMissRecordPanel.routeName,
           name: ClientMissRecordPanel.routeName,
           pageBuilder: (context, state) {
+            final record = state.extra as UploadClientResponse;
             return CustomTransitionPage(
               key: state.pageKey, // Required for unique page identification
-              child: const ClientMissRecordPanel(), // The screen to display
+              child: ClientMissRecordPanel(
+                record: record,
+              ), // The screen to display
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) {
                     // Define a fade transition to avoid bouncing
@@ -139,9 +148,12 @@ GoRouter routers = GoRouter(
           path: VendorMissRecordPanel.routeName,
           name: VendorMissRecordPanel.routeName,
           pageBuilder: (context, state) {
+            final record = state.extra as UploadVendorResponse;
             return CustomTransitionPage(
               key: state.pageKey, // Required for unique page identification
-              child: const VendorMissRecordPanel(), // The screen to display
+              child: VendorMissRecordPanel(
+                record: record,
+              ), // The screen to display
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) {
                     // Define a fade transition to avoid bouncing
@@ -181,9 +193,12 @@ GoRouter routers = GoRouter(
           path: RoundMissRecordPanel.routeName,
           name: RoundMissRecordPanel.routeName,
           pageBuilder: (context, state) {
+            final record = state.extra as UploadRoundRecordModel;
             return CustomTransitionPage(
               key: state.pageKey, // Required for unique page identification
-              child: const RoundMissRecordPanel(), // The screen to display
+              child: RoundMissRecordPanel(
+                record: record,
+              ), // The screen to display
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) {
                     // Define a fade transition to avoid bouncing
@@ -200,9 +215,12 @@ GoRouter routers = GoRouter(
           path: TapeMissRecordPanel.routeName,
           name: TapeMissRecordPanel.routeName,
           pageBuilder: (context, state) {
+            final missRecord = state.extra as UploadTapRecordModel;
             return CustomTransitionPage(
               key: state.pageKey, // Required for unique page identification
-              child: const TapeMissRecordPanel(), // The screen to display
+              child: TapeMissRecordPanel(
+                record: missRecord,
+              ), // The screen to display
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) {
                     // Define a fade transition to avoid bouncing
@@ -219,10 +237,12 @@ GoRouter routers = GoRouter(
           path: StretchFilmMissRecordPanel.routeName,
           name: StretchFilmMissRecordPanel.routeName,
           pageBuilder: (context, state) {
+            final missRecord = state.extra as StretchMissRecordResponse;
             return CustomTransitionPage(
               key: state.pageKey, // Required for unique page identification
-              child:
-                  const StretchFilmMissRecordPanel(), // The screen to display
+              child: StretchFilmMissRecordPanel(
+                record: missRecord,
+              ), // The screen to display
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) {
                     // Define a fade transition to avoid bouncing

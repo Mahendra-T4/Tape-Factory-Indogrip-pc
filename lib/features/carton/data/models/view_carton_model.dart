@@ -3,6 +3,7 @@ class ViewCartonModel {
   String? message;
   List<ViewCartonRecord>? record;
   int? pageQty;
+  String? pageText;
 
   ViewCartonModel({this.status, this.message, this.record, this.pageQty});
 
@@ -16,6 +17,7 @@ class ViewCartonModel {
       });
     }
     pageQty = json['pageQty'];
+    pageText = json['pageText'];
   }
 
   Map<String, dynamic> toJson() {
@@ -26,6 +28,7 @@ class ViewCartonModel {
       data['record'] = this.record!.map((v) => v.toJson()).toList();
     }
     data['pageQty'] = this.pageQty;
+    data['pageText'] = this.pageText;
     return data;
   }
 }

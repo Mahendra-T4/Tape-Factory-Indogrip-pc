@@ -89,7 +89,7 @@ abstract class CartonRepository {
                 'filterBy': param.filterBy ?? '',
                 'sortBy': param.sortBy ?? '',
                 'orderBy': param.orderBy ?? '',
-                'pageNO': param.pageNo ?? 1,
+                'pageNo': param.pageNo ?? 1,
                 'fromDate': param.fromDate ?? '',
                 'toDate': param.toDate ?? '',
               }),

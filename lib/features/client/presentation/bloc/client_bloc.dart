@@ -6,6 +6,7 @@ import 'package:bloc/bloc.dart';
 import 'package:indogrip/features/carton/data/models/view_client_succ_model.dart';
 import 'package:indogrip/features/client/data/model/add_client_param.dart';
 import 'package:indogrip/features/client/data/model/edit_client_api_param.dart';
+import 'package:indogrip/features/client/data/model/upload_client_model.dart';
 import 'package:indogrip/features/client/data/model/view_staff_modeld.dart';
 import 'package:indogrip/features/client/domain/repositories/add_client_repo.dart';
 import 'package:indogrip/features/global/data/model/success_reponse.dart';

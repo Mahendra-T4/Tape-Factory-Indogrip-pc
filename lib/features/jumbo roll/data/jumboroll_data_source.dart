@@ -9,6 +9,13 @@ class JumboRollDataSource extends DataGridSource {
   List<JumboRollRecord> jumboRollData = [];
 
   bool isAllChecked;
+  int? _highlightedRowIndex;
+  int? get highlightedRowIndex => _highlightedRowIndex;
+  set highlightedRowIndex(int? value) {
+    _highlightedRowIndex = value;
+    notifyListeners();
+  }
+
   final Function(bool) onStatusChanged;
   final Function(bool, int) onCheckboxChanged;
   final Function(JumboRollRecord) onEdit;
@@ -20,6 +27,7 @@ class JumboRollDataSource extends DataGridSource {
   JumboRollDataSource({
     required this.jumboRollData,
     required this.isAllChecked,
+    int? highlightedRowIndex,
     required this.onStatusChanged,
     required this.onCheckboxChanged,
     required this.onEdit,
@@ -28,6 +36,7 @@ class JumboRollDataSource extends DataGridSource {
     required this.stickerPopup,
     required this.context,
   }) {
+    _highlightedRowIndex = highlightedRowIndex;
     buildDataGridRows();
   }
 
@@ -136,6 +145,9 @@ class JumboRollDataSource extends DataGridSource {
 
   @override
   DataGridRowAdapter buildRow(DataGridRow row) {
+    final rowIndex = dataGridRows.indexOf(row);
+    final isHighlighted = _highlightedRowIndex == rowIndex;
+
     // Get consume length value from the row
     Color? rowBackgroundColor;
     try {
@@ -157,6 +169,11 @@ class JumboRollDataSource extends DataGridSource {
     } catch (e) {
       // If parsing fails, use default color
       rowBackgroundColor = null;
+    }
+
+    // Apply highlight color if row is highlighted
+    if (isHighlighted) {
+      rowBackgroundColor = Colors.deepPurple.withOpacity(0.2);
     }
 
     return DataGridRowAdapter(

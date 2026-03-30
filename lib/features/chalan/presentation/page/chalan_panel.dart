@@ -7,10 +7,12 @@ import 'package:indogrip/core/utils/appbar/desktop_appbar.dart';
 import 'package:indogrip/core/utils/appbar/mobile_appbar.dart';
 import 'package:indogrip/core/utils/sidebar.dart';
 import 'package:indogrip/core/utils/widgets/toast_service.dart';
+import 'package:indogrip/features/chalan/presentation/bloc/challan_bloc.dart';
 import 'package:indogrip/features/chalan/presentation/page/chalan_builder.dart';
 import 'package:indogrip/features/global/presentation/bloc/global_bloc.dart';
 import 'package:indogrip/features/global/presentation/widget/data_filtration.dart';
 import 'package:indogrip/features/global/presentation/widget/pagination_widget.dart';
+import 'package:indogrip/features/staff/data/models/view_staff_api_param.dart';
 
 class ChalanPanel extends StatefulWidget {
   const ChalanPanel({super.key});
@@ -32,121 +34,115 @@ class _ChalanPanelState extends ChalanBuilder {
   }
 
   Widget _buildTabletView() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (Responsive.isDesktop(context))
-                DesktopAppBar(context, statekey, 'Challan Panel', false),
-              // Filter fields would go here (similar to ViewStaffPanel)
-              const SizedBox(height: 15),
-              BlocListener<GlobalBloc, GlobalState>(
-                bloc: globalBloc,
-                listener: (context, state) {
-                  if (state is GlobalChangeUserStatusSuccessStatus) {
-                    // Handle status change success (for approved, rejected, blocked, etc.)
-                    if (state.changeStatusEntity.status == 1) {
-                      ToastService.instance.showSuccess(
-                        context,
-                        state.changeStatusEntity.message.toString(),
-                      );
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: BlocListener<GlobalBloc, GlobalState>(
+            bloc: globalBloc,
+            listener: (context, state) {
+              if (state is GlobalChangeUserStatusSuccessStatus) {
+                // Handle status change success (for approved, rejected, blocked, etc.)
+                if (state.changeStatusEntity.status == 1) {
+                  ToastService.instance.showSuccess(
+                    context,
+                    state.changeStatusEntity.message.toString(),
+                  );
 
-                      // Refresh list after status change
-                      dataLoadingEventCall();
-                    } else {
-                      ToastService.instance.showError(
-                        context,
-                        state.changeStatusEntity.message.toString(),
-                      );
-                    }
-                  } else if (state is GlobalChangeUserStatusErrorStatus) {
-                    ToastService.instance.showError(
-                      context,
-                      state.message.toString(),
-                    );
-                  } else if (state is GlobalDeleteRecordSuccessStatus) {
-                    ToastService.instance.showSuccess(
-                      context,
-                      state.deleteRecordEntity.message.toString(),
-                    );
-                    // Refresh list after single delete
-                    dataLoadingEventCall();
-                  } else if (state is GlobalDeleteRecordErrorStatus) {
-                    ToastService.instance.showError(
-                      context,
-                      state.message.toString(),
-                    );
-                  } else if (state
-                      is GlobalDeleteMultipleRecordsSuccessStatus) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          state.deleteRecordEntity.message ?? 'Records deleted',
-                        ),
+                  // Refresh list after status change
+                  dataLoadingEventCall();
+                } else {
+                  ToastService.instance.showError(
+                    context,
+                    state.changeStatusEntity.message.toString(),
+                  );
+                }
+              } else if (state is GlobalChangeUserStatusErrorStatus) {
+                ToastService.instance.showError(
+                  context,
+                  state.message.toString(),
+                );
+              } else if (state is GlobalDeleteRecordSuccessStatus) {
+                ToastService.instance.showSuccess(
+                  context,
+                  state.deleteRecordEntity.message.toString(),
+                );
+                // Refresh list after single delete
+                dataLoadingEventCall();
+              } else if (state is GlobalDeleteRecordErrorStatus) {
+                ToastService.instance.showError(
+                  context,
+                  state.message.toString(),
+                );
+              } else if (state is GlobalDeleteMultipleRecordsSuccessStatus) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      state.deleteRecordEntity.message ?? 'Records deleted',
+                    ),
+                  ),
+                );
+                // Refresh list after bulk delete
+                dataLoadingEventCall();
+                // Clear selection
+                setState(() {
+                  selectedRows.clear();
+                  // selectedItems.clear();
+                  isMultipleSelection = false;
+                });
+              } else if (state is GlobalDeleteMultipleRecordsErrorStatus) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(state.message)));
+              }
+            },
+            child: !Responsive.isDesktop(context)
+                ? Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: searchFields,
+                  )
+                : Column(
+                    children: [
+                      DateFiltration(
+                        isChalan: true,
+                        fromDateController: fromDateController,
+                        toDateController: toDateController,
+                        clientKey: clientKey,
+                        staffKey: staffKey,
+                        onChanged: (client) {
+                          setState(() {
+                            clientKey = client;
+                          });
+                          dataLoadingEventCall();
+                        },
+                        onStaffChanged: (staff) {
+                          setState(() {
+                            staffKey = staff;
+                          });
+                          dataLoadingEventCall();
+                        },
                       ),
-                    );
-                    // Refresh list after bulk delete
-                    dataLoadingEventCall();
-                    // Clear selection
-                    setState(() {
-                      selectedRows.clear();
-                      // selectedItems.clear();
-                      isMultipleSelection = false;
-                    });
-                  } else if (state is GlobalDeleteMultipleRecordsErrorStatus) {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text(state.message)));
-                  }
-                },
-                child: !Responsive.isDesktop(context)
-                    ? Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: searchFields,
-                      )
-                    : Column(
-                        children: [
-                          DateFiltration(
-                            isChalan: true,
-                            fromDateController: fromDateController,
-                            toDateController: toDateController,
-                            clientKey: clientKey,
-                            staffKey: staffKey,
-                            onChanged: (client) {
-                              setState(() {
-                                clientKey = client;
-                              });
-                              dataLoadingEventCall();
-                            },
-                            onStaffChanged: (staff) {
-                              setState(() {
-                                staffKey = staff;
-                              });
-                              dataLoadingEventCall();
-                            },
-                          ),
-                          searchFields,
-                        ],
-                      ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(right: 20, bottom: 15),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [refreshButton],
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [_buildPaginationWidget],
-              ),
-              buildContentTableWidget,
-            ],
+                      searchFields,
+                    ],
+                  ),
           ),
         ),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.only(right: 20, bottom: 15),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [refreshButton],
+            ),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [_buildPaginationWidget],
+          ),
+        ),
+        SliverToBoxAdapter(child: buildContentTableWidget),
+        SliverToBoxAdapter(child: SizedBox(height: 100)),
       ],
     );
   }
@@ -175,7 +171,7 @@ class _ChalanPanelState extends ChalanBuilder {
           key: statekey,
           appBar: !Responsive.isDesktop(context)
               ? MobileAppBar(context, statekey, 'Challan Panel')
-              : null,
+              : DesktopAppBar(context, statekey, 'Challan Panel', false),
           drawer: !Responsive.isDesktop(context)
               ? const SideMenuWidget()
               : null,
@@ -187,41 +183,113 @@ class _ChalanPanelState extends ChalanBuilder {
 
   Widget get _buildPaginationWidget => TableBottomWidget(
     currentPage: pageNo,
+    pageText: '',
     pageQty: pageQty,
     onPagePressed: (pageNumber) {
       setState(() {
         pageNo = pageNumber;
+        challanBloc.add(
+          FetchChallanRecordsEvent(
+            param: ViewRecordApiParam(
+              keyword: searchController.text,
+              filterBy: recordValue ?? '',
+              orderBy: filterValue.toString(),
+              pageNo: pageNo.toString(),
+              sortBy: entryValue.toString(),
+              fromDate: fromDateController.text,
+              toDate: toDateController.text,
+              clientKey: clientKey ?? '',
+              staffKey: staffKey ?? '',
+            ),
+          ),
+        );
       });
-      dataLoadingEventCall();
+
       // Add pagination logic here when BLoC is implemented
     },
     onFirstPressed: () {
       setState(() {
         pageNo = 1;
+        challanBloc.add(
+          FetchChallanRecordsEvent(
+            param: ViewRecordApiParam(
+              keyword: searchController.text,
+              filterBy: recordValue ?? '',
+              orderBy: filterValue.toString(),
+              pageNo: pageNo.toString(),
+              sortBy: entryValue.toString(),
+              fromDate: fromDateController.text,
+              toDate: toDateController.text,
+              clientKey: clientKey ?? '',
+              staffKey: staffKey ?? '',
+            ),
+          ),
+        );
       });
-      dataLoadingEventCall();
     },
     onPreviousPressed: () {
       if (pageNo != null && pageNo! > 1) {
         setState(() {
           pageNo = pageNo! - 1;
+          challanBloc.add(
+            FetchChallanRecordsEvent(
+              param: ViewRecordApiParam(
+                keyword: searchController.text,
+                filterBy: recordValue ?? '',
+                orderBy: filterValue.toString(),
+                pageNo: pageNo.toString(),
+                sortBy: entryValue.toString(),
+                fromDate: fromDateController.text,
+                toDate: toDateController.text,
+                clientKey: clientKey ?? '',
+                staffKey: staffKey ?? '',
+              ),
+            ),
+          );
         });
-        dataLoadingEventCall();
       }
     },
     onNextPressed: () {
       if (pageNo != null && pageQty != null && pageNo! < pageQty!) {
         setState(() {
           pageNo = pageNo! + 1;
+          challanBloc.add(
+            FetchChallanRecordsEvent(
+              param: ViewRecordApiParam(
+                keyword: searchController.text,
+                filterBy: recordValue ?? '',
+                orderBy: filterValue.toString(),
+                pageNo: pageNo.toString(),
+                sortBy: entryValue.toString(),
+                fromDate: fromDateController.text,
+                toDate: toDateController.text,
+                clientKey: clientKey ?? '',
+                staffKey: staffKey ?? '',
+              ),
+            ),
+          );
         });
-        dataLoadingEventCall();
       }
     },
     onLastPressed: () {
       setState(() {
         pageNo = pageQty;
+        challanBloc.add(
+          FetchChallanRecordsEvent(
+            param: ViewRecordApiParam(
+              keyword: searchController.text,
+              filterBy: recordValue ?? '',
+              orderBy: filterValue.toString(),
+              pageNo: pageNo.toString(),
+              sortBy: entryValue.toString(),
+              fromDate: fromDateController.text,
+              toDate: toDateController.text,
+              clientKey: clientKey ?? '',
+              staffKey: staffKey ?? '',
+            ),
+          ),
+        );
       });
-      dataLoadingEventCall();
     },
   );
 }

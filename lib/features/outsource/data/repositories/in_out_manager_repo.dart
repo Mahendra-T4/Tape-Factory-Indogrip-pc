@@ -2,17 +2,26 @@ import 'dart:async';
 import 'dart:developer' as developer;
 
 import 'package:dio/dio.dart';
+import 'package:retry/retry.dart';
+
 import 'package:indogrip/core/database/hive_service.dart';
 import 'package:indogrip/core/service/api%20service/dio_service.dart';
 import 'package:indogrip/features/global/data/model/success_reponse.dart';
 import 'package:indogrip/features/outsource/data/model/stretchfilm_sticker_model.dart';
 import 'package:indogrip/features/outsource/data/model/tap_sticker_info_model.dart';
 import 'package:indogrip/features/outsource/data/model/upload_file_param.dart';
+import 'package:indogrip/features/outsource/data/model/upload_stretch_record_model.dart';
+import 'package:indogrip/features/outsource/data/model/upload_tap_miss_record_model.dart';
 import 'package:indogrip/features/outsource/data/model/view_stretchfilm_model.dart';
 import 'package:indogrip/features/outsource/data/model/view_tap_in_model.dart';
 import 'package:indogrip/features/outsource/domain/repositories/in_out_repo.dart';
 import 'package:indogrip/features/staff/data/models/view_staff_api_param.dart';
-import 'package:retry/retry.dart';
+
+class InventoryModel {
+  final UploadTapRecordModel? tapMissRecordModel;
+  final UploadStretchRecordModel? stretchMissRecordModel;
+  InventoryModel({this.tapMissRecordModel, this.stretchMissRecordModel});
+}
 
 class InventoryOutManagerRepository implements InventoryOutRepository {
   @override
@@ -254,10 +263,10 @@ class InventoryOutManagerRepository implements InventoryOutRepository {
   }
 
   @override
-  Future<SuccessResponse> uploadCSVFileInventoryIN(
+  Future<UploadTapRecordModel> uploadCSVFileInventoryIN(
     UploadFileParam param,
   ) async {
-    SuccessResponse successResponse = SuccessResponse();
+    UploadTapRecordModel successResponse = UploadTapRecordModel();
     try {
       final formData = FormData.fromMap({
         'activity': 'import-inventory',
@@ -289,7 +298,7 @@ class InventoryOutManagerRepository implements InventoryOutRepository {
       ;
 
       if (response.statusCode == 200) {
-        successResponse = SuccessResponse.fromJson(response.data);
+        successResponse = UploadTapRecordModel.fromJson(response.data);
         developer.log(formData.fields.toString(), name: 'Upload CSV In param');
         developer.log(param.csvFile.toString(), name: 'Upload CSV File');
         developer.log(response.data.toString(), name: 'Upload CSV Response');
@@ -310,10 +319,10 @@ class InventoryOutManagerRepository implements InventoryOutRepository {
   }
 
   @override
-  Future<SuccessResponse> uploadStretchCSVFileInventoryIN(
+  Future<UploadStretchRecordModel> uploadStretchCSVFileInventoryIN(
     UploadFileParam param,
   ) async {
-    SuccessResponse successResponse = SuccessResponse();
+    UploadStretchRecordModel successResponse = UploadStretchRecordModel();
     try {
       final formData = FormData.fromMap({
         'activity': 'import-inventory',
@@ -345,7 +354,7 @@ class InventoryOutManagerRepository implements InventoryOutRepository {
       ;
 
       if (response.statusCode == 200) {
-        successResponse = SuccessResponse.fromJson(response.data);
+        successResponse = UploadStretchRecordModel.fromJson(response.data);
         developer.log(formData.fields.toString(), name: 'Upload CSV In param');
         developer.log(param.csvFile.toString(), name: 'Upload CSV File');
         developer.log(response.data.toString(), name: 'Upload CSV Response');

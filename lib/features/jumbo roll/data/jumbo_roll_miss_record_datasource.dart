@@ -1,37 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:indogrip/features/jumbo%20roll/data/models/jumbo_uploadfile_response_model.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
-
-class JumboRollRecord {
-  int? sNo;
-  String? rollCode;
-  String? rollDescription;
-  String? width;
-  String? length;
-  String? weight;
-  String? grammage;
-  String? supplier;
-  String? batchNumber;
-  String? dateReceived;
-  String? quality;
-
-  JumboRollRecord({
-    this.sNo,
-    this.rollCode,
-    this.rollDescription,
-    this.width,
-    this.length,
-    this.weight,
-    this.grammage,
-    this.supplier,
-    this.batchNumber,
-    this.dateReceived,
-    this.quality,
-  });
-}
 
 class JumboRollMissRecordDataSource extends DataGridSource {
   List<DataGridRow> dataGridRows = [];
-  List<JumboRollRecord> jumboRollData = [];
+  List<JumboMissRecord> jumboRollData = [];
   final BuildContext context;
 
   JumboRollMissRecordDataSource({
@@ -44,48 +17,58 @@ class JumboRollMissRecordDataSource extends DataGridSource {
   void buildDataGridRows() {
     dataGridRows = jumboRollData.asMap().entries.map<DataGridRow>((entry) {
       final data = entry.value;
+      final index = entry.key;
       return DataGridRow(
         cells: [
-          DataGridCell<String>(columnName: 'Sr No', value: data.sNo.toString()),
           DataGridCell<String>(
-            columnName: 'Roll Code',
-            value: data.rollCode.toString(),
+            columnName: 'Sr No',
+            value: (index + 1).toString(),
           ),
           DataGridCell<String>(
-            columnName: 'Description',
-            value: data.rollDescription.toString(),
+            columnName: 'Reason',
+            value: data.msg.toString(),
           ),
           DataGridCell<String>(
-            columnName: 'Width (mm)',
-            value: data.width.toString(),
+            columnName: 'Bill Date',
+            value: data.billDate.toString(),
           ),
           DataGridCell<String>(
-            columnName: 'Length (m)',
+            columnName: 'Bill Number',
+            value: data.billNumber.toString(),
+          ),
+          DataGridCell<String>(
+            columnName: 'Roll Number',
+            value: data.rollNumber.toString(),
+          ),
+          DataGridCell<String>(columnName: 'Base', value: data.base.toString()),
+          DataGridCell<String>(columnName: 'MIC', value: data.mic.toString()),
+          DataGridCell<String>(
+            columnName: 'Length',
             value: data.length.toString(),
           ),
           DataGridCell<String>(
-            columnName: 'Weight (kg)',
-            value: data.weight.toString(),
+            columnName: 'Width',
+            value: data.width.toString(),
           ),
           DataGridCell<String>(
-            columnName: 'Grammage (gsm)',
-            value: data.grammage.toString(),
-          ),
-          // DataGridCell<String>(
-          //   columnName: 'Supplier',
-          //   value: data.supplier.toString(),
-          // ),
-          DataGridCell<String>(
-            columnName: 'Batch Number',
-            value: data.batchNumber.toString(),
+            columnName: 'Net Weight',
+            value: data.netWeight.toString(),
           ),
           DataGridCell<String>(
-            columnName: 'Date Received',
-            value: data.dateReceived.toString(),
+            columnName: 'Total Square Meter',
+            value: data.totalSquareMtr.toString(),
           ),
           DataGridCell<String>(
-            columnName: 'Quality',
-            value: data.quality.toString(),
+            columnName: 'Amount Per KG',
+            value: data.amountPerKG.toString(),
+          ),
+          DataGridCell<String>(
+            columnName: 'Roll Cost',
+            value: data.rollCost.toString(),
+          ),
+          DataGridCell<String>(
+            columnName: 'Remark',
+            value: data.remark.toString(),
           ),
           // DataGridCell<String>(columnName: 'Status', value: 'Active'),
           // DataGridCell<String>(columnName: 'actions', value: 'Edit'),

@@ -9,6 +9,7 @@ import 'package:indogrip/core/service/api%20service/dio_service.dart';
 import 'package:indogrip/features/carton/data/models/view_client_succ_model.dart';
 import 'package:indogrip/features/client/data/model/add_client_param.dart';
 import 'package:indogrip/features/client/data/model/edit_client_api_param.dart';
+import 'package:indogrip/features/client/data/model/upload_client_model.dart';
 import 'package:indogrip/features/client/data/model/view_staff_modeld.dart';
 import 'package:indogrip/features/global/data/model/success_reponse.dart';
 import 'package:indogrip/features/staff/data/models/view_staff_api_param.dart';
@@ -81,7 +82,7 @@ class AddClientRepository {
         'filterBy': param.filterBy ?? '',
         'sortBy': param.sortBy ?? '',
         'orderBy': param.orderBy ?? '',
-        'pageNO': param.pageNo,
+        'pageNo': param.pageNo,
         'fromDate': param.fromDate ?? '',
         'toDate': param.toDate ?? '',
       });
@@ -206,11 +207,11 @@ class AddClientRepository {
     return successResponse;
   }
 
-  static Future<SuccessResponse> uploadClientCSVFile({
+  static Future<UploadClientResponse> uploadClientCSVFile({
     required String activity,
     required File csvFile,
   }) async {
-    SuccessResponse successResponse = SuccessResponse();
+    UploadClientResponse successResponse = UploadClientResponse();
     try {
       final formData = FormData.fromMap({
         'activity': activity,
@@ -238,7 +239,7 @@ class AddClientRepository {
         delayFactor: const Duration(seconds: 1),
       );
       if (response.statusCode == 200) {
-        successResponse = SuccessResponse.fromJson(response.data);
+        successResponse = UploadClientResponse.fromJson(response.data);
 
         developer.log(
           response.data.toString(),
@@ -260,5 +261,36 @@ class AddClientRepository {
       print(e);
     }
     return successResponse;
+  }
+
+  static Future<List<Map<String, dynamic>>> loadClientJsonData() async {
+    try {
+      final response = await DioService.dioPostApiCall(
+        data: FormData.fromMap({
+          'activity': 'view-client',
+          'userKey': HiveService.getUserId(),
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = response.data;
+
+        final clientData = jsonData is Map && jsonData['record'] is List
+            ? (jsonData['record'] as List)
+                  .where((item) => item is Map)
+                  .map((element) => Map<String, dynamic>.from(element as Map))
+                  .toList()
+            : <Map<String, dynamic>>[];
+
+        return clientData;
+      } else {
+        throw Exception(
+          'Failed to load client data: ${response.statusMessage}',
+        );
+      }
+    } catch (e) {
+      developer.log('Error loading client data: $e', name: 'Load Client Data');
+      throw Exception('Error loading client data: $e');
+    }
   }
 }
