@@ -497,7 +497,7 @@ abstract class AddJumboRollBuilder extends State<AddJumboRollPanel> {
             if (!context.mounted) return;
             ToastService.instance.showError(
               context,
-              state.jumboRoleEntity.message.toString(),
+              state.jumboRoleEntity.message ?? 'try again later',
             );
           }
         } else if (state is AddJumboRollOnRecordFailureStatus) {
@@ -562,8 +562,6 @@ abstract class AddJumboRollBuilder extends State<AddJumboRollPanel> {
       );
     },
   );
-
-  
 
   void submitForm() {
     if (formKey.currentState?.validate() ?? false) {}

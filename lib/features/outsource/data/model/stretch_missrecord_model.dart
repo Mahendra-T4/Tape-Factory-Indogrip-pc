@@ -42,7 +42,7 @@ class StretchMissRecordResponse {
 }
 
 class StretchMissRecord {
-  final String? inventoryCode;
+  final dynamic inventoryCode;
   final String? vendorKey;
   final String? date;
   final String? billNumber;
@@ -58,7 +58,7 @@ class StretchMissRecord {
   final int? coreID;
   final dynamic netWeight;
   final dynamic grossWeight;
-  final String? quantity;
+  final dynamic quantity;
   final String? remarks;
   final String? reason;
 

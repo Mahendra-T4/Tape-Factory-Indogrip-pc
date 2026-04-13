@@ -352,23 +352,39 @@ Widget _buildActionButton({
 }) {
   return MouseRegion(
     cursor: SystemMouseCursors.click,
-    child: Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+    child: TooltipTheme(
+      data: TooltipThemeData(
+        waitDuration: Duration(milliseconds: 500),
+        // showDuration: Duration(seconds: 2),
+        decoration: BoxDecoration(
+          color: Colors.black87,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        textStyle: TextStyle(
+          color: Colors.white,
+          fontSize: 15,
+          fontWeight: FontWeight.w400,
+        ),
       ),
-      child: IconButton(
-        onPressed: onPressed,
-        icon: Icon(icon, color: Colors.white, size: 24),
-        tooltip: tooltip,
-        padding: const EdgeInsets.all(12),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: IconButton(
+          onPressed: onPressed,
+          icon: Icon(icon, color: Colors.white, size: 24),
+          tooltip: tooltip,
+
+          padding: const EdgeInsets.all(12),
+        ),
       ),
     ),
   );

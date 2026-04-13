@@ -8,6 +8,7 @@ import 'package:indogrip/features/global/presentation/widget/search_fields.dart'
 import 'package:indogrip/features/staff/data/models/view_staff_api_param.dart';
 
 abstract class ViewCartonBuilder extends State<ViewCartonPanel> {
+  Key refreshKey = UniqueKey();
   late CartonBloc cartonBloc;
   bool isMultipleSelection = false;
   List<ViewCartonRecord> selectedItems = [];
@@ -18,14 +19,6 @@ abstract class ViewCartonBuilder extends State<ViewCartonPanel> {
   final fromDateController = TextEditingController();
   final toDateController = TextEditingController();
 
-  List recordList = [
-    "All Records",
-    "Requested",
-    "In-Progress",
-    "Approved",
-    "Rejected",
-    "Block",
-  ];
   List filterList = ["Newest", "Oldest"];
   List entryList = ["10", "25", "50", "100", "500"];
   var recordValue, filterValue, entryValue;
@@ -34,6 +27,37 @@ abstract class ViewCartonBuilder extends State<ViewCartonPanel> {
     setState(() {
       selectedItems = items;
     });
+  }
+
+  eventHandler() {
+    cartonBloc.add(
+      ViewCartonRecordEvent(
+        param: ViewRecordApiParam(
+          keyword: searchController.text.trim(),
+          filterBy: recordValue ?? '',
+          orderBy: filterValue.toString(),
+          pageNo: currentPage.toString(),
+          sortBy: entryValue.toString(),
+          fromDate: fromDateController.text,
+          toDate: toDateController.text,
+        ),
+      ),
+    );
+  }
+
+  clearFiltersOnRefresh() {
+    searchController.clear();
+    fromDateController.clear();
+    toDateController.clear();
+    setState(() {
+      recordValue = null;
+      filterValue = null;
+      entryValue = null;
+    });
+
+    refreshKey = UniqueKey();
+
+    eventHandler();
   }
 
   void handleBulkDelete() {
@@ -113,19 +137,7 @@ abstract class ViewCartonBuilder extends State<ViewCartonPanel> {
         height: 35,
         child: RefreshButton(
           onPressed: () {
-            cartonBloc.add(
-              ViewCartonRecordEvent(
-                param: ViewRecordApiParam(
-                  keyword: searchController.text,
-                  filterBy: recordValue ?? '',
-                  orderBy: filterValue.toString(),
-                  pageNo: currentPage.toString(),
-                  sortBy: entryValue.toString(),
-                  fromDate: fromDateController.text,
-                  toDate: toDateController.text,
-                ),
-              ),
-            );
+            clearFiltersOnRefresh();
           },
         ),
       ),
@@ -135,76 +147,29 @@ abstract class ViewCartonBuilder extends State<ViewCartonPanel> {
   //! tablet
 
   Widget get searchFields => SearchFields(
+    key: refreshKey,
     isStatus: true,
     controller: searchController,
     onSearch: (keyword) {
-      cartonBloc.add(
-        ViewCartonRecordEvent(
-          param: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue ?? '',
-            orderBy: filterValue.toString(),
-            pageNo: currentPage.toString(),
-            sortBy: entryValue.toString(),
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
     },
     onChangedStatus: (status) {
       setState(() {
         recordValue = status;
       });
-      cartonBloc.add(
-        ViewCartonRecordEvent(
-          param: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue ?? '',
-            orderBy: filterValue.toString(),
-            pageNo: currentPage.toString(),
-            sortBy: entryValue.toString(),
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
     },
     onChangedOrder: (order) {
       setState(() {
         filterValue = order;
       });
-      cartonBloc.add(
-        ViewCartonRecordEvent(
-          param: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue ?? '',
-            orderBy: filterValue.toString(),
-            pageNo: currentPage.toString(),
-            sortBy: entryValue.toString(),
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
     },
     onChangedSort: (sortBy) {
       setState(() {
         entryValue = sortBy ?? 10;
       });
-      cartonBloc.add(
-        ViewCartonRecordEvent(
-          param: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue ?? '',
-            orderBy: filterValue.toString(),
-            pageNo: currentPage.toString(),
-            sortBy: entryValue.toString(),
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
     },
   );
 }

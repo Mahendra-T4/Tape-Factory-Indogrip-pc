@@ -11,6 +11,8 @@ import 'package:indogrip/core/database/hive_service.dart';
 import 'package:indogrip/core/service/api%20service/dio_service.dart';
 import 'package:indogrip/core/utils/widgets/outsource_side_option.dart';
 import 'package:indogrip/core/utils/widgets/sidebar_panel_builder.dart';
+import 'package:indogrip/core/utils/widgets/small_os_panel.dart';
+import 'package:indogrip/core/utils/widgets/small_sidebar.dart';
 import 'package:indogrip/core/utils/widgets/toast_service.dart';
 import 'package:indogrip/features/carton/presentation/pages/add/add_carton.dart';
 import 'package:indogrip/features/carton/presentation/pages/view/view_carton.dart';
@@ -50,10 +52,25 @@ class ShellScaffold extends ConsumerStatefulWidget {
 
 class _ShellScaffoldState extends ConsumerState<ShellScaffold>
     with SingleTickerProviderStateMixin {
+  bool isShowPanel = true;
   late AnimationController _controller;
   late Animation<double> _animation;
   NotificationModel notificationModel = NotificationModel();
   Timer? _notificationTimer;
+
+  TooltipThemeData get _buildTooltipTheme => TooltipThemeData(
+    waitDuration: Duration(milliseconds: 500),
+    // showDuration: Duration(seconds: 2),
+    decoration: BoxDecoration(
+      color: Colors.black87,
+      borderRadius: BorderRadius.circular(8),
+    ),
+    textStyle: TextStyle(
+      color: Colors.white,
+      fontSize: 15,
+      fontWeight: FontWeight.w400,
+    ),
+  );
 
   // Notification queue management
   Queue<Record> notificationQueue = Queue();
@@ -253,408 +270,862 @@ class _ShellScaffoldState extends ConsumerState<ShellScaffold>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Row(
-        children: [
-          // if (Responsive.isDesktop(context))
-          Container(
-            width: 250,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF2C3E50), Color(0xFF1A1A2E)],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 20,
-                  offset: Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
+      body: isShowPanel
+          ? Row(
               children: [
-                const SizedBox(height: 30),
-                // Modern logo container
+                // if (Responsive.isDesktop(context))
                 Container(
-                  width: 100,
-                  height: 100,
-                  clipBehavior: Clip.antiAlias,
+                  width: 250,
                   decoration: BoxDecoration(
-                    // shape: BoxShape.circle,
-                    borderRadius: BorderRadius.circular(20),
-                    color: Colors.white,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF2C3E50), Color(0xFF1A1A2E)],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 20,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
                   ),
-                  child: Image.asset(
-                    Assets.indoGripLogoImage,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                const SizedBox(height: 30),
-                Expanded(
-                  child: ClipRRect(
-                    child: ListView(
-                      padding: EdgeInsets.zero,
-                      children: [
-                        ListTile(
-                          onTap: () {
-                            context.goNamed(IndoGripDashboard.routeName);
-                          },
-                          leading: Container(
-                            padding: EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Icon(
-                              Icons.dashboard, // Transfer/Exchange icon
-                              size: 20,
-                              color: Colors.white.withOpacity(0.9),
-                            ),
-                          ),
-                          title: Text(
-                            'Dashboard',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.white.withOpacity(0.9),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 30),
+                      // Modern logo container
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            isShowPanel = !isShowPanel;
+                          });
+                        },
+                        child: TooltipTheme(
+                          data: _buildTooltipTheme,
+                          child: Tooltip(
+                            message: 'Tap to Minimize menu',
+                            child: Container(
+                              width: 100,
+                              height: 100,
+                              clipBehavior: Clip.antiAlias,
+                              decoration: BoxDecoration(
+                                // shape: BoxShape.circle,
+                                borderRadius: BorderRadius.circular(20),
+                                color: Colors.white,
+                              ),
+                              child: Image.asset(
+                                Assets.indoGripLogoImage,
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
                         ),
-
-                        if (HiveService.getPanels()!.contains('7') ||
-                            HiveService.getRole() == '1' ||
-                            HiveService.getRole() == '2')
-                          ListTile(
-                            onTap: () {
-                              context.goNamed(ChalanPanel.routeName);
-                            },
-                            leading: Container(
-                              padding: EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
+                      ),
+                      const SizedBox(height: 30),
+                      Expanded(
+                        child: ClipRRect(
+                          child: ListView(
+                            padding: EdgeInsets.zero,
+                            children: [
+                              ListTile(
+                                onTap: () {
+                                  context.goNamed(IndoGripDashboard.routeName);
+                                },
+                                leading: Container(
+                                  padding: EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(
+                                    Icons.dashboard, // Transfer/Exchange icon
+                                    size: 20,
+                                    color: Colors.white.withOpacity(0.9),
+                                  ),
+                                ),
+                                title: Text(
+                                  'Dashboard',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white.withOpacity(0.9),
+                                  ),
+                                ),
                               ),
-                              child: Icon(
-                                Icons.dashboard, // Transfer/Exchange icon
-                                size: 20,
-                                color: Colors.white.withOpacity(0.9),
-                              ),
-                            ),
-                            title: Text(
-                              'Challan',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white.withOpacity(0.9),
-                              ),
-                            ),
-                          ),
 
-                        if (['1', '8', '2'].any(
-                              (p) => HiveService.getPanels()!.contains(p),
-                            ) &&
-                            ['1', '2'].contains(HiveService.getRole()))
-                          _buildSectionHeader('Account'),
+                              if (HiveService.getPanels()!.contains('7') ||
+                                  HiveService.getRole() == '1' ||
+                                  HiveService.getRole() == '2')
+                                ListTile(
+                                  onTap: () {
+                                    context.goNamed(ChalanPanel.routeName);
+                                  },
+                                  leading: Container(
+                                    padding: EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Icon(
+                                      Icons.dashboard, // Transfer/Exchange icon
+                                      size: 20,
+                                      color: Colors.white.withOpacity(0.9),
+                                    ),
+                                  ),
+                                  title: Text(
+                                    'Challan',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white.withOpacity(0.9),
+                                    ),
+                                  ),
+                                ),
 
-                        if (HiveService.getPanels()!.contains('1') ||
-                            HiveService.getRole() == '1')
-                          SidebarPanelBuilder(
-                            isRolePanel: HiveService.getRole() == '2'
-                                ? false
-                                : true,
-                            currentTap: isStaff,
-                            onTap: () {
-                              setState(() {
-                                isStaff = !isStaff;
-                              });
-                            },
-                            panel1: 'Add',
-                            panel2: 'View',
-                            icon: Icons.people,
-                            title: 'Staff',
-                            routeName: [
-                              AddStaff.routeName,
-                              ViewStaffPanel.routeName,
-                            ],
-                          ),
-                        if (HiveService.getPanels()!.contains('8') ||
-                            HiveService.getRole() == '1')
-                          SidebarPanelBuilder(
-                            currentTap: isClient,
-                            isRolePanel: HiveService.getRole() == '2'
-                                ? false
-                                : true,
-                            onTap: () {
-                              setState(() {
-                                isClient = !isClient;
-                              });
-                            },
-                            panel1: 'Add',
-                            panel2: 'View',
-                            icon: Icons.people,
-                            title: 'Client',
-                            routeName: [
-                              AddClientPanel.routeName,
-                              ViewClientPanel.routeName,
-                            ],
-                          ),
-                        if (HiveService.getPanels()!.contains('2') ||
-                            HiveService.getRole() == '1')
-                          SidebarPanelBuilder(
-                            isRolePanel: HiveService.getRole() == '2'
-                                ? false
-                                : true,
-                            currentTap: isVendor,
-                            onTap: () {
-                              setState(() {
-                                isVendor = !isVendor;
-                              });
-                            },
-                            panel1: 'Add',
-                            panel2: 'View',
-                            icon: Icons.store_outlined,
-                            title: 'Vendor',
-                            routeName: [
-                              AddVendorPanel.routeName,
-                              ViewVendorPanel.routeName,
-                            ],
-                          ),
-                        if (['3', '4'].any(
-                              (p) => HiveService.getPanels()!.contains(p),
-                            ) &&
-                            ['1', '2'].contains(HiveService.getRole()))
-                          // if (HiveService.getPanels()!.contains('3') &&
-                          //     HiveService.getPanels()!.contains('4'))
-                          _buildSectionHeader('Operations'),
-                        if (HiveService.getPanels()!.contains('3') ||
-                            HiveService.getRole() == '1')
-                          SidebarPanelBuilder(
-                            isRolePanel: HiveService.getRole() == '2'
-                                ? false
-                                : true,
-                            currentTap: isJumboRoll,
-                            onTap: () {
-                              setState(() {
-                                isJumboRoll = !isJumboRoll;
-                              });
-                            },
-                            panel1: 'Add',
-                            panel2: 'View',
-                            icon: Icons.rotate_90_degrees_ccw_outlined,
-                            title: 'Jumbo Roll',
-                            routeName: [
-                              AddJumboRollPanel.routeName,
-                              ViewJumboRollPanel.routeName,
-                            ],
-                          ),
-                        if (HiveService.getPanels()!.contains('4') ||
-                            HiveService.getRole() == '1')
-                          SidebarPanelBuilder(
-                            isRolePanel: HiveService.getRole() == '2'
-                                ? false
-                                : true,
-                            currentTap: isRound,
-                            onTap: () {
-                              setState(() {
-                                isRound = !isRound;
-                              });
-                            },
-                            panel1: 'Add',
-                            panel2: 'View',
-                            icon: Icons.circle_outlined,
-                            title: 'Round',
-                            routeName: [
-                              AddRoundPanel.routeName,
-                              ViewRoundPanel.routeName,
-                            ],
-                          ),
-                        if (['5'].any(
-                              (p) => HiveService.getPanels()!.contains(p),
-                            ) &&
-                            ['1', '2'].contains(HiveService.getRole()))
-                          // if (HiveService.getPanels()!.contains('5'))
-                          _buildSectionHeader('Stock'),
-                        if (HiveService.getPanels()!.contains('5') ||
-                            HiveService.getRole() == '1')
-                          ListTile(
-                            onTap: () {
-                              context.goNamed(OutSourceIN.routeName);
-                            },
-                            leading: Container(
-                              padding: EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Icon(
-                                Icons
-                                    .swap_horiz_outlined, // Transfer/Exchange icon
-                                size: 20,
-                                color: Colors.white.withOpacity(0.9),
-                              ),
-                            ),
-                            title: Text(
-                              'Inventory - IN',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white.withOpacity(0.9),
-                              ),
-                            ),
-                          ),
-                        // _buildSectionHeader('Outsource-OUT'),
-                        if (HiveService.getPanels()!.contains('5') ||
-                            HiveService.getRole() == '1')
-                          OutSourceSidePanelBuilder(
-                            currentTap: isOutsourceOut,
-                            title: 'Inventory',
-                            onTap: () {
-                              setState(() {
-                                isOutsourceOut = !isOutsourceOut;
-                              });
-                            },
-                            panel1: 'Tape',
-                            panel2: 'Stretch Film',
-                            panel3: 'Silica',
-                            panel4: 'Packing Strip',
-                            icon: Icons.circle_outlined,
-                            routeName: [
-                              TapPanel.routeName,
-                              StretchFilmPanel.routeName,
-                              SilicaPanel.routeName,
-                              PackingStripPanel.routeName,
-                            ],
-                          ),
-                        if (HiveService.getPanels()!.contains('6') ||
-                            HiveService.getRole() == '1') ...[
-                          _buildSectionHeader('General'),
+                              if (['1', '8', '2'].any(
+                                    (p) => HiveService.getPanels()!.contains(p),
+                                  ) &&
+                                  ['1', '2'].contains(HiveService.getRole()))
+                                _buildSectionHeader('Account'),
 
-                          SidebarPanelBuilder(
-                            isRolePanel: HiveService.getRole() == '2'
-                                ? false
-                                : true,
-                            currentTap: isWastage,
-                            onTap: () {
-                              setState(() {
-                                isWastage = !isWastage;
-                              });
-                            },
-                            panel1: 'Add',
-                            panel2: 'View',
-                            icon: Icons.delete_outline,
-                            title: 'Wastage Peace',
-                            routeName: [
-                              AddWastagePanel.routeName,
-                              ViewWastagePanel.routeName,
+                              if (HiveService.getPanels()!.contains('1') ||
+                                  HiveService.getRole() == '1')
+                                SidebarPanelBuilder(
+                                  isRolePanel: HiveService.getRole() == '2'
+                                      ? false
+                                      : true,
+                                  currentTap: isStaff,
+                                  onTap: () {
+                                    setState(() {
+                                      isStaff = !isStaff;
+                                    });
+                                  },
+                                  panel1: 'Add',
+                                  panel2: 'View',
+                                  icon: Icons.people,
+                                  title: 'Staff',
+                                  routeName: [
+                                    AddStaff.routeName,
+                                    ViewStaffPanel.routeName,
+                                  ],
+                                ),
+                              if (HiveService.getPanels()!.contains('8') ||
+                                  HiveService.getRole() == '1')
+                                SidebarPanelBuilder(
+                                  currentTap: isClient,
+                                  isRolePanel: HiveService.getRole() == '2'
+                                      ? false
+                                      : true,
+                                  onTap: () {
+                                    setState(() {
+                                      isClient = !isClient;
+                                    });
+                                  },
+                                  panel1: 'Add',
+                                  panel2: 'View',
+                                  icon: Icons.people,
+                                  title: 'Client',
+                                  routeName: [
+                                    AddClientPanel.routeName,
+                                    ViewClientPanel.routeName,
+                                  ],
+                                ),
+                              if (HiveService.getPanels()!.contains('2') ||
+                                  HiveService.getRole() == '1')
+                                SidebarPanelBuilder(
+                                  isRolePanel: HiveService.getRole() == '2'
+                                      ? false
+                                      : true,
+                                  currentTap: isVendor,
+                                  onTap: () {
+                                    setState(() {
+                                      isVendor = !isVendor;
+                                    });
+                                  },
+                                  panel1: 'Add',
+                                  panel2: 'View',
+                                  icon: Icons.store_outlined,
+                                  title: 'Vendor',
+                                  routeName: [
+                                    AddVendorPanel.routeName,
+                                    ViewVendorPanel.routeName,
+                                  ],
+                                ),
+                              if (['3', '4'].any(
+                                    (p) => HiveService.getPanels()!.contains(p),
+                                  ) &&
+                                  ['1', '2'].contains(HiveService.getRole()))
+                                // if (HiveService.getPanels()!.contains('3') &&
+                                //     HiveService.getPanels()!.contains('4'))
+                                _buildSectionHeader('Operations'),
+                              if (HiveService.getPanels()!.contains('3') ||
+                                  HiveService.getRole() == '1')
+                                SidebarPanelBuilder(
+                                  isRolePanel: HiveService.getRole() == '2'
+                                      ? false
+                                      : true,
+                                  currentTap: isJumboRoll,
+                                  onTap: () {
+                                    setState(() {
+                                      isJumboRoll = !isJumboRoll;
+                                    });
+                                  },
+                                  panel1: 'Add',
+                                  panel2: 'View',
+                                  icon: Icons.rotate_90_degrees_ccw_outlined,
+                                  title: 'Jumbo Roll',
+                                  routeName: [
+                                    AddJumboRollPanel.routeName,
+                                    ViewJumboRollPanel.routeName,
+                                  ],
+                                ),
+                              if (HiveService.getPanels()!.contains('4') ||
+                                  HiveService.getRole() == '1')
+                                SidebarPanelBuilder(
+                                  isRolePanel: HiveService.getRole() == '2'
+                                      ? false
+                                      : true,
+                                  currentTap: isRound,
+                                  onTap: () {
+                                    setState(() {
+                                      isRound = !isRound;
+                                    });
+                                  },
+                                  panel1: 'Add',
+                                  panel2: 'View',
+                                  icon: Icons.circle_outlined,
+                                  title: 'Round',
+                                  routeName: [
+                                    AddRoundPanel.routeName,
+                                    ViewRoundPanel.routeName,
+                                  ],
+                                ),
+                              if (['5'].any(
+                                    (p) => HiveService.getPanels()!.contains(p),
+                                  ) &&
+                                  ['1', '2'].contains(HiveService.getRole()))
+                                // if (HiveService.getPanels()!.contains('5'))
+                                _buildSectionHeader('Stock'),
+                              if (HiveService.getPanels()!.contains('5') ||
+                                  HiveService.getRole() == '1')
+                                ListTile(
+                                  onTap: () {
+                                    context.goNamed(OutSourceIN.routeName);
+                                  },
+                                  leading: Container(
+                                    padding: EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Icon(
+                                      Icons
+                                          .swap_horiz_outlined, // Transfer/Exchange icon
+                                      size: 20,
+                                      color: Colors.white.withOpacity(0.9),
+                                    ),
+                                  ),
+                                  title: Text(
+                                    'Inventory - IN',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white.withOpacity(0.9),
+                                    ),
+                                  ),
+                                ),
+                              // _buildSectionHeader('Outsource-OUT'),
+                              if (HiveService.getPanels()!.contains('5') ||
+                                  HiveService.getRole() == '1')
+                                OutSourceSidePanelBuilder(
+                                  currentTap: isOutsourceOut,
+                                  title: 'Inventory',
+                                  onTap: () {
+                                    setState(() {
+                                      isOutsourceOut = !isOutsourceOut;
+                                    });
+                                  },
+                                  panel1: 'Tape',
+                                  panel2: 'Stretch Film',
+                                  // panel3: 'Silica',
+                                  // panel4: 'Packing Strip',
+                                  icon: Icons.circle_outlined,
+                                  routeName: [
+                                    TapPanel.routeName,
+                                    StretchFilmPanel.routeName,
+                                    // SilicaPanel.routeName,
+                                    // PackingStripPanel.routeName,
+                                  ],
+                                ),
+                              if (HiveService.getPanels()!.contains('6') ||
+                                  HiveService.getRole() == '1') ...[
+                                _buildSectionHeader('General'),
+
+                                SidebarPanelBuilder(
+                                  isRolePanel: HiveService.getRole() == '2'
+                                      ? false
+                                      : true,
+                                  currentTap: isWastage,
+                                  onTap: () {
+                                    setState(() {
+                                      isWastage = !isWastage;
+                                    });
+                                  },
+                                  panel1: 'Add',
+                                  panel2: 'View',
+                                  icon: Icons.delete_outline,
+                                  title: 'Wastage Peace',
+                                  routeName: [
+                                    AddWastagePanel.routeName,
+                                    ViewWastagePanel.routeName,
+                                  ],
+                                ),
+                              ],
+
+                              // _buildExpandableMenuItem(
+                              //   'Estimation',
+                              //   Icons.calculate_outlined, // Calculator/Estimation icon
+                              //   [AddEstimation(), ViewstaffPage()],
+                              //   ['ADD', 'VIEW'],
+                              // ),
+                              // _buildExpandableMenuItem(
+                              //   'Loss Meters',
+                              //   Icons.trending_down_outlined, // Downward trend/Loss icon
+                              //   [AddLossMeterPanel(), ViewLossMeterPanel()],
+                              //   ['ADD', 'VIEW'],
+                              // ),
+                              if (['9', '10'].any(
+                                    (p) => HiveService.getPanels()!.contains(p),
+                                  ) &&
+                                  ['1', '2'].contains(HiveService.getRole()))
+                                _buildSectionHeader('Stock Maintenance'),
+                              if (HiveService.getPanels()!.contains('9') ||
+                                  HiveService.getRole() == '1')
+                                SidebarPanelBuilder(
+                                  isRolePanel: HiveService.getRole() == '2'
+                                      ? false
+                                      : true,
+                                  currentTap: isCarton,
+                                  onTap: () {
+                                    setState(() {
+                                      isCarton = !isCarton;
+                                    });
+                                  },
+                                  panel1: 'Add',
+                                  panel2: 'View',
+                                  icon: Icons.inventory_2_outlined,
+                                  title: 'Carton',
+                                  routeName: [
+                                    AddCartonPanel.routeName,
+                                    ViewCartonPanel.routeName,
+                                  ],
+                                ),
+
+                              if (HiveService.getPanels()!.contains('10') ||
+                                  HiveService.getRole() == '1')
+                                SidebarPanelBuilder(
+                                  isRolePanel: HiveService.getRole() == '2'
+                                      ? false
+                                      : true,
+                                  currentTap: isCore,
+                                  onTap: () {
+                                    setState(() {
+                                      isCore = !isCore;
+                                    });
+                                  },
+                                  panel1: 'Add',
+                                  panel2: 'View',
+                                  icon: Icons.category_outlined,
+                                  title: 'Core',
+                                  routeName: [
+                                    AddCorePanel.routeName,
+                                    ViewCorePanel.routeName,
+                                  ],
+                                ),
+
+                              // _buildSectionHeader('Miss Record'),
+                              // OutSourceSidePanelBuilder2(
+                              //   currentTap: isOutsourceOut2,
+                              //   title: 'Miss Record Panel',
+                              //   onTap: () {
+                              //     setState(() {
+                              //       isOutsourceOut2 = !isOutsourceOut2;
+                              //     });
+                              //   },
+                              //   panel1: 'Client',
+                              //   panel2: 'Vendor',
+                              //   panel3: 'Jumbo Roll',
+                              //   panel4: 'Round',
+                              //   panel5: 'Tape',
+                              //   panel6: 'Stretch Film',
+                              //   icon: Icons.circle_outlined,
+                              //   routeName: [
+                              //     ClientMissRecordPanel.routeName,
+                              //     VendorMissRecordPanel.routeName,
+                              //     JumboRollMissRecordPanel.routeName,
+                              //     RoundMissRecordPanel.routeName,
+                              //     TapeMissRecordPanel.routeName,
+                              //     StretchFilmMissRecordPanel.routeName,
+                              //   ],
+                              // ),
+
+                              // _buildSectionHeader('Logout'),
+                              const SizedBox(height: 50),
                             ],
                           ),
-                        ],
-
-                        // _buildExpandableMenuItem(
-                        //   'Estimation',
-                        //   Icons.calculate_outlined, // Calculator/Estimation icon
-                        //   [AddEstimation(), ViewstaffPage()],
-                        //   ['ADD', 'VIEW'],
-                        // ),
-                        // _buildExpandableMenuItem(
-                        //   'Loss Meters',
-                        //   Icons.trending_down_outlined, // Downward trend/Loss icon
-                        //   [AddLossMeterPanel(), ViewLossMeterPanel()],
-                        //   ['ADD', 'VIEW'],
-                        // ),
-                        if (['9', '10'].any(
-                              (p) => HiveService.getPanels()!.contains(p),
-                            ) &&
-                            ['1', '2'].contains(HiveService.getRole()))
-                          _buildSectionHeader('Stock Maintenance'),
-                        if (HiveService.getPanels()!.contains('9') ||
-                            HiveService.getRole() == '1')
-                          SidebarPanelBuilder(
-                            isRolePanel: HiveService.getRole() == '2'
-                                ? false
-                                : true,
-                            currentTap: isCarton,
-                            onTap: () {
-                              setState(() {
-                                isCarton = !isCarton;
-                              });
-                            },
-                            panel1: 'Add',
-                            panel2: 'View',
-                            icon: Icons.inventory_2_outlined,
-                            title: 'Carton',
-                            routeName: [
-                              AddCartonPanel.routeName,
-                              ViewCartonPanel.routeName,
-                            ],
-                          ),
-
-                        if (HiveService.getPanels()!.contains('10') ||
-                            HiveService.getRole() == '1')
-                          SidebarPanelBuilder(
-                            isRolePanel: HiveService.getRole() == '2'
-                                ? false
-                                : true,
-                            currentTap: isCore,
-                            onTap: () {
-                              setState(() {
-                                isCore = !isCore;
-                              });
-                            },
-                            panel1: 'Add',
-                            panel2: 'View',
-                            icon: Icons.category_outlined,
-                            title: 'Core',
-                            routeName: [
-                              AddCorePanel.routeName,
-                              ViewCorePanel.routeName,
-                            ],
-                          ),
-
-                        // _buildSectionHeader('Miss Record'),
-                        // OutSourceSidePanelBuilder2(
-                        //   currentTap: isOutsourceOut2,
-                        //   title: 'Miss Record Panel',
-                        //   onTap: () {
-                        //     setState(() {
-                        //       isOutsourceOut2 = !isOutsourceOut2;
-                        //     });
-                        //   },
-                        //   panel1: 'Client',
-                        //   panel2: 'Vendor',
-                        //   panel3: 'Jumbo Roll',
-                        //   panel4: 'Round',
-                        //   panel5: 'Tape',
-                        //   panel6: 'Stretch Film',
-                        //   icon: Icons.circle_outlined,
-                        //   routeName: [
-                        //     ClientMissRecordPanel.routeName,
-                        //     VendorMissRecordPanel.routeName,
-                        //     JumboRollMissRecordPanel.routeName,
-                        //     RoundMissRecordPanel.routeName,
-                        //     TapeMissRecordPanel.routeName,
-                        //     StretchFilmMissRecordPanel.routeName,
-                        //   ],
-                        // ),
-
-                        // _buildSectionHeader('Logout'),
-                        const SizedBox(height: 50),
-                      ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 350),
+                    child: widget.child,
+                  ),
+                ),
+              ],
+            )
+          : Row(
+              children: [
+                // if (Responsive.isDesktop(context))
+                Container(
+                  width: 100,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF2C3E50), Color(0xFF1A1A2E)],
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 20,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 30),
+                      // Modern logo container
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            isShowPanel = !isShowPanel;
+                          });
+                        },
+                        child: TooltipTheme(
+                          data: _buildTooltipTheme,
+                          child: Tooltip(
+                            message: 'Tap to Maximize menu',
+
+                            child: Container(
+                              width: 50,
+                              height: 50,
+                              clipBehavior: Clip.antiAlias,
+                              decoration: BoxDecoration(
+                                // shape: BoxShape.circle,
+                                borderRadius: BorderRadius.circular(10),
+                                color: Colors.white,
+                              ),
+                              child: Image.asset(
+                                Assets.indoGripLogoImage,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                      Expanded(
+                        child: ClipRRect(
+                          child: ListView(
+                            padding: EdgeInsets.zero,
+                            children: [
+                              TooltipTheme(
+                                data: _buildTooltipTheme,
+                                child: Tooltip(
+                                  message: 'Dashboard',
+                                  child: ListTile(
+                                    onTap: () {
+                                      context.goNamed(
+                                        IndoGripDashboard.routeName,
+                                      );
+                                    },
+                                    leading: Container(
+                                      padding: EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Icon(
+                                        Icons
+                                            .dashboard, // Transfer/Exchange icon
+                                        size: 20,
+                                        color: Colors.white.withOpacity(0.9),
+                                      ),
+                                    ),
+                                    // title: Text(
+                                    //   'Dashboard',
+                                    //   style: TextStyle(
+                                    //     fontSize: 14,
+                                    //     fontWeight: FontWeight.w500,
+                                    //     color: Colors.white.withOpacity(0.9),
+                                    //   ),
+                                    // ),
+                                  ),
+                                ),
+                              ),
+
+                              if (HiveService.getPanels()!.contains('7') ||
+                                  HiveService.getRole() == '1' ||
+                                  HiveService.getRole() == '2')
+                                TooltipTheme(
+                                  data: _buildTooltipTheme,
+                                  child: Tooltip(
+                                    message: 'Challan',
+                                    child: ListTile(
+                                      onTap: () {
+                                        context.goNamed(ChalanPanel.routeName);
+                                      },
+                                      leading: Container(
+                                        padding: EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          Icons.note, // Transfer/Exchange icon
+                                          size: 20,
+                                          color: Colors.white.withOpacity(0.9),
+                                        ),
+                                      ),
+                                      // title: Text(
+                                      //   'Challan',
+                                      //   style: TextStyle(
+                                      //     fontSize: 14,
+                                      //     fontWeight: FontWeight.w500,
+                                      //     color: Colors.white.withOpacity(0.9),
+                                      //   ),
+                                      // ),
+                                    ),
+                                  ),
+                                ),
+
+                              // if (['1', '8', '2'].any(
+                              //       (p) => HiveService.getPanels()!.contains(p),
+                              //     ) &&
+                              //     ['1', '2'].contains(HiveService.getRole()))
+                              //   _buildSectionHeader('Account'),
+                              if (HiveService.getPanels()!.contains('1') ||
+                                  HiveService.getRole() == '1')
+                                SmallSidebarPanelBuilder(
+                                  isRolePanel: HiveService.getRole() == '2'
+                                      ? false
+                                      : true,
+                                  currentTap: isStaff,
+                                  onTap: () {
+                                    setState(() {
+                                      isStaff = !isStaff;
+                                    });
+                                  },
+                                  panel1: 'Add Staff',
+                                  panel2: 'View Staff',
+                                  icon: Icons.people,
+                                  title: 'Staff',
+                                  routeName: [
+                                    AddStaff.routeName,
+                                    ViewStaffPanel.routeName,
+                                  ],
+                                ),
+                              if (HiveService.getPanels()!.contains('8') ||
+                                  HiveService.getRole() == '1')
+                                SmallSidebarPanelBuilder(
+                                  currentTap: isClient,
+                                  isRolePanel: HiveService.getRole() == '2'
+                                      ? false
+                                      : true,
+                                  onTap: () {
+                                    setState(() {
+                                      isClient = !isClient;
+                                    });
+                                  },
+                                  panel1: 'Add Client',
+                                  panel2: 'View Client',
+                                  icon: Icons.people,
+                                  title: 'Client',
+                                  routeName: [
+                                    AddClientPanel.routeName,
+                                    ViewClientPanel.routeName,
+                                  ],
+                                ),
+                              if (HiveService.getPanels()!.contains('2') ||
+                                  HiveService.getRole() == '1')
+                                SmallSidebarPanelBuilder(
+                                  isRolePanel: HiveService.getRole() == '2'
+                                      ? false
+                                      : true,
+                                  currentTap: isVendor,
+                                  onTap: () {
+                                    setState(() {
+                                      isVendor = !isVendor;
+                                    });
+                                  },
+                                  panel1: 'Add Vendor',
+                                  panel2: 'View Vendor',
+                                  icon: Icons.store_outlined,
+                                  title: 'Vendor',
+                                  routeName: [
+                                    AddVendorPanel.routeName,
+                                    ViewVendorPanel.routeName,
+                                  ],
+                                ),
+                              // if (['3', '4'].any(
+                              //       (p) => HiveService.getPanels()!.contains(p),
+                              //     ) &&
+                              //     ['1', '2'].contains(HiveService.getRole()))
+                              // if (HiveService.getPanels()!.contains('3') &&
+                              //     HiveService.getPanels()!.contains('4'))
+                              // _buildSectionHeader('Operations'),
+                              if (HiveService.getPanels()!.contains('3') ||
+                                  HiveService.getRole() == '1')
+                                SmallSidebarPanelBuilder(
+                                  isRolePanel: HiveService.getRole() == '2'
+                                      ? false
+                                      : true,
+                                  currentTap: isJumboRoll,
+                                  onTap: () {
+                                    setState(() {
+                                      isJumboRoll = !isJumboRoll;
+                                    });
+                                  },
+                                  panel1: 'Add Jumbo',
+                                  panel2: 'View Jumbo',
+                                  icon: Icons.rotate_90_degrees_ccw_outlined,
+                                  title: 'Jumbo Roll',
+                                  routeName: [
+                                    AddJumboRollPanel.routeName,
+                                    ViewJumboRollPanel.routeName,
+                                  ],
+                                ),
+                              if (HiveService.getPanels()!.contains('4') ||
+                                  HiveService.getRole() == '1')
+                                SmallSidebarPanelBuilder(
+                                  isRolePanel: HiveService.getRole() == '2'
+                                      ? false
+                                      : true,
+                                  currentTap: isRound,
+                                  onTap: () {
+                                    setState(() {
+                                      isRound = !isRound;
+                                    });
+                                  },
+                                  panel1: 'Add Round',
+                                  panel2: 'View Round',
+                                  icon: Icons.circle_outlined,
+                                  title: 'Round',
+                                  routeName: [
+                                    AddRoundPanel.routeName,
+                                    ViewRoundPanel.routeName,
+                                  ],
+                                ),
+                              // if (['5'].any(
+                              //       (p) => HiveService.getPanels()!.contains(p),
+                              //     ) &&
+                              //     ['1', '2'].contains(HiveService.getRole()))
+                              //   // if (HiveService.getPanels()!.contains('5'))
+                              //   _buildSectionHeader('Stock'),
+                              if (HiveService.getPanels()!.contains('5') ||
+                                  HiveService.getRole() == '1')
+                                TooltipTheme(
+                                  data: _buildTooltipTheme,
+                                  child: Tooltip(
+                                    message: 'Inventory - IN',
+                                    child: ListTile(
+                                      onTap: () {
+                                        context.goNamed(OutSourceIN.routeName);
+                                      },
+                                      leading: Container(
+                                        padding: EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          Icons
+                                              .swap_horiz_outlined, // Transfer/Exchange icon
+                                          size: 20,
+                                          color: Colors.white.withOpacity(0.9),
+                                        ),
+                                      ),
+                                      // title: Text(
+                                      //   'Inventory - IN',
+                                      //   style: TextStyle(
+                                      //     fontSize: 14,
+                                      //     fontWeight: FontWeight.w500,
+                                      //     color: Colors.white.withOpacity(0.9),
+                                      //   ),
+                                      // ),
+                                    ),
+                                  ),
+                                ),
+                              // _buildSectionHeader('Outsource-OUT'),
+                              if (HiveService.getPanels()!.contains('5') ||
+                                  HiveService.getRole() == '1')
+                                SmallOutSourceSidePanelBuilder(
+                                  currentTap: isOutsourceOut,
+                                  title: 'Inventory',
+                                  onTap: () {
+                                    setState(() {
+                                      isOutsourceOut = !isOutsourceOut;
+                                    });
+                                  },
+                                  panel1: 'Tape',
+                                  panel2: 'Stretch Film',
+                                  // panel3: 'Silica',
+                                  // panel4: 'Packing Strip',
+                                  icon: Icons.circle_outlined,
+                                  routeName: [
+                                    TapPanel.routeName,
+                                    StretchFilmPanel.routeName,
+                                    // SilicaPanel.routeName,
+                                    // PackingStripPanel.routeName,
+                                  ],
+                                ),
+
+                              // if (HiveService.getPanels()!.contains('6') ||
+                              //     HiveService.getRole() == '1') ...[
+                              //   _buildSectionHeader('General'),
+                              SmallSidebarPanelBuilder(
+                                isRolePanel: HiveService.getRole() == '2'
+                                    ? false
+                                    : true,
+                                currentTap: isWastage,
+                                onTap: () {
+                                  setState(() {
+                                    isWastage = !isWastage;
+                                  });
+                                },
+                                panel1: 'Add Wastage',
+                                panel2: 'View Wastage',
+                                icon: Icons.delete_outline,
+                                title: 'Wastage Peace',
+                                routeName: [
+                                  AddWastagePanel.routeName,
+                                  ViewWastagePanel.routeName,
+                                ],
+                              ),
+                              // ],
+
+                              // _buildExpandableMenuItem(
+                              //   'Estimation',
+                              //   Icons.calculate_outlined, // Calculator/Estimation icon
+                              //   [AddEstimation(), ViewstaffPage()],
+                              //   ['ADD', 'VIEW'],
+                              // ),
+                              // _buildExpandableMenuItem(
+                              //   'Loss Meters',
+                              //   Icons.trending_down_outlined, // Downward trend/Loss icon
+                              //   [AddLossMeterPanel(), ViewLossMeterPanel()],
+                              //   ['ADD', 'VIEW'],
+                              // ),
+                              // if (['9', '10'].any(
+                              //       (p) => HiveService.getPanels()!.contains(p),
+                              //     ) &&
+                              //     ['1', '2'].contains(HiveService.getRole()))
+                              //   _buildSectionHeader('Stock Maintenance'),
+                              if (HiveService.getPanels()!.contains('9') ||
+                                  HiveService.getRole() == '1')
+                                SmallSidebarPanelBuilder(
+                                  isRolePanel: HiveService.getRole() == '2'
+                                      ? false
+                                      : true,
+                                  currentTap: isCarton,
+                                  onTap: () {
+                                    setState(() {
+                                      isCarton = !isCarton;
+                                    });
+                                  },
+                                  panel1: 'Add Carton',
+                                  panel2: 'View Carton',
+                                  icon: Icons.inventory_2_outlined,
+                                  title: 'Carton',
+                                  routeName: [
+                                    AddCartonPanel.routeName,
+                                    ViewCartonPanel.routeName,
+                                  ],
+                                ),
+
+                              if (HiveService.getPanels()!.contains('10') ||
+                                  HiveService.getRole() == '1')
+                                SmallSidebarPanelBuilder(
+                                  isRolePanel: HiveService.getRole() == '2'
+                                      ? false
+                                      : true,
+                                  currentTap: isCore,
+                                  onTap: () {
+                                    setState(() {
+                                      isCore = !isCore;
+                                    });
+                                  },
+                                  panel1: 'Add Core',
+                                  panel2: 'View Core',
+                                  icon: Icons.category_outlined,
+                                  title: 'Core',
+                                  routeName: [
+                                    AddCorePanel.routeName,
+                                    ViewCorePanel.routeName,
+                                  ],
+                                ),
+
+                              // _buildSectionHeader('Miss Record'),
+                              // OutSourceSidePanelBuilder2(
+                              //   currentTap: isOutsourceOut2,
+                              //   title: 'Miss Record Panel',
+                              //   onTap: () {
+                              //     setState(() {
+                              //       isOutsourceOut2 = !isOutsourceOut2;
+                              //     });
+                              //   },
+                              //   panel1: 'Client',
+                              //   panel2: 'Vendor',
+                              //   panel3: 'Jumbo Roll',
+                              //   panel4: 'Round',
+                              //   panel5: 'Tape',
+                              //   panel6: 'Stretch Film',
+                              //   icon: Icons.circle_outlined,
+                              //   routeName: [
+                              //     ClientMissRecordPanel.routeName,
+                              //     VendorMissRecordPanel.routeName,
+                              //     JumboRollMissRecordPanel.routeName,
+                              //     RoundMissRecordPanel.routeName,
+                              //     TapeMissRecordPanel.routeName,
+                              //     StretchFilmMissRecordPanel.routeName,
+                              //   ],
+                              // ),
+
+                              // _buildSectionHeader('Logout'),
+                              const SizedBox(height: 50),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 350),
+                    child: widget.child,
                   ),
                 ),
               ],
             ),
-          ),
-          Expanded(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 350),
-              child: widget.child,
-            ),
-          ),
-        ],
-      ),
     );
   }
 

@@ -25,11 +25,7 @@ abstract class ViewClientBuilder extends State<ViewClientPanel> {
   int pageNo = 1;
   int pageQty = 1;
 
-  @override
-  void initState() {
-    super.initState();
-    globalBloc = GlobalBloc(globalRepository: GlobalManagerRepository());
-    clientBloc = ClientBloc();
+  eventHandler() {
     clientBloc.add(
       ViewClientRecordsFetchingEvent(
         viewClientApiParam: ViewRecordApiParam(
@@ -43,7 +39,47 @@ abstract class ViewClientBuilder extends State<ViewClientPanel> {
         ),
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    globalBloc = GlobalBloc(globalRepository: GlobalManagerRepository());
+    clientBloc = ClientBloc();
+    eventHandler();
+
     // _initializeDataSource();
+  }
+
+  Key refreshKey = UniqueKey();
+
+  void clearFiltersOnRefresh() {
+    fromDateController.clear();
+    toDateController.clear();
+    searchController.clear();
+
+    // Change key to force rebuild of dropdown widgets
+    refreshKey = UniqueKey();
+
+    setState(() {
+      recordValue = null;
+      filterValue = null;
+      entryValue = null;
+    });
+
+    clientBloc.add(
+      ViewClientRecordsFetchingEvent(
+        viewClientApiParam: ViewRecordApiParam(
+          keyword: searchController.text,
+          filterBy: recordValue ?? '',
+          orderBy: filterValue.toString(),
+          pageNo: pageNo.toString(),
+          sortBy: entryValue.toString(),
+          fromDate: fromDateController.text,
+          toDate: toDateController.text,
+        ),
+      ),
+    );
   }
 
   final TextEditingController searchController = TextEditingController();
@@ -71,80 +107,33 @@ abstract class ViewClientBuilder extends State<ViewClientPanel> {
   }
 
   Widget get searchFields => SearchFields(
+    key: refreshKey,
     isStatus: true,
     controller: searchController,
     statusValue: recordValue,
     orderByValue: filterValue,
     sortByValue: entryValue,
     onSearch: (keyword) {
-      clientBloc.add(
-        ViewClientRecordsFetchingEvent(
-          viewClientApiParam: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue ?? '',
-            orderBy: filterValue.toString(),
-            pageNo: pageNo.toString(),
-            sortBy: entryValue.toString(),
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
     },
     onChangedStatus: (status) {
       setState(() {
         recordValue = status;
       });
-      clientBloc.add(
-        ViewClientRecordsFetchingEvent(
-          viewClientApiParam: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue ?? '',
-            orderBy: filterValue.toString(),
-            pageNo: pageNo.toString(),
-            sortBy: entryValue.toString(),
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
     },
     onChangedOrder: (order) {
       setState(() {
         filterValue = order;
       });
-      clientBloc.add(
-        ViewClientRecordsFetchingEvent(
-          viewClientApiParam: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue ?? '',
-            orderBy: filterValue.toString(),
-            pageNo: pageNo.toString(),
-            sortBy: entryValue.toString(),
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
     },
     onChangedSort: (sortBy) {
       setState(() {
         entryValue = sortBy;
       });
       log('Entry Value: $entryValue');
-      clientBloc.add(
-        ViewClientRecordsFetchingEvent(
-          viewClientApiParam: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue ?? '',
-            orderBy: filterValue.toString(),
-            pageNo: pageNo.toString(),
-            sortBy: entryValue.toString(),
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
     },
   );
 
@@ -229,6 +218,18 @@ abstract class ViewClientBuilder extends State<ViewClientPanel> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         DateFiltration(
+          onFromChanged: (fromDate) {
+            setState(() {
+              fromDateController.text = fromDate;
+            });
+            eventHandler();
+          },
+          onToChanged: (toDate) {
+            setState(() {
+              toDateController.text = toDate;
+            });
+            eventHandler();
+          },
           fromDateController: fromDateController,
           toDateController: toDateController,
         ),
@@ -245,6 +246,15 @@ abstract class ViewClientBuilder extends State<ViewClientPanel> {
               onPressed: () async {
                 await ClientExcelExporter.exportClientExcelFile(
                   context: context,
+                  param: ViewRecordApiParam(
+                    keyword: searchController.text,
+                    filterBy: recordValue ?? '',
+                    orderBy: filterValue.toString(),
+                    pageNo: pageNo.toString(),
+                    sortBy: entryValue.toString(),
+                    fromDate: fromDateController.text,
+                    toDate: toDateController.text,
+                  ),
                 );
               },
             ),
@@ -283,19 +293,7 @@ abstract class ViewClientBuilder extends State<ViewClientPanel> {
         setState(() {
           pageNo = 1;
         });
-        clientBloc.add(
-          ViewClientRecordsFetchingEvent(
-            viewClientApiParam: ViewRecordApiParam(
-              keyword: searchController.text,
-              filterBy: recordValue ?? '',
-              orderBy: filterValue.toString(),
-              pageNo: pageNo.toString(),
-              sortBy: entryValue.toString(),
-              fromDate: fromDateController.text,
-              toDate: toDateController.text,
-            ),
-          ),
-        );
+        clearFiltersOnRefresh();
       },
     ),
   );

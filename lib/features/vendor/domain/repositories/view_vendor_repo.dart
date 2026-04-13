@@ -19,19 +19,20 @@ abstract class ViewVendorRepository {
   }) async {
     ViewVendorModel viewVendorModel = ViewVendorModel();
     try {
+      final formData = FormData.fromMap({
+        'activity': 'view-vendor',
+        'userKey': HiveService.getUserId(),
+        'keyword': param.keyword,
+        // 'filterBy': param.filterBy,
+        'sortBy': param.sortBy,
+        'orderBy': param.orderBy,
+        'pageNo': param.pageNo,
+        'fromDate': param.fromDate ?? '',
+        'toDate': param.toDate ?? '',
+      });
       final response = await retry(
         () => DioService.dioPostApiCall(
-          data: FormData.fromMap({
-            'activity': 'view-vendor',
-            'userKey': HiveService.getUserId(),
-            'keyword': param.keyword,
-            'filterBy': param.filterBy,
-            'sortBy': param.sortBy,
-            'orderBy': param.orderBy,
-            'pageNo': param.pageNo,
-            'fromDate': param.fromDate ?? '',
-            'toDate': param.toDate ?? '',
-          }),
+          data: formData,
         ).timeout(const Duration(seconds: 5)),
         retryIf: (e) => e is TimeoutException || e is DioException,
         maxAttempts: 3,
@@ -43,6 +44,15 @@ abstract class ViewVendorRepository {
         developer.log(
           viewVendorModel.message.toString(),
           name: 'View Vendor Success Response',
+        );
+
+        developer.log(
+          response.data.toString(),
+          name: 'View Vendor Json Response',
+        );
+        developer.log(
+          formData.fields.toString(),
+          name: 'View Vendor Form Data',
         );
       }
     } catch (e) {
@@ -92,12 +102,21 @@ abstract class ViewVendorRepository {
     return successResponse;
   }
 
-  static Future<List<Map<String, dynamic>>> loadViewVendorJsonData() async {
+  static Future<List<Map<String, dynamic>>> loadViewVendorJsonData(
+    ViewRecordApiParam param,
+  ) async {
     try {
       final response = await DioService.dioPostApiCall(
         data: FormData.fromMap({
           'activity': 'view-vendor',
           'userKey': HiveService.getUserId(),
+          'keyword': param.keyword,
+          'filterBy': param.filterBy,
+          'sortBy': param.sortBy,
+          'orderBy': param.orderBy,
+          'pageNo': param.pageNo ?? '',
+          'fromDate': param.fromDate ?? '',
+          'toDate': param.toDate ?? '',
         }),
       );
 

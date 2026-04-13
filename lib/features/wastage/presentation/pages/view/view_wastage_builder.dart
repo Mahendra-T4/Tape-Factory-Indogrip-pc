@@ -9,6 +9,9 @@ import 'package:indogrip/features/wastage/presentation/bloc/wastage_bloc.dart';
 import 'package:indogrip/features/wastage/presentation/pages/view/view_wastage.dart';
 
 abstract class ViewWastageBuilder extends State<ViewWastagePanel> {
+  Key refreshKey = UniqueKey();
+  final fromDateController = TextEditingController();
+  final toDateController = TextEditingController();
   late WastageBloc wastageBloc;
   bool isMultipleSelection = false;
   List<Map<String, dynamic>> selectedItems = [];
@@ -28,6 +31,37 @@ abstract class ViewWastageBuilder extends State<ViewWastagePanel> {
 
   var recordValue, filterValue, entryValue;
 
+  eventHandler() {
+    wastageBloc.add(
+      ViewWastageFromRecords(
+        param: ViewRecordApiParam(
+          toDate: toDateController.text.trim(),
+          fromDate: fromDateController.text.trim(),
+          keyword: searchController.text,
+          filterBy: recordValue ?? '',
+          orderBy: filterValue.toString(),
+          pageNo: currentPage.toString(),
+          sortBy: entryValue.toString(),
+        ),
+      ),
+    );
+  }
+
+  clearFiltersOnRefresh() {
+    searchController.clear();
+    fromDateController.clear();
+    toDateController.clear();
+    setState(() {
+      recordValue = null;
+      filterValue = null;
+      entryValue = null;
+    });
+
+    refreshKey = UniqueKey();
+
+    eventHandler();
+  }
+
   void handleSelectionChanged(List<Map<String, dynamic>> items) {
     setState(() {
       selectedItems = items;
@@ -35,68 +69,29 @@ abstract class ViewWastageBuilder extends State<ViewWastagePanel> {
   }
 
   Widget get searchFields => SearchFields(
+    key: refreshKey,
     isStatus: true,
     controller: searchController,
     onSearch: (keyword) {
-      wastageBloc.add(
-        ViewWastageFromRecords(
-          param: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue ?? '',
-            orderBy: filterValue.toString(),
-            pageNo: currentPage.toString(),
-            sortBy: entryValue.toString(),
-          ),
-        ),
-      );
+      eventHandler();
     },
     onChangedStatus: (status) {
       setState(() {
         recordValue = status;
       });
-      wastageBloc.add(
-        ViewWastageFromRecords(
-          param: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue ?? '',
-            orderBy: filterValue.toString(),
-            pageNo: currentPage.toString(),
-            sortBy: entryValue.toString(),
-          ),
-        ),
-      );
+      eventHandler();
     },
     onChangedOrder: (order) {
       setState(() {
         filterValue = order;
       });
-      wastageBloc.add(
-        ViewWastageFromRecords(
-          param: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue ?? '',
-            orderBy: filterValue.toString(),
-            pageNo: currentPage.toString(),
-            sortBy: entryValue.toString(),
-          ),
-        ),
-      );
+      eventHandler();
     },
     onChangedSort: (sortBy) {
       setState(() {
         entryValue = sortBy ?? 10;
       });
-      wastageBloc.add(
-        ViewWastageFromRecords(
-          param: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue ?? '',
-            orderBy: filterValue.toString(),
-            pageNo: currentPage.toString(),
-            sortBy: entryValue.toString(),
-          ),
-        ),
-      );
+      eventHandler();
     },
   );
 
@@ -108,17 +103,7 @@ abstract class ViewWastageBuilder extends State<ViewWastagePanel> {
         height: 35,
         child: RefreshButton(
           onPressed: () {
-            wastageBloc.add(
-              ViewWastageFromRecords(
-                param: ViewRecordApiParam(
-                  keyword: searchController.text,
-                  filterBy: recordValue ?? '',
-                  orderBy: filterValue.toString(),
-                  pageNo: currentPage.toString(),
-                  sortBy: entryValue.toString(),
-                ),
-              ),
-            );
+            clearFiltersOnRefresh();
           },
         ),
       ),

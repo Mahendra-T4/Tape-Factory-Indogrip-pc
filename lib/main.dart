@@ -36,12 +36,12 @@ void main() async {
 
   // Calculate responsive window size based on typical screen sizes
   // Use conservative defaults that work on most screens
-  final defaultWidth = 1200.0; // Reasonable default width
+  final defaultWidth = 1300.0; // Reasonable default width
   final defaultHeight =
       850.0; // Reasonable default height with space for title bar
 
   // Ensure minimum size allows proper title bar display
-  final minWidth = 1200.0; // Increased minimum width for title bar
+  final minWidth = 1300.0; // Increased minimum width for title bar
   final minHeight = 760.0; // Increased minimum height for proper layout
 
   // Configure window options with responsive sizing and proper title bar

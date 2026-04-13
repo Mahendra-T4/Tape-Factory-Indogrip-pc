@@ -11,8 +11,8 @@ class OutSourceSidePanelBuilder extends StatefulWidget {
     required this.routeName,
     this.panel1,
     this.panel2,
-    this.panel3,
-    this.panel4,
+    // this.panel3,
+    // this.panel4,
   });
   final bool currentTap;
   final VoidCallback onTap;
@@ -20,8 +20,8 @@ class OutSourceSidePanelBuilder extends StatefulWidget {
   final String title;
   String? panel1;
   String? panel2;
-  String? panel3;
-  String? panel4;
+  // String? panel3;
+  // String? panel4;
   final List<String> routeName;
 
   @override
@@ -177,62 +177,62 @@ class _SidebarPanelBuilderState extends State<OutSourceSidePanelBuilder>
                     ),
                   ),
                 ),
-                Container(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    color: Colors.white.withOpacity(0.05),
-                  ),
-                  child: ListTile(
-                    onTap: () {
-                      context.goNamed(widget.routeName[2]);
-                    },
-                    leading: Icon(
-                      Icons.grain,
-                      size: 20,
-                      color: Colors.white.withOpacity(0.9),
-                    ),
-                    title: Text(
-                      widget.panel3 ?? 'Silica',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white.withOpacity(0.9),
-                      ),
-                    ),
-                  ),
-                ),
-                Container(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    color: Colors.white.withOpacity(0.05),
-                  ),
-                  child: ListTile(
-                    onTap: () {
-                      context.goNamed(widget.routeName[3]);
-                    },
-                    leading: Icon(
-                      Icons.add_box,
-                      size: 20,
-                      color: Colors.white.withOpacity(0.9),
-                    ),
-                    title: Text(
-                      widget.panel4 ?? 'Packing Strip',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white.withOpacity(0.9),
-                      ),
-                    ),
-                  ),
-                ),
+                // Container(
+                //   margin: const EdgeInsets.symmetric(
+                //     horizontal: 8,
+                //     vertical: 2,
+                //   ),
+                //   decoration: BoxDecoration(
+                //     borderRadius: BorderRadius.circular(8),
+                //     color: Colors.white.withOpacity(0.05),
+                //   ),
+                //   child: ListTile(
+                //     onTap: () {
+                //       context.goNamed(widget.routeName[2]);
+                //     },
+                //     leading: Icon(
+                //       Icons.grain,
+                //       size: 20,
+                //       color: Colors.white.withOpacity(0.9),
+                //     ),
+                //     title: Text(
+                //       widget.panel3 ?? 'Silica',
+                //       style: TextStyle(
+                //         fontSize: 14,
+                //         fontWeight: FontWeight.w500,
+                //         color: Colors.white.withOpacity(0.9),
+                //       ),
+                //     ),
+                //   ),
+                // ),
+                // Container(
+                //   margin: const EdgeInsets.symmetric(
+                //     horizontal: 8,
+                //     vertical: 2,
+                //   ),
+                //   decoration: BoxDecoration(
+                //     borderRadius: BorderRadius.circular(8),
+                //     color: Colors.white.withOpacity(0.05),
+                //   ),
+                //   child: ListTile(
+                //     onTap: () {
+                //       context.goNamed(widget.routeName[3]);
+                //     },
+                //     leading: Icon(
+                //       Icons.add_box,
+                //       size: 20,
+                //       color: Colors.white.withOpacity(0.9),
+                //     ),
+                //     title: Text(
+                //       widget.panel4 ?? 'Packing Strip',
+                //       style: TextStyle(
+                //         fontSize: 14,
+                //         fontWeight: FontWeight.w500,
+                //         color: Colors.white.withOpacity(0.9),
+                //       ),
+                //     ),
+                //   ),
+                // ),
               ],
             ),
           ),

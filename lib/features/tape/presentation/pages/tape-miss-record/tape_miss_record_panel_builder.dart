@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:indogrip/core/utils/scroll_behavier.dart';
 import 'package:indogrip/features/outsource/data/model/tap_miss_record_model.dart';
 import 'package:indogrip/features/outsource/data/model/upload_tap_miss_record_model.dart';
 import 'package:indogrip/features/tape/data/tape_miss_record_datasource.dart';
@@ -40,23 +41,26 @@ abstract class TapeMissRecordPanelBuilder extends State<TapeMissRecordPanel> {
   Widget get buildTableRecordWidget => Expanded(
     child: Padding(
       padding: const EdgeInsets.only(left: 12, right: 12),
-      child: SfDataGrid(
-        showHorizontalScrollbar: true,
-        key: _key,
-        rowsPerPage: 4,
-        allowPullToRefresh: true,
-        allowColumnsResizing: true,
-        columnResizeMode: ColumnResizeMode.onResizeEnd,
-        isScrollbarAlwaysShown: true,
-        showVerticalScrollbar: true,
-        onColumnResizeUpdate: (ColumnResizeUpdateDetails details) {
-          setState(() {
-            columnWidths[details.column.columnName] = details.width;
-          });
-          return true;
-        },
-        source: _dataSource!,
-        columns: buildGridColumns(),
+      child: ScrollConfiguration(
+        behavior: HorizontalMouseScrollBehavior(),
+        child: SfDataGrid(
+          showHorizontalScrollbar: true,
+          key: _key,
+          rowsPerPage: 4,
+          allowPullToRefresh: true,
+          allowColumnsResizing: true,
+          columnResizeMode: ColumnResizeMode.onResizeEnd,
+          isScrollbarAlwaysShown: true,
+          showVerticalScrollbar: true,
+          onColumnResizeUpdate: (ColumnResizeUpdateDetails details) {
+            setState(() {
+              columnWidths[details.column.columnName] = details.width;
+            });
+            return true;
+          },
+          source: _dataSource!,
+          columns: buildGridColumns(),
+        ),
       ),
     ),
   );
@@ -75,7 +79,7 @@ abstract class TapeMissRecordPanelBuilder extends State<TapeMissRecordPanel> {
       ),
       GridColumn(
         columnName: 'Reason',
-        width: 120,
+        width: 450,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),

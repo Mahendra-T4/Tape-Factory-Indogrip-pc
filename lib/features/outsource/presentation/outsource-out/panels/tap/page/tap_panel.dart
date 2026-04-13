@@ -24,6 +24,7 @@ import 'package:indogrip/features/outsource/presentation/outside-in/edit/edit_in
 import 'package:indogrip/features/outsource/presentation/outsource-out/panels/tap/page/tape_builder.dart';
 import 'package:indogrip/features/outsource/presentation/state/bloc.out/inventory_out_bloc.dart';
 import 'package:indogrip/features/outsource/presentation/widget/tap_details_box.dart';
+import 'package:indogrip/features/staff/data/models/view_staff_api_param.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:indogrip/features/outsource/data/data%20source/tap_data_source.dart';
 
@@ -39,6 +40,8 @@ class _TapPanelState extends TapeBuilder {
   final GlobalKey<ScaffoldState> _stateKey = GlobalKey<ScaffoldState>();
   final GlobalKey _key = GlobalKey();
   String pageText = '';
+
+  bool isNotEmpty = false;
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +91,8 @@ class _TapPanelState extends TapeBuilder {
                         } else {
                           ToastService.instance.showSuccess(
                             context,
-                            state.changeStatusEntity.message.toString(),
+                            state.changeStatusEntity.message ??
+                                'try again later',
                           );
                           eventCall();
                         }
@@ -104,10 +108,7 @@ class _TapPanelState extends TapeBuilder {
                         );
                         eventCall();
                       } else if (state is GlobalDeleteRecordErrorStatus) {
-                        ToastService.instance.showError(
-                          context,
-                          state.message.toString(),
-                        );
+                        ToastService.instance.showError(context, state.message);
                       } else if (state
                           is GlobalDeleteMultipleRecordsSuccessStatus) {
                         ToastService.instance.showSuccess(
@@ -185,6 +186,19 @@ class _TapPanelState extends TapeBuilder {
                           onPressed: () async {
                             await OSTapFileExporter.exportTapeExcel(
                               context: context,
+                              param: ViewRecordApiParam(
+                                keyword: searchController.text.trim(),
+                                filterBy: stockStatus?.toString() ?? '',
+                                orderBy: filterValue?.toString() ?? '',
+                                pageNo: pageNo.toString(),
+                                sortBy: entryValue?.toString() ?? '10',
+                                vendorKey: vendorKey,
+                                baseID: baseID,
+                                micID: micID,
+                                widthID: widthID,
+                                fromDate: fromDateController.text.trim(),
+                                toDate: toDateController.text.trim(),
+                              ),
                             );
                           },
                         ),
@@ -218,16 +232,8 @@ class _TapPanelState extends TapeBuilder {
                 SliverToBoxAdapter(child: SizedBox(height: 15)),
 
                 // buildSelectionActions(),
-                SliverToBoxAdapter(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [_buildPaginationWidget],
-                    ),
-                  ),
-                ),
+                if (isNotEmpty)
+                  SliverToBoxAdapter(child: _buildPaginationWidget),
                 // TapeDetailBox(),
                 SliverToBoxAdapter(child: _buildContentWidget),
                 const SliverToBoxAdapter(child: SizedBox(height: 100)),
@@ -289,7 +295,16 @@ class _TapPanelState extends TapeBuilder {
       },
       listener: (context, state) {
         if (state is InventoryOutTapLoadedSuccessStatus) {
-          pageText = state.model.pageText.toString();
+          pageText = state.model.pageText ?? '';
+          if (state.model.status == 1) {
+            setState(() {
+              isNotEmpty = true;
+            });
+          } else {
+            setState(() {
+              isNotEmpty = false;
+            });
+          }
           log('Page Text: $pageText');
           dataSource = null;
         }
@@ -297,8 +312,17 @@ class _TapPanelState extends TapeBuilder {
       builder: (context, state) {
         switch (state.runtimeType) {
           case const (InventoryOutLoadingStatus):
-            return Center(
-              child: CircularProgressIndicator(color: Colors.deepPurpleAccent),
+            return Padding(
+              padding: EdgeInsets.only(
+                top: MediaQuery.of(context).size.height * 0.2,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(color: Colors.deepPurpleAccent),
+                ],
+              ),
             );
           case const (InventoryOutTapLoadedSuccessStatus):
             final tapData = (state as InventoryOutTapLoadedSuccessStatus).model;
@@ -381,7 +405,46 @@ class _TapPanelState extends TapeBuilder {
               });
             });
             return tapData.status != 1
-                ? Center(child: Text(tapData.message ?? 'Refresh to load data'))
+                ? Column(
+                    children: [
+                      // Table Header
+                      ScrollConfiguration(
+                        behavior: HorizontalMouseScrollBehavior(),
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 16),
+                          color: Colors.grey[100],
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: buildGridColumns()
+                                  .map(
+                                    (column) => Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12.0,
+                                        vertical: 12.0,
+                                      ),
+                                      child: column.label,
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Message below header
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(
+                          state.model.message ?? 'try again later',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  )
                 : Column(
                     children: [
                       TapeDetailBox(

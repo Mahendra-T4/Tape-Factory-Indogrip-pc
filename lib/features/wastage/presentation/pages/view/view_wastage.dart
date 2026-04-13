@@ -36,8 +36,8 @@ class ViewWastagePanel extends StatefulWidget {
 
 class _ViewWastagePanelState extends ViewWastageBuilder {
   final GlobalKey<ScaffoldState> _stateKey = GlobalKey<ScaffoldState>();
-  final fromDateController = TextEditingController();
-  final toDateController = TextEditingController();
+  bool isNotEmpty = false;
+
   late final GlobalBloc globalBloc;
   final GlobalKey _key = GlobalKey();
   late Map<String, double> columnWidths = {};
@@ -56,17 +56,7 @@ class _ViewWastagePanelState extends ViewWastageBuilder {
     super.initState();
     wastageBloc = WastageBloc(addWastageRepository: AddWastageRepository());
     globalBloc = GlobalBloc(globalRepository: GlobalManagerRepository());
-    wastageBloc.add(
-      ViewWastageFromRecords(
-        param: ViewRecordApiParam(
-          keyword: searchController.text,
-          filterBy: recordValue ?? '',
-          orderBy: filterValue.toString(),
-          pageNo: currentPage.toString(),
-          sortBy: entryValue.toString(),
-        ),
-      ),
-    );
+    eventHandler();
   }
 
   List<GridColumn> buildGridColumns() {
@@ -176,21 +166,11 @@ class _ViewWastagePanelState extends ViewWastageBuilder {
                   );
 
                   // Refresh list after status change
-                  wastageBloc.add(
-                    ViewWastageFromRecords(
-                      param: ViewRecordApiParam(
-                        keyword: searchController.text,
-                        filterBy: recordValue ?? '',
-                        orderBy: filterValue.toString(),
-                        pageNo: currentPage.toString(),
-                        sortBy: entryValue.toString(),
-                      ),
-                    ),
-                  );
+                  eventHandler();
                 } else {
                   ToastService.instance.showError(
                     context,
-                    state.changeStatusEntity.message.toString(),
+                    state.changeStatusEntity.message ?? 'try again later',
                   );
                 }
               } else if (state is GlobalChangeUserStatusErrorStatus) {
@@ -204,17 +184,7 @@ class _ViewWastagePanelState extends ViewWastageBuilder {
                   state.deleteRecordEntity.message.toString(),
                 );
                 // Refresh list after single delete
-                wastageBloc.add(
-                  ViewWastageFromRecords(
-                    param: ViewRecordApiParam(
-                      keyword: searchController.text,
-                      filterBy: recordValue ?? '',
-                      orderBy: filterValue.toString(),
-                      pageNo: currentPage.toString(),
-                      sortBy: entryValue.toString(),
-                    ),
-                  ),
-                );
+                eventHandler();
               } else if (state is GlobalDeleteRecordErrorStatus) {
                 ToastService.instance.showError(
                   context,
@@ -229,17 +199,7 @@ class _ViewWastagePanelState extends ViewWastageBuilder {
                   ),
                 );
                 // Refresh list after bulk delete
-                wastageBloc.add(
-                  ViewWastageFromRecords(
-                    param: ViewRecordApiParam(
-                      keyword: searchController.text,
-                      filterBy: recordValue ?? '',
-                      orderBy: filterValue.toString(),
-                      pageNo: currentPage.toString(),
-                      sortBy: entryValue.toString(),
-                    ),
-                  ),
-                );
+                eventHandler();
                 // Clear selection
                 setState(() {
                   selectedRows.clear();
@@ -265,11 +225,7 @@ class _ViewWastagePanelState extends ViewWastageBuilder {
 
           refreshButton,
           SizedBox(height: 15),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            mainAxisSize: MainAxisSize.min,
-            children: [_buildPaginationWidget],
-          ),
+          if (isNotEmpty) _buildPaginationWidget,
 
           // SizedBox(height: 20),
           SizedBox(
@@ -280,6 +236,15 @@ class _ViewWastagePanelState extends ViewWastageBuilder {
                 if (state is ViewWastageFromRecordsSuccessStatus) {
                   if (state.viewWastageModel.status == 1) {
                     pageText = state.viewWastageModel.pageText ?? '';
+                    if (state.viewWastageModel.status == 1) {
+                      setState(() {
+                        isNotEmpty = true;
+                      });
+                    } else {
+                      setState(() {
+                        isNotEmpty = false;
+                      });
+                    }
                   }
                   _dataSource = null;
                 }
@@ -382,17 +347,7 @@ class _ViewWastagePanelState extends ViewWastageBuilder {
                           ),
                         ),
                       );
-                      wastageBloc.add(
-                        ViewWastageFromRecords(
-                          param: ViewRecordApiParam(
-                            keyword: searchController.text,
-                            filterBy: recordValue ?? '',
-                            orderBy: filterValue.toString(),
-                            pageNo: currentPage.toString(),
-                            sortBy: entryValue.toString(),
-                          ),
-                        ),
-                      );
+                      eventHandler();
                     },
                   );
 
@@ -472,13 +427,45 @@ class _ViewWastagePanelState extends ViewWastageBuilder {
                           ),
                         )
                       : Column(
-                          // mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            SizedBox(height: 200),
-                            Text(
-                              successData.message ?? 'Refresh to load data',
-                              style: TextStyle(fontSize: 16),
+                            // Table Header
+                            ScrollConfiguration(
+                              behavior: HorizontalMouseScrollBehavior(),
+                              child: Container(
+                                width: double.infinity,
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                color: Colors.grey[100],
+                                child: Row(
+                                  children: buildGridColumns()
+                                      .map(
+                                        (column) => Expanded(
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 12.0,
+                                              vertical: 12.0,
+                                            ),
+                                            child: column.label,
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                                ),
+                              ),
+                            ),
+                            // Message below header
+                            Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Text(
+                                state.viewWastageModel.message ??
+                                    'try again later',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
                           ],
                         );
@@ -494,58 +481,6 @@ class _ViewWastagePanelState extends ViewWastageBuilder {
       ),
     );
   }
-
-  // Widget _buildTabletView() {
-  //   return Padding(
-  //     padding: const EdgeInsets.all(16.0),
-  //     child: Column(
-  //       crossAxisAlignment: CrossAxisAlignment.stretch,
-  //       children: [
-  //         buildFilterFieldsTablet,
-  //         buildSelectionActions(),
-  //         Expanded(
-  //           child: SfDataGrid(
-  //             showHorizontalScrollbar: true,
-  //             key: _key,
-  //             rowsPerPage: 4,
-  //             allowPullToRefresh: true,
-  //             allowColumnsResizing: true,
-  //             columnResizeMode: ColumnResizeMode.onResizeEnd,
-  //             isScrollbarAlwaysShown: true,
-  //             showVerticalScrollbar: true,
-  //             showCheckboxColumn: isMultipleSelection,
-  //             selectionMode:
-  //                 isMultipleSelection
-  //                     ? SelectionMode.multiple
-  //                     : SelectionMode.single,
-  //             onSelectionChanged: (addedRows, removedRows) {
-  //               setState(() {
-  //                 selectedRows.addAll(addedRows);
-  //                 selectedRows.removeWhere((row) => removedRows.contains(row));
-
-  //                 final selectedData =
-  //                     selectedRows.map((row) {
-  //                       final index = _dataSource.rows.indexOf(row);
-  //                       return wastageData[index];
-  //                     }).toList();
-  //                 handleSelectionChanged(selectedData);
-  //               });
-  //             },
-  //             onColumnResizeUpdate: (details) {
-  //               setState(() {
-  //                 columnWidths[details.column.columnName] = details.width;
-  //               });
-  //               return true;
-  //             },
-  //             source: _dataSource,
-  //             columnWidthMode: ColumnWidthMode.fill,
-  //             columns: buildGridColumns(),
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -581,94 +516,49 @@ class _ViewWastagePanelState extends ViewWastageBuilder {
     );
   }
 
-  Widget get _buildPaginationWidget => TableBottomWidget(
-    currentPage: currentPage,
-    pageQty: pageQty,
-    pageText: pageText,
-    onPagePressed: (pageNumber) {
-      setState(() {
-        currentPage = pageNumber;
-      });
-      wastageBloc.add(
-        ViewWastageFromRecords(
-          param: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue ?? '',
-            orderBy: filterValue.toString(),
-            pageNo: currentPage.toString(),
-            sortBy: entryValue.toString(),
-          ),
-        ),
-      );
-      // Page number button clicked
-    },
-    onFirstPressed: () {
-      setState(() {
-        currentPage = 1;
-        wastageBloc.add(
-          ViewWastageFromRecords(
-            param: ViewRecordApiParam(
-              keyword: searchController.text,
-              filterBy: recordValue ?? '',
-              orderBy: filterValue.toString(),
-              pageNo: currentPage.toString(),
-              sortBy: entryValue.toString(),
-            ),
-          ),
-        );
-      });
-    },
-    onPreviousPressed: () {
-      if (currentPage != null && pageQty != null && currentPage! <= pageQty!) {
+  Widget get _buildPaginationWidget => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: TableBottomWidget(
+      currentPage: currentPage,
+      pageQty: pageQty,
+      pageText: pageText,
+      onPagePressed: (pageNumber) {
         setState(() {
-          currentPage = currentPage! - 1;
-          wastageBloc.add(
-            ViewWastageFromRecords(
-              param: ViewRecordApiParam(
-                keyword: searchController.text,
-                filterBy: recordValue ?? '',
-                orderBy: filterValue.toString(),
-                pageNo: currentPage.toString(),
-                sortBy: entryValue.toString(),
-              ),
-            ),
-          );
+          currentPage = pageNumber;
         });
-      }
-    },
-    onNextPressed: () {
-      if (currentPage != null && currentPage! >= 1) {
+        eventHandler();
+        // Page number button clicked
+      },
+      onFirstPressed: () {
         setState(() {
-          currentPage = currentPage! + 1;
-          wastageBloc.add(
-            ViewWastageFromRecords(
-              param: ViewRecordApiParam(
-                keyword: searchController.text,
-                filterBy: recordValue ?? '',
-                orderBy: filterValue.toString(),
-                pageNo: currentPage.toString(),
-                sortBy: entryValue.toString(),
-              ),
-            ),
-          );
+          currentPage = 1;
+          eventHandler();
         });
-      }
-    },
-    onLastPressed: () {
-      setState(() {
-        currentPage = pageQty!;
-        wastageBloc.add(
-          ViewWastageFromRecords(
-            param: ViewRecordApiParam(
-              keyword: searchController.text,
-              filterBy: recordValue ?? '',
-              orderBy: filterValue.toString(),
-              pageNo: currentPage.toString(),
-              sortBy: entryValue.toString(),
-            ),
-          ),
-        );
-      });
-    },
+      },
+      onPreviousPressed: () {
+        if (currentPage != null &&
+            pageQty != null &&
+            currentPage! <= pageQty!) {
+          setState(() {
+            currentPage = currentPage! - 1;
+            eventHandler();
+          });
+        }
+      },
+      onNextPressed: () {
+        if (currentPage != null && currentPage! >= 1) {
+          setState(() {
+            currentPage = currentPage! + 1;
+            eventHandler();
+          });
+        }
+      },
+      onLastPressed: () {
+        setState(() {
+          currentPage = pageQty!;
+          eventHandler();
+        });
+      },
+    ),
   );
 }

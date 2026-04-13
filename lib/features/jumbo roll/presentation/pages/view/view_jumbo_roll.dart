@@ -42,6 +42,8 @@ class _ViewJumboRollPanelState extends ViewJumboRollBuilder {
   late Map<String, double> columnWidths = {};
   bool isChecked = false;
 
+  bool isNotEmpty = false;
+
   List<DataGridRow> selectedRows = [];
 
   @override
@@ -83,45 +85,13 @@ class _ViewJumboRollPanelState extends ViewJumboRollBuilder {
                       context,
                       state.changeStatusEntity.message.toString(),
                     );
-                    jumboRollBloc.add(
-                      FetchViewJumboRollRecordEvent(
-                        param: ViewRecordApiParam(
-                          keyword: searchController.text,
-                          filterBy: recordValue?.toString() ?? '',
-                          orderBy: filterValue?.toString() ?? '',
-                          pageNo: pageNo.toString(),
-                          sortBy: entryValue?.toString() ?? '',
-                          vendorKey: vendorKey,
-                          micID: micID,
-                          baseID: baseID,
-                          widthID: widthID,
-                          fromDate: fromDateController.text,
-                          toDate: toDateController.text,
-                        ),
-                      ),
-                    );
+                    eventHandler();
                   } else {
                     ToastService.instance.showSuccess(
                       context,
-                      state.changeStatusEntity.message.toString(),
+                      state.changeStatusEntity.message ?? 'try again later',
                     );
-                    jumboRollBloc.add(
-                      FetchViewJumboRollRecordEvent(
-                        param: ViewRecordApiParam(
-                          keyword: searchController.text,
-                          filterBy: recordValue?.toString() ?? '',
-                          orderBy: filterValue?.toString() ?? '',
-                          pageNo: pageNo.toString(),
-                          sortBy: entryValue?.toString() ?? '',
-                          vendorKey: vendorKey,
-                          micID: micID,
-                          baseID: baseID,
-                          widthID: widthID,
-                          fromDate: fromDateController.text,
-                          toDate: toDateController.text,
-                        ),
-                      ),
-                    );
+                    eventHandler();
                   }
                 } else if (state is GlobalChangeUserStatusErrorStatus) {
                   ToastService.instance.showError(
@@ -134,23 +104,7 @@ class _ViewJumboRollPanelState extends ViewJumboRollBuilder {
                     state.deleteRecordEntity.message.toString(),
                   );
                   // Refresh list after single delete
-                  jumboRollBloc.add(
-                    FetchViewJumboRollRecordEvent(
-                      param: ViewRecordApiParam(
-                        keyword: searchController.text,
-                        filterBy: recordValue?.toString() ?? '',
-                        orderBy: filterValue?.toString() ?? '',
-                        pageNo: pageNo.toString(),
-                        sortBy: entryValue?.toString() ?? '',
-                        vendorKey: vendorKey,
-                        micID: micID,
-                        baseID: baseID,
-                        widthID: widthID,
-                        fromDate: fromDateController.text,
-                        toDate: toDateController.text,
-                      ),
-                    ),
-                  );
+                  eventHandler();
                 } else if (state is GlobalDeleteRecordErrorStatus) {
                   ToastService.instance.showError(
                     context,
@@ -160,28 +114,12 @@ class _ViewJumboRollPanelState extends ViewJumboRollBuilder {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        state.deleteRecordEntity.message ?? 'Records deleted',
+                        state.deleteRecordEntity.message ?? 'try again later',
                       ),
                     ),
                   );
                   // Refresh list after bulk delete
-                  jumboRollBloc.add(
-                    FetchViewJumboRollRecordEvent(
-                      param: ViewRecordApiParam(
-                        keyword: searchController.text,
-                        filterBy: recordValue?.toString() ?? '',
-                        orderBy: filterValue?.toString() ?? '',
-                        pageNo: pageNo.toString(),
-                        sortBy: entryValue?.toString() ?? '',
-                        vendorKey: vendorKey,
-                        micID: micID,
-                        baseID: baseID,
-                        widthID: widthID,
-                        fromDate: fromDateController.text,
-                        toDate: toDateController.text,
-                      ),
-                    ),
-                  );
+                  eventHandler();
                   // Clear selection
                   setState(() {
                     selectedRows.clear();
@@ -196,14 +134,7 @@ class _ViewJumboRollPanelState extends ViewJumboRollBuilder {
               },
               child: buildFilterFieldsDesktop,
             ),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                mainAxisSize: MainAxisSize.min,
-                children: [_buildPaginationWidget],
-              ),
-            ),
+            if (isNotEmpty) _buildPaginationWidget,
 
             // Selection actions widget
             SizedBox(
@@ -213,7 +144,16 @@ class _ViewJumboRollPanelState extends ViewJumboRollBuilder {
 
                 listener: (context, state) {
                   if (state is FetchViewJumboRollRecordSuccessStatus) {
-                    pageText = state.viewJumboRollModel.pageText.toString();
+                    pageText = state.viewJumboRollModel.pageText ?? '';
+                    if (state.viewJumboRollModel.status == 1) {
+                      setState(() {
+                        isNotEmpty = true;
+                      });
+                    } else {
+                      setState(() {
+                        isNotEmpty = false;
+                      });
+                    }
                     dataSource = null;
                     highlightedRowIndex = null;
                     // Reset data source when new data is fetched
@@ -293,23 +233,7 @@ class _ViewJumboRollPanelState extends ViewJumboRollBuilder {
                               param: ViewRecordApiParam(),
                             ),
                           );
-                          jumboRollBloc.add(
-                            FetchViewJumboRollRecordEvent(
-                              param: ViewRecordApiParam(
-                                keyword: searchController.text,
-                                filterBy: recordValue?.toString() ?? '',
-                                orderBy: filterValue?.toString() ?? '',
-                                pageNo: pageNo.toString(),
-                                sortBy: entryValue?.toString() ?? '',
-                                vendorKey: vendorKey,
-                                micID: micID,
-                                baseID: baseID,
-                                widthID: widthID,
-                                fromDate: fromDateController.text,
-                                toDate: toDateController.text,
-                              ),
-                            ),
-                          );
+                          eventHandler();
                         },
                         // onProfile: (p0) {},
                         stickerPopup: (value) {
@@ -418,14 +342,49 @@ class _ViewJumboRollPanelState extends ViewJumboRollBuilder {
                                 ),
                               ],
                             )
-                          : Expanded(
-                              child: Center(
-                                child: Text(
-                                  successData.message ??
-                                      'No response from server',
-                                  style: const TextStyle(fontSize: 16),
+                          : Column(
+                              children: [
+                                // Table Header
+                                ScrollConfiguration(
+                                  behavior: HorizontalMouseScrollBehavior(),
+                                  child: Container(
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                    ),
+                                    color: Colors.grey[100],
+                                    child: SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      child: Row(
+                                        children: buildGridColumns()
+                                            .map(
+                                              (column) => Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 12.0,
+                                                      vertical: 12.0,
+                                                    ),
+                                                child: column.label,
+                                              ),
+                                            )
+                                            .toList(),
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
+                                // Message below header
+                                Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Text(
+                                    state.viewJumboRollModel.message ??
+                                        'try again later',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
                             );
                     case const (FetchViewJumboRollRecordFailureStatus):
                       return Center(
@@ -436,23 +395,7 @@ class _ViewJumboRollPanelState extends ViewJumboRollBuilder {
                                   .errorMessage,
                               name: 'FetchViewJumboRollRecordFailureStatus',
                             );
-                            jumboRollBloc.add(
-                              FetchViewJumboRollRecordEvent(
-                                param: ViewRecordApiParam(
-                                  keyword: searchController.text,
-                                  filterBy: recordValue?.toString() ?? '',
-                                  orderBy: filterValue?.toString() ?? '',
-                                  pageNo: pageNo.toString(),
-                                  sortBy: entryValue?.toString() ?? '',
-                                  vendorKey: vendorKey,
-                                  micID: micID,
-                                  baseID: baseID,
-                                  widthID: widthID,
-                                  fromDate: fromDateController.text,
-                                  toDate: toDateController.text,
-                                ),
-                              ),
-                            );
+                            eventHandler();
                           },
                         ),
                       );
@@ -699,67 +642,19 @@ class _ViewJumboRollPanelState extends ViewJumboRollBuilder {
       setState(() {
         pageNo = pageNumber;
       });
-      jumboRollBloc.add(
-        FetchViewJumboRollRecordEvent(
-          param: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue?.toString() ?? '',
-            orderBy: filterValue?.toString() ?? '',
-            pageNo: pageNo.toString(),
-            sortBy: entryValue?.toString() ?? '',
-            vendorKey: vendorKey,
-            micID: micID,
-            baseID: baseID,
-            widthID: widthID,
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
     },
     onFirstPressed: () {
       setState(() {
         pageNo = 1;
-        jumboRollBloc.add(
-          FetchViewJumboRollRecordEvent(
-            param: ViewRecordApiParam(
-              keyword: searchController.text,
-              filterBy: recordValue?.toString() ?? '',
-              orderBy: filterValue?.toString() ?? '',
-              pageNo: pageNo.toString(),
-              sortBy: entryValue?.toString() ?? '',
-              vendorKey: vendorKey,
-              micID: micID,
-              baseID: baseID,
-              widthID: widthID,
-              fromDate: fromDateController.text,
-              toDate: toDateController.text,
-            ),
-          ),
-        );
+        eventHandler();
       });
     },
     onPreviousPressed: () {
       if (pageNo >= 1) {
         setState(() {
           pageNo = pageNo - 1;
-          jumboRollBloc.add(
-            FetchViewJumboRollRecordEvent(
-              param: ViewRecordApiParam(
-                keyword: searchController.text,
-                filterBy: recordValue?.toString() ?? '',
-                orderBy: filterValue?.toString() ?? '',
-                pageNo: pageNo.toString(),
-                sortBy: entryValue?.toString() ?? '',
-                vendorKey: vendorKey,
-                micID: micID,
-                baseID: baseID,
-                widthID: widthID,
-                fromDate: fromDateController.text,
-                toDate: toDateController.text,
-              ),
-            ),
-          );
+          eventHandler();
         });
       }
     },
@@ -767,46 +662,14 @@ class _ViewJumboRollPanelState extends ViewJumboRollBuilder {
       if (pageNo >= 1) {
         setState(() {
           pageNo = pageNo + 1;
-          jumboRollBloc.add(
-            FetchViewJumboRollRecordEvent(
-              param: ViewRecordApiParam(
-                keyword: searchController.text,
-                filterBy: recordValue?.toString() ?? '',
-                orderBy: filterValue?.toString() ?? '',
-                pageNo: pageNo.toString(),
-                sortBy: entryValue?.toString() ?? '',
-                vendorKey: vendorKey,
-                micID: micID,
-                baseID: baseID,
-                widthID: widthID,
-                fromDate: fromDateController.text,
-                toDate: toDateController.text,
-              ),
-            ),
-          );
+          eventHandler();
         });
       }
     },
     onLastPressed: () {
       setState(() {
         pageNo = pageQty;
-        jumboRollBloc.add(
-          FetchViewJumboRollRecordEvent(
-            param: ViewRecordApiParam(
-              keyword: searchController.text,
-              filterBy: recordValue?.toString() ?? '',
-              orderBy: filterValue?.toString() ?? '',
-              pageNo: pageNo.toString(),
-              sortBy: entryValue?.toString() ?? '',
-              vendorKey: vendorKey,
-              micID: micID,
-              baseID: baseID,
-              widthID: widthID,
-              fromDate: fromDateController.text,
-              toDate: toDateController.text,
-            ),
-          ),
-        );
+        eventHandler();
       });
     },
   );

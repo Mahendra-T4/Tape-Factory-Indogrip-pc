@@ -61,22 +61,22 @@ class _EditWastagePanelState extends EditWastageBuilder {
   Widget build(BuildContext context) {
     return StreamBuilder(
       stream: InternetConnectionService().connectionStream,
-        initialData: true, // Assume connected initially
-        builder: (context, snapshot) {
-          // Handle error state
-          if (snapshot.hasError) {
-            return const NoInternetConnection();
-          }
+      initialData: true, // Assume connected initially
+      builder: (context, snapshot) {
+        // Handle error state
+        if (snapshot.hasError) {
+          return const NoInternetConnection();
+        }
 
-          // Handle disconnected state
-          if (snapshot.data == false) {
-            return const NoInternetConnection();
-          }
+        // Handle disconnected state
+        if (snapshot.data == false) {
+          return const NoInternetConnection();
+        }
 
-          // Handle loading state
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
+        // Handle loading state
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
         return Scaffold(
           key: stateKey,
           appBar: !Responsive.isDesktop(context)
@@ -85,12 +85,12 @@ class _EditWastagePanelState extends EditWastageBuilder {
           drawer: !Responsive.isDesktop(context)
               ? const SideMenuWidget()
               : const SizedBox(),
-        
+
           body: Responsive.isDesktop(context)
               ? _buildWastageDesktop
               : _buildWastageTablet,
         );
-      }
+      },
     );
   }
 
@@ -179,7 +179,7 @@ class _EditWastagePanelState extends EditWastageBuilder {
               } else {
                 ToastService.instance.showError(
                   context,
-                  state.successResponse.message.toString(),
+                  state.successResponse.message ?? 'try again later',
                 );
               }
             } else if (state is UpdateWastageOnRecordFailureStatus) {

@@ -48,24 +48,14 @@ class _ViewCartonPanelState extends ViewCartonBuilder {
     super.dispose();
   }
 
+  bool isNotEmpty = false;
+
   @override
   void initState() {
     super.initState();
     cartonBloc = CartonBloc();
     globalBloc = GlobalBloc(globalRepository: GlobalManagerRepository());
-    cartonBloc.add(
-      ViewCartonRecordEvent(
-        param: ViewRecordApiParam(
-          keyword: searchController.text,
-          filterBy: recordValue ?? '',
-          orderBy: filterValue.toString(),
-          pageNo: currentPage.toString(),
-          sortBy: entryValue.toString(),
-          fromDate: fromDateController.text,
-          toDate: toDateController.text,
-        ),
-      ),
-    );
+    eventHandler();
   }
 
   Widget _buildDesktopView() {
@@ -85,49 +75,22 @@ class _ViewCartonPanelState extends ViewCartonBuilder {
                   );
 
                   // Refresh list after status change
-                  cartonBloc.add(
-                    ViewCartonRecordEvent(
-                      param: ViewRecordApiParam(
-                        keyword: searchController.text,
-                        filterBy: recordValue ?? '',
-                        orderBy: filterValue.toString(),
-                        pageNo: currentPage.toString(),
-                        sortBy: entryValue.toString(),
-                        fromDate: fromDateController.text,
-                        toDate: toDateController.text,
-                      ),
-                    ),
-                  );
+                  eventHandler();
                 } else {
                   ToastService.instance.showError(
                     context,
-                    state.changeStatusEntity.message.toString(),
+                    state.changeStatusEntity.message ?? 'try again later',
                   );
                 }
               } else if (state is GlobalChangeUserStatusErrorStatus) {
-                ToastService.instance.showError(
-                  context,
-                  state.message.toString(),
-                );
+                ToastService.instance.showError(context, state.message);
               } else if (state is GlobalDeleteRecordSuccessStatus) {
                 ToastService.instance.showSuccess(
                   context,
                   state.deleteRecordEntity.message.toString(),
                 );
                 // Refresh list after single delete
-                cartonBloc.add(
-                  ViewCartonRecordEvent(
-                    param: ViewRecordApiParam(
-                      keyword: searchController.text,
-                      filterBy: recordValue ?? '',
-                      orderBy: filterValue.toString(),
-                      pageNo: currentPage.toString(),
-                      sortBy: entryValue.toString(),
-                      fromDate: fromDateController.text,
-                      toDate: toDateController.text,
-                    ),
-                  ),
-                );
+                eventHandler();
               } else if (state is GlobalDeleteRecordErrorStatus) {
                 ToastService.instance.showError(
                   context,
@@ -142,19 +105,7 @@ class _ViewCartonPanelState extends ViewCartonBuilder {
                   ),
                 );
                 // Refresh list after bulk delete
-                cartonBloc.add(
-                  ViewCartonRecordEvent(
-                    param: ViewRecordApiParam(
-                      keyword: searchController.text,
-                      filterBy: recordValue ?? '',
-                      orderBy: filterValue.toString(),
-                      pageNo: currentPage.toString(),
-                      sortBy: entryValue.toString(),
-                      fromDate: fromDateController.text,
-                      toDate: toDateController.text,
-                    ),
-                  ),
-                );
+                eventHandler();
                 // Clear selection
                 setState(() {
                   selectedRows.clear();
@@ -182,13 +133,7 @@ class _ViewCartonPanelState extends ViewCartonBuilder {
             child: refreshButton,
           ),
           SizedBox(height: 15),
-          SingleChildScrollView(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              mainAxisSize: MainAxisSize.min,
-              children: [_buildPaginationWidget],
-            ),
-          ),
+          if (isNotEmpty) _buildPaginationWidget,
 
           SizedBox(
             height: MediaQuery.sizeOf(context).height,
@@ -196,7 +141,16 @@ class _ViewCartonPanelState extends ViewCartonBuilder {
               bloc: cartonBloc,
               listener: (context, state) {
                 if (state is FetchViewCartonRecordSuccessStatus) {
-                  pageText = state.viewCartonModel.pageText.toString();
+                  pageText = state.viewCartonModel.pageText ?? '';
+                  if (state.viewCartonModel.status == 1) {
+                    setState(() {
+                      isNotEmpty = true;
+                    });
+                  } else {
+                    setState(() {
+                      isNotEmpty = false;
+                    });
+                  }
                   _dataSource = null;
                   // Reset data source when new data is fetched
                 }
@@ -259,19 +213,7 @@ class _ViewCartonPanelState extends ViewCartonBuilder {
                             ),
                           ),
                         );
-                        cartonBloc.add(
-                          ViewCartonRecordEvent(
-                            param: ViewRecordApiParam(
-                              keyword: searchController.text,
-                              filterBy: recordValue ?? '',
-                              orderBy: filterValue.toString(),
-                              pageNo: currentPage.toString(),
-                              sortBy: entryValue.toString(),
-                              fromDate: fromDateController.text,
-                              toDate: toDateController.text,
-                            ),
-                          ),
-                        );
+                        eventHandler();
                       },
                     );
                     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -328,12 +270,41 @@ class _ViewCartonPanelState extends ViewCartonBuilder {
                             ),
                           )
                         : Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              SizedBox(height: 200),
-                              Text(
-                                successState.message ?? 'Refresh to load data',
-                                style: const TextStyle(fontSize: 16),
+                              // Table Header
+                              Container(
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                color: Colors.grey[100],
+                                child: Row(
+                                  children: buildGridColumns()
+                                      .map(
+                                        (column) => Expanded(
+                                          flex: 1,
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8.0,
+                                              vertical: 12.0,
+                                            ),
+                                            child: column.label,
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                                ),
+                              ),
+                              // Message below header
+                              Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Text(
+                                  successState.message ?? 'try again later',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
                             ],
                           );
@@ -341,19 +312,7 @@ class _ViewCartonPanelState extends ViewCartonBuilder {
                     return Center(
                       child: RefreshButton(
                         onPressed: () {
-                          cartonBloc.add(
-                            ViewCartonRecordEvent(
-                              param: ViewRecordApiParam(
-                                keyword: searchController.text,
-                                filterBy: recordValue ?? '',
-                                orderBy: filterValue.toString(),
-                                pageNo: currentPage.toString(),
-                                sortBy: entryValue.toString(),
-                                fromDate: fromDateController.text,
-                                toDate: toDateController.text,
-                              ),
-                            ),
-                          );
+                          eventHandler();
                         },
                       ),
                     );
@@ -472,109 +431,54 @@ class _ViewCartonPanelState extends ViewCartonBuilder {
     );
   }
 
-  Widget get _buildPaginationWidget => TableBottomWidget(
-    pageText: pageText,
-    currentPage: currentPage,
-    pageQty: pageQty,
+  Widget get _buildPaginationWidget => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: TableBottomWidget(
+      pageText: pageText,
+      currentPage: currentPage,
+      pageQty: pageQty,
 
-    onPagePressed: (pageNumber) {
-      setState(() {
-        currentPage = pageNumber;
-      });
-      setState(() {
-        final pageNumber = currentPage;
-        cartonBloc.add(
-          ViewCartonRecordEvent(
-            param: ViewRecordApiParam(
-              keyword: searchController.text,
-              filterBy: recordValue ?? '',
-              orderBy: filterValue.toString(),
-              pageNo: currentPage.toString(),
-              sortBy: entryValue.toString(),
-              fromDate: fromDateController.text,
-              toDate: toDateController.text,
-            ),
-          ),
-        );
-      });
+      onPagePressed: (pageNumber) {
+        setState(() {
+          currentPage = pageNumber;
+        });
+        setState(() {
+          final pageNumber = currentPage;
+          eventHandler();
+        });
 
-      // Page number button clicked
-    },
-    onFirstPressed: () {
-      setState(() {
-        currentPage = 1;
-        cartonBloc.add(
-          ViewCartonRecordEvent(
-            param: ViewRecordApiParam(
-              keyword: searchController.text,
-              filterBy: recordValue ?? '',
-              orderBy: filterValue.toString(),
-              pageNo: currentPage.toString(),
-              sortBy: entryValue.toString(),
-              fromDate: fromDateController.text,
-              toDate: toDateController.text,
-            ),
-          ),
-        );
-      });
-    },
-    onPreviousPressed: () {
-      if (currentPage != null && currentPage! >= 1) {
+        // Page number button clicked
+      },
+      onFirstPressed: () {
         setState(() {
-          currentPage = currentPage! - 1;
-          cartonBloc.add(
-            ViewCartonRecordEvent(
-              param: ViewRecordApiParam(
-                keyword: searchController.text,
-                filterBy: recordValue ?? '',
-                orderBy: filterValue.toString(),
-                pageNo: currentPage.toString(),
-                sortBy: entryValue.toString(),
-                fromDate: fromDateController.text,
-                toDate: toDateController.text,
-              ),
-            ),
-          );
+          currentPage = 1;
+          eventHandler();
         });
-      }
-    },
-    onNextPressed: () {
-      if (currentPage != null && pageQty != null && currentPage! <= pageQty!) {
+      },
+      onPreviousPressed: () {
+        if (currentPage != null && currentPage! >= 1) {
+          setState(() {
+            currentPage = currentPage! - 1;
+            eventHandler();
+          });
+        }
+      },
+      onNextPressed: () {
+        if (currentPage != null &&
+            pageQty != null &&
+            currentPage! <= pageQty!) {
+          setState(() {
+            currentPage = currentPage! + 1;
+            eventHandler();
+          });
+        }
+      },
+      onLastPressed: () {
         setState(() {
-          currentPage = currentPage! + 1;
-          cartonBloc.add(
-            ViewCartonRecordEvent(
-              param: ViewRecordApiParam(
-                keyword: searchController.text,
-                filterBy: recordValue ?? '',
-                orderBy: filterValue.toString(),
-                pageNo: currentPage.toString(),
-                sortBy: entryValue.toString(),
-                fromDate: fromDateController.text,
-                toDate: toDateController.text,
-              ),
-            ),
-          );
+          currentPage = pageQty;
+          eventHandler();
         });
-      }
-    },
-    onLastPressed: () {
-      setState(() {
-        currentPage = pageQty;
-        cartonBloc.add(
-          ViewCartonRecordEvent(
-            param: ViewRecordApiParam(
-              keyword: searchController.text,
-              filterBy: recordValue ?? '',
-              orderBy: filterValue.toString(),
-              pageNo: currentPage.toString(),
-              sortBy: entryValue.toString(),
-              fromDate: fromDateController.text,
-              toDate: toDateController.text,
-            ),
-          ),
-        );
-      });
-    },
+      },
+    ),
   );
 }

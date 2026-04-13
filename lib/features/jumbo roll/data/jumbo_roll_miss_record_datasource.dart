@@ -25,6 +25,14 @@ class JumboRollMissRecordDataSource extends DataGridSource {
             value: (index + 1).toString(),
           ),
           DataGridCell<String>(
+            columnName: 'Roll Code',
+            value: data.rollNumber.toString(),
+          ),
+          DataGridCell<String>(
+            columnName: 'Roll Cost',
+            value: data.rollCost.toString(),
+          ),
+          DataGridCell<String>(
             columnName: 'Reason',
             value: data.msg.toString(),
           ),
@@ -62,10 +70,7 @@ class JumboRollMissRecordDataSource extends DataGridSource {
             columnName: 'Amount Per KG',
             value: data.amountPerKG.toString(),
           ),
-          DataGridCell<String>(
-            columnName: 'Roll Cost',
-            value: data.rollCost.toString(),
-          ),
+
           DataGridCell<String>(
             columnName: 'Remark',
             value: data.remark.toString(),

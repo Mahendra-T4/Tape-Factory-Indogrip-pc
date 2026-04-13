@@ -30,6 +30,41 @@ abstract class ViewVendorBuilder extends State<ViewVendorPanel> {
 
   // Define table columns
 
+  eventHandler() {
+    vendorBloc.add(
+      ViewVendorRecordsFetchingEvent(
+        param: ViewRecordApiParam(
+          keyword: searchController.text,
+          filterBy: recordValue.toString(),
+          orderBy: filterValue.toString(),
+          pageNo: pageNo.toString(),
+          sortBy: entryValue.toString(),
+          fromDate: fromDateController.text,
+          toDate: toDateController.text,
+        ),
+      ),
+    );
+  }
+
+  Key refreshKey = UniqueKey();
+
+  void clearFiltersOnRefresh() {
+    fromDateController.clear();
+    toDateController.clear();
+    searchController.clear();
+
+    // Change key to force rebuild of dropdown widgets
+    refreshKey = UniqueKey();
+
+    setState(() {
+      recordValue = null;
+      filterValue = null;
+      entryValue = null;
+    });
+
+    eventHandler();
+  }
+
   void handleSelectionChanged(List<Map<String, dynamic>> items) {
     setState(() {
       selectedItems = items;
@@ -127,21 +162,9 @@ abstract class ViewVendorBuilder extends State<ViewVendorPanel> {
             state.changeStatusEntity.message.toString(),
           );
           // Only close dialog after successful status change
-          Navigator.of(context).pop();
+          context.pop();
           // Refresh the staff list
-          vendorBloc.add(
-            ViewVendorRecordsFetchingEvent(
-              param: ViewRecordApiParam(
-                keyword: searchController.text,
-                filterBy: recordValue.toString(),
-                orderBy: filterValue.toString(),
-                pageNo: pageNo.toString(),
-                sortBy: entryValue.toString(),
-                fromDate: fromDateController.text,
-                toDate: toDateController.text,
-              ),
-            ),
-          );
+          eventHandler();
         } else {
           if (!context.mounted) return;
           ToastService.instance.showError(
@@ -194,19 +217,7 @@ abstract class ViewVendorBuilder extends State<ViewVendorPanel> {
         setState(() {
           pageNo = 1;
         });
-        vendorBloc.add(
-          ViewVendorRecordsFetchingEvent(
-            param: ViewRecordApiParam(
-              keyword: searchController.text,
-              filterBy: recordValue ?? '',
-              orderBy: filterValue.toString(),
-              pageNo: pageNo.toString(),
-              sortBy: entryValue.toString(),
-              fromDate: fromDateController.text,
-              toDate: toDateController.text,
-            ),
-          ),
-        );
+        clearFiltersOnRefresh();
       },
     ),
   );

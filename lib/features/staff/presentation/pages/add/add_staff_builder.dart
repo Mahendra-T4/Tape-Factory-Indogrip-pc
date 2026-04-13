@@ -882,7 +882,7 @@ abstract class AddStaffBuilder extends ConsumerState<AddStaff> {
               if (context.mounted) {
                 ToastService.instance.showError(
                   context,
-                  state.addStaffEntity.message.toString(),
+                  state.addStaffEntity.message ?? 'try again later',
                 );
               }
             }

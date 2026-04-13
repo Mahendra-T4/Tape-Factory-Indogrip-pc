@@ -21,8 +21,6 @@ import 'package:indogrip/features/global/data/repositories/global_manager_repo.d
 import 'package:indogrip/features/global/presentation/bloc/global_bloc.dart';
 import 'package:indogrip/features/global/presentation/widget/data_filtration.dart';
 import 'package:indogrip/features/global/presentation/widget/pagination_widget.dart';
-import 'package:indogrip/features/global/presentation/widget/refresh_button.dart';
-import 'package:indogrip/features/staff/data/models/view_staff_api_param.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
 class ViewCorePanel extends StatefulWidget {
@@ -42,6 +40,8 @@ class _ViewCorePanelState extends ViewCoreBuilder {
   List<DataGridRow> selectedRows = [];
   late final GlobalBloc globalBloc;
 
+  bool isEmpty = false;
+
   @override
   void dispose() {
     selectedRows.clear();
@@ -53,19 +53,7 @@ class _ViewCorePanelState extends ViewCoreBuilder {
     super.initState();
     coreBloc = CoreBloc();
     globalBloc = GlobalBloc(globalRepository: GlobalManagerRepository());
-    coreBloc.add(
-      ViewCoreRecordEvent(
-        param: ViewRecordApiParam(
-          keyword: searchController.text,
-          filterBy: recordValue ?? '',
-          orderBy: filterValue.toString(),
-          pageNo: currentPage.toString(),
-          sortBy: entryValue.toString(),
-          fromDate: fromDateController.text,
-          toDate: toDateController.text,
-        ),
-      ),
-    );
+    eventHandler();
   }
 
   Widget _buildDesktopView() {
@@ -85,23 +73,11 @@ class _ViewCorePanelState extends ViewCoreBuilder {
                   );
 
                   // Refresh list after status change
-                  coreBloc.add(
-                    ViewCoreRecordEvent(
-                      param: ViewRecordApiParam(
-                        keyword: searchController.text,
-                        filterBy: recordValue ?? '',
-                        orderBy: filterValue.toString(),
-                        pageNo: currentPage.toString(),
-                        sortBy: entryValue.toString(),
-                        fromDate: fromDateController.text,
-                        toDate: toDateController.text,
-                      ),
-                    ),
-                  );
+                  eventHandler();
                 } else {
                   ToastService.instance.showError(
                     context,
-                    state.changeStatusEntity.message.toString(),
+                    state.changeStatusEntity.message ?? 'try again later',
                   );
                 }
               } else if (state is GlobalChangeUserStatusErrorStatus) {
@@ -115,19 +91,7 @@ class _ViewCorePanelState extends ViewCoreBuilder {
                   state.deleteRecordEntity.message.toString(),
                 );
                 // Refresh list after single delete
-                coreBloc.add(
-                  ViewCoreRecordEvent(
-                    param: ViewRecordApiParam(
-                      keyword: searchController.text,
-                      filterBy: recordValue ?? '',
-                      orderBy: filterValue.toString(),
-                      pageNo: currentPage.toString(),
-                      sortBy: entryValue.toString(),
-                      fromDate: fromDateController.text,
-                      toDate: toDateController.text,
-                    ),
-                  ),
-                );
+                eventHandler();
               } else if (state is GlobalDeleteRecordErrorStatus) {
                 ToastService.instance.showError(
                   context,
@@ -142,19 +106,7 @@ class _ViewCorePanelState extends ViewCoreBuilder {
                   ),
                 );
                 // Refresh list after bulk delete
-                coreBloc.add(
-                  ViewCoreRecordEvent(
-                    param: ViewRecordApiParam(
-                      keyword: searchController.text,
-                      filterBy: recordValue ?? '',
-                      orderBy: filterValue.toString(),
-                      pageNo: currentPage.toString(),
-                      sortBy: entryValue.toString(),
-                      fromDate: fromDateController.text,
-                      toDate: toDateController.text,
-                    ),
-                  ),
-                );
+                eventHandler();
                 // Clear selection
                 setState(() {
                   selectedRows.clear();
@@ -183,19 +135,22 @@ class _ViewCorePanelState extends ViewCoreBuilder {
             child: refreshButton,
           ),
           SizedBox(height: 15),
-          SingleChildScrollView(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              mainAxisSize: MainAxisSize.min,
-              children: [_buildPaginationWidget],
-            ),
-          ),
+          if (isEmpty) _buildPaginationWidget,
           SizedBox(
             height: MediaQuery.sizeOf(context).height,
             child: BlocConsumer(
               listener: (context, state) {
                 if (state is FetchViewCoreRecordSuccessStatus) {
-                  pageText = state.viewCoreModel.pageText.toString();
+                  pageText = state.viewCoreModel.pageText ?? '';
+                  if (state.viewCoreModel.status == 1) {
+                    setState(() {
+                      isEmpty = true;
+                    });
+                  } else {
+                    setState(() {
+                      isEmpty = false;
+                    });
+                  }
                 }
               },
               bloc: coreBloc,
@@ -270,19 +225,7 @@ class _ViewCorePanelState extends ViewCoreBuilder {
                             ),
                           ),
                         );
-                        coreBloc.add(
-                          ViewCoreRecordEvent(
-                            param: ViewRecordApiParam(
-                              keyword: searchController.text,
-                              filterBy: recordValue ?? '',
-                              orderBy: filterValue.toString(),
-                              pageNo: currentPage.toString(),
-                              sortBy: entryValue.toString(),
-                              fromDate: fromDateController.text,
-                              toDate: toDateController.text,
-                            ),
-                          ),
-                        );
+                        eventHandler();
                       },
                     );
 
@@ -343,11 +286,46 @@ class _ViewCorePanelState extends ViewCoreBuilder {
                             ),
                           )
                         : Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              SizedBox(height: 200),
-                              Text(
-                                successState.message ?? 'Refresh to load data',
+                              // Table Header
+                              ScrollConfiguration(
+                                behavior: HorizontalMouseScrollBehavior(),
+                                child: Container(
+                                  width: double.infinity,
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
+                                  color: Colors.grey[100],
+                                  child: Row(
+                                    children: buildGridColumns()
+                                        .map(
+                                          (column) => Expanded(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 12.0,
+                                                    vertical: 12.0,
+                                                  ),
+                                              child: column.label,
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                  ),
+                                ),
+                              ),
+                              // Message below header
+                              Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Text(
+                                  state.viewCoreModel.message ??
+                                      'try again later',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
                             ],
                           );
@@ -486,104 +464,49 @@ class _ViewCorePanelState extends ViewCoreBuilder {
     );
   }
 
-  Widget get _buildPaginationWidget => TableBottomWidget(
-    pageText: pageText,
-    currentPage: currentPage,
-    pageQty: pageQty,
-    onPagePressed: (pageNumber) {
-      setState(() {
-        currentPage = pageNumber;
-      });
-      coreBloc.add(
-        ViewCoreRecordEvent(
-          param: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue ?? '',
-            orderBy: filterValue.toString(),
-            pageNo: currentPage.toString(),
-            sortBy: entryValue.toString(),
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
-      // Page number button clicked
-    },
-    onFirstPressed: () {
-      setState(() {
-        currentPage = 1;
-        coreBloc.add(
-          ViewCoreRecordEvent(
-            param: ViewRecordApiParam(
-              keyword: searchController.text,
-              filterBy: recordValue ?? '',
-              orderBy: filterValue.toString(),
-              pageNo: currentPage.toString(),
-              sortBy: entryValue.toString(),
-              fromDate: fromDateController.text,
-              toDate: toDateController.text,
-            ),
-          ),
-        );
-      });
-    },
-    onPreviousPressed: () {
-      if (currentPage != null && pageQty != null && currentPage! <= pageQty!) {
+  Widget get _buildPaginationWidget => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+    child: TableBottomWidget(
+      pageText: pageText,
+      currentPage: currentPage,
+      pageQty: pageQty,
+      onPagePressed: (pageNumber) {
         setState(() {
-          currentPage = currentPage! - 1;
-          coreBloc.add(
-            ViewCoreRecordEvent(
-              param: ViewRecordApiParam(
-                keyword: searchController.text,
-                filterBy: recordValue ?? '',
-                orderBy: filterValue.toString(),
-                pageNo: currentPage.toString(),
-                sortBy: entryValue.toString(),
-                fromDate: fromDateController.text,
-                toDate: toDateController.text,
-              ),
-            ),
-          );
+          currentPage = pageNumber;
         });
-      }
-    },
-    onNextPressed: () {
-      if (currentPage != null && currentPage! >= 1) {
+        eventHandler();
+        // Page number button clicked
+      },
+      onFirstPressed: () {
         setState(() {
-          currentPage = currentPage! + 1;
-          coreBloc.add(
-            ViewCoreRecordEvent(
-              param: ViewRecordApiParam(
-                keyword: searchController.text,
-                filterBy: recordValue ?? '',
-                orderBy: filterValue.toString(),
-                pageNo: currentPage.toString(),
-                sortBy: entryValue.toString(),
-                fromDate: fromDateController.text,
-                toDate: toDateController.text,
-              ),
-            ),
-          );
+          currentPage = 1;
+          eventHandler();
         });
-      }
-    },
-    onLastPressed: () {
-      setState(() {
-        currentPage = pageQty!;
-        coreBloc.add(
-          ViewCoreRecordEvent(
-            param: ViewRecordApiParam(
-              keyword: searchController.text,
-              filterBy: recordValue ?? '',
-              orderBy: filterValue.toString(),
-              pageNo: currentPage.toString(),
-              sortBy: entryValue.toString(),
-              fromDate: fromDateController.text,
-              toDate: toDateController.text,
-            ),
-          ),
-        );
-      });
-    },
+      },
+      onPreviousPressed: () {
+        if (currentPage != null &&
+            pageQty != null &&
+            currentPage! <= pageQty!) {
+          setState(() {
+            currentPage = currentPage! - 1;
+            eventHandler();
+          });
+        }
+      },
+      onNextPressed: () {
+        if (currentPage != null && currentPage! >= 1) {
+          setState(() {
+            currentPage = currentPage! + 1;
+            eventHandler();
+          });
+        }
+      },
+      onLastPressed: () {
+        setState(() {
+          currentPage = pageQty!;
+          eventHandler();
+        });
+      },
+    ),
   );
 }

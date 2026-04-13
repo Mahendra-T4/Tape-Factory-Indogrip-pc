@@ -190,7 +190,7 @@ class _MyWidgetState extends State<UploadFileButton> {
             if (!context.mounted) return;
             ToastService.instance.showError(
               context,
-              state.successResponse.message.toString(),
+              state.successResponse.message ?? 'try again later',
             );
           }
         } else if (state is GlobalUploadCsvFileErrorStatus) {

@@ -18,20 +18,20 @@ class UploadClientResponse {
 
 class ClientMissRecord {
   final String? cConsigneeName;
-  final String? cGSTIN;
-  final String? cUnitOne;
-  final String? cUnitTwo;
-  final String? cUnitThree;
-  final String? cUnitFour;
-  final String? cUnitFive;
-  final String? cMobileNumber;
-  final String? cAlternateNumber;
-  final String? cOwnerName;
-  final String? cOwnerMobileNumber;
-  final String? cOwnerAlternateNumber;
-  final String? cPurchaseManagerName;
-  final String? cPurchaseManagerNumber;
-  final String? cPurchaseManagerAlternateNumber;
+  final dynamic cGSTIN;
+  final dynamic cUnitOne;
+  final dynamic cUnitTwo;
+  final dynamic cUnitThree;
+  final dynamic cUnitFour;
+  final dynamic cUnitFive;
+  final dynamic cMobileNumber;
+  final dynamic cAlternateNumber;
+  final dynamic cOwnerName;
+  final dynamic cOwnerMobileNumber;
+  final dynamic cOwnerAlternateNumber;
+  final dynamic cPurchaseManagerName;
+  final dynamic cPurchaseManagerNumber;
+  final dynamic cPurchaseManagerAlternateNumber;
   final String? reason;
 
   ClientMissRecord({

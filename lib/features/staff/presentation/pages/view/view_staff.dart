@@ -50,6 +50,7 @@ class _ViewStaffPanelState extends ViewStaffBuilder {
   bool isChecked = false;
   String pageText = '';
   bool isExpanded = false;
+  bool isNotEmpty = false;
 
   StaffDataSource? _dataSource;
   List<DataGridRow> selectedRows = [];
@@ -118,19 +119,7 @@ class _ViewStaffPanelState extends ViewStaffBuilder {
                   );
 
                   // Refresh list after status change
-                  staffBloc.add(
-                    ViewStaffRecordsFetchingEvent(
-                      viewStaffApiParam: ViewRecordApiParam(
-                        keyword: searchController.text,
-                        filterBy: recordValue ?? '',
-                        orderBy: filterValue.toString(),
-                        pageNo: pageNo.toString(),
-                        sortBy: entryValue.toString(),
-                        fromDate: fromDateController.text,
-                        toDate: toDateController.text,
-                      ),
-                    ),
-                  );
+                  eventHandler();
                 } else {
                   ToastService.instance.showSuccess(
                     context,
@@ -138,19 +127,7 @@ class _ViewStaffPanelState extends ViewStaffBuilder {
                         ? state.changeStatusEntity.message.toString()
                         : 'Failed to update status',
                   );
-                  staffBloc.add(
-                    ViewStaffRecordsFetchingEvent(
-                      viewStaffApiParam: ViewRecordApiParam(
-                        keyword: searchController.text,
-                        filterBy: recordValue ?? '',
-                        orderBy: filterValue.toString(),
-                        pageNo: pageNo.toString(),
-                        sortBy: entryValue.toString(),
-                        fromDate: fromDateController.text,
-                        toDate: toDateController.text,
-                      ),
-                    ),
-                  );
+                  eventHandler();
                 }
               } else if (state is GlobalChangeUserStatusErrorStatus) {
                 ToastService.instance.showError(
@@ -167,19 +144,7 @@ class _ViewStaffPanelState extends ViewStaffBuilder {
                       : 'Record deleted successfully',
                 );
                 // Refresh list after single delete
-                staffBloc.add(
-                  ViewStaffRecordsFetchingEvent(
-                    viewStaffApiParam: ViewRecordApiParam(
-                      keyword: searchController.text,
-                      filterBy: recordValue ?? '',
-                      orderBy: filterValue.toString(),
-                      pageNo: pageNo.toString(),
-                      sortBy: entryValue.toString(),
-                      fromDate: fromDateController.text,
-                      toDate: toDateController.text,
-                    ),
-                  ),
-                );
+                eventHandler();
               } else if (state is GlobalDeleteRecordErrorStatus) {
                 ToastService.instance.showError(
                   context,
@@ -198,19 +163,7 @@ class _ViewStaffPanelState extends ViewStaffBuilder {
                   ),
                 );
                 // Refresh list after bulk delete
-                staffBloc.add(
-                  ViewStaffRecordsFetchingEvent(
-                    viewStaffApiParam: ViewRecordApiParam(
-                      keyword: searchController.text,
-                      filterBy: recordValue ?? '',
-                      orderBy: filterValue.toString(),
-                      pageNo: pageNo.toString(),
-                      sortBy: entryValue.toString(),
-                      fromDate: fromDateController.text,
-                      toDate: toDateController.text,
-                    ),
-                  ),
-                );
+                eventHandler();
                 // Clear selection
                 setState(() {
                   selectedRows.clear();
@@ -235,19 +188,13 @@ class _ViewStaffPanelState extends ViewStaffBuilder {
 
         // if (isMultipleSelection) buildSelectionActions(),
         SliverToBoxAdapter(child: SizedBox(height: 15)),
-        SliverToBoxAdapter(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
+        if (isNotEmpty)
+          SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                mainAxisSize: MainAxisSize.max,
-                children: [_buildPaginationWidget],
-              ),
+              child: _buildPaginationWidget,
             ),
           ),
-        ),
         SliverToBoxAdapter(
           child: SizedBox(
             height: MediaQuery.sizeOf(context).height,
@@ -257,6 +204,15 @@ class _ViewStaffPanelState extends ViewStaffBuilder {
                 if (state is StaffViewLoadedSuccessStatus) {
                   // Reset data source when new data arrives
                   pageText = state.viewStaffModel.pageText.toString();
+                  if (state.viewStaffModel.status == 1) {
+                    setState(() {
+                      isNotEmpty = true;
+                    });
+                  } else {
+                    setState(() {
+                      isNotEmpty = false;
+                    });
+                  }
                   _dataSource = null;
                 }
                 if (state is StaffViewLoadedFailureStatus) {
@@ -374,19 +330,7 @@ class _ViewStaffPanelState extends ViewStaffBuilder {
                               ),
                             ).then((_) {
                               // After dialog closes, refresh list
-                              staffBloc.add(
-                                ViewStaffRecordsFetchingEvent(
-                                  viewStaffApiParam: ViewRecordApiParam(
-                                    keyword: searchController.text,
-                                    filterBy: recordValue ?? '',
-                                    orderBy: filterValue.toString(),
-                                    pageNo: pageNo.toString(),
-                                    sortBy: entryValue.toString(),
-                                    fromDate: fromDateController.text,
-                                    toDate: toDateController.text,
-                                  ),
-                                ),
-                              );
+                              eventHandler();
                             });
                           } else {
                             // For other statuses, call API immediately
@@ -415,11 +359,45 @@ class _ViewStaffPanelState extends ViewStaffBuilder {
                     });
 
                     return state.viewStaffModel.status != 1
-                        ? Center(
-                            child: Text(
-                              state.viewStaffModel.message ??
-                                  'Refresh to load data',
-                            ),
+                        ? Column(
+                            children: [
+                              // Table Header
+                              Container(
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                color: Colors.grey[100],
+                                child: Row(
+                                  children: buildGridColumns()
+                                      .map(
+                                        (column) => Expanded(
+                                          flex: 1,
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8.0,
+                                              vertical: 12.0,
+                                            ),
+                                            child: column.label,
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                                ),
+                              ),
+                              // Message below header
+                              Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Text(
+                                  state.viewStaffModel.message ??
+                                      'try again later',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ],
                           )
                         : Padding(
                             padding: const EdgeInsets.symmetric(
@@ -435,6 +413,7 @@ class _ViewStaffPanelState extends ViewStaffBuilder {
                                 allowPullToRefresh: true,
                                 allowColumnsResizing: true,
                                 columnResizeMode: ColumnResizeMode.onResizeEnd,
+
                                 isScrollbarAlwaysShown: true,
                                 showVerticalScrollbar: true,
                                 showCheckboxColumn: isMultipleSelection,
@@ -504,19 +483,7 @@ class _ViewStaffPanelState extends ViewStaffBuilder {
                             failureState.error.toString(),
                             name: 'Retry Fetching Staff Records',
                           );
-                          staffBloc.add(
-                            ViewStaffRecordsFetchingEvent(
-                              viewStaffApiParam: ViewRecordApiParam(
-                                keyword: searchController.text,
-                                filterBy: recordValue ?? '',
-                                orderBy: filterValue.toString(),
-                                pageNo: pageNo.toString(),
-                                sortBy: entryValue.toString(),
-                                fromDate: fromDateController.text,
-                                toDate: toDateController.text,
-                              ),
-                            ),
-                          );
+                          eventHandler();
                         },
                       ),
                     );
@@ -575,56 +542,20 @@ class _ViewStaffPanelState extends ViewStaffBuilder {
       setState(() {
         pageNo = pageNumber;
       });
-      staffBloc.add(
-        ViewStaffRecordsFetchingEvent(
-          viewStaffApiParam: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue ?? '',
-            orderBy: filterValue.toString(),
-            pageNo: pageNo.toString(),
-            sortBy: entryValue.toString(),
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
       // Page number button clicked
     },
     onFirstPressed: () {
       setState(() {
         pageNo = 1;
-        staffBloc.add(
-          ViewStaffRecordsFetchingEvent(
-            viewStaffApiParam: ViewRecordApiParam(
-              keyword: searchController.text,
-              filterBy: recordValue ?? '',
-              orderBy: filterValue.toString(),
-              pageNo: pageNo.toString(),
-              sortBy: entryValue.toString(),
-              fromDate: fromDateController.text,
-              toDate: toDateController.text,
-            ),
-          ),
-        );
+        eventHandler();
       });
     },
     onPreviousPressed: () {
       if (pageNo != null && pageNo! >= 1) {
         setState(() {
           pageNo = pageNo! - 1;
-          staffBloc.add(
-            ViewStaffRecordsFetchingEvent(
-              viewStaffApiParam: ViewRecordApiParam(
-                keyword: searchController.text,
-                filterBy: recordValue ?? '',
-                orderBy: filterValue.toString(),
-                pageNo: pageNo.toString(),
-                sortBy: entryValue.toString(),
-                fromDate: fromDateController.text,
-                toDate: toDateController.text,
-              ),
-            ),
-          );
+          eventHandler();
         });
       }
     },
@@ -632,38 +563,14 @@ class _ViewStaffPanelState extends ViewStaffBuilder {
       if (pageNo != null && pageQty != null && pageNo! <= pageQty!) {
         setState(() {
           pageNo = pageNo! + 1;
-          staffBloc.add(
-            ViewStaffRecordsFetchingEvent(
-              viewStaffApiParam: ViewRecordApiParam(
-                keyword: searchController.text,
-                filterBy: recordValue ?? '',
-                orderBy: filterValue.toString(),
-                pageNo: pageNo.toString(),
-                sortBy: entryValue.toString(),
-                fromDate: fromDateController.text,
-                toDate: toDateController.text,
-              ),
-            ),
-          );
+          eventHandler();
         });
       }
     },
     onLastPressed: () {
       setState(() {
         pageNo = pageQty;
-        staffBloc.add(
-          ViewStaffRecordsFetchingEvent(
-            viewStaffApiParam: ViewRecordApiParam(
-              keyword: searchController.text,
-              filterBy: recordValue ?? '',
-              orderBy: filterValue.toString(),
-              pageNo: pageNo.toString(),
-              sortBy: entryValue.toString(),
-              fromDate: fromDateController.text,
-              toDate: toDateController.text,
-            ),
-          ),
-        );
+        eventHandler();
       });
     },
   );

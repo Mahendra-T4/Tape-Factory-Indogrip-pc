@@ -38,6 +38,8 @@ class _StratchFilmPanelState extends StretchFilmBuilder {
   final GlobalKey _key = GlobalKey();
   late ScrollController _horizontalScrollController;
 
+  bool isNotEmpty = false;
+
   @override
   void initState() {
     super.initState();
@@ -139,6 +141,23 @@ class _StratchFilmPanelState extends StretchFilmBuilder {
                                     onPressed: () async {
                                       await OSStretchFileExporter.exportTapeExcel(
                                         context: context,
+                                        param: ViewRecordApiParam(
+                                          keyword: searchController.text,
+                                          filterBy:
+                                              stockStatus?.toString() ?? '',
+                                          orderBy:
+                                              filterValue?.toString() ?? '',
+                                          pageNo: pageNo.toString(),
+                                          sortBy:
+                                              entryValue?.toString() ?? '10',
+                                          vendorKey:
+                                              vendorKey?.toString() ?? '',
+                                          coreID: coreID?.toString() ?? '',
+                                          filmSizeID:
+                                              filmSizeID?.toString() ?? '',
+                                          fromDate: fromDateController.text,
+                                          toDate: toDateController.text,
+                                        ),
                                       );
                                     },
                                   ),
@@ -172,7 +191,8 @@ class _StratchFilmPanelState extends StretchFilmBuilder {
                   ),
                 ),
                 SliverToBoxAdapter(child: const SizedBox(height: 16)),
-                SliverToBoxAdapter(child: _buildPaginationWidget),
+                if (isNotEmpty)
+                  SliverToBoxAdapter(child: _buildPaginationWidget),
                 // StretchDetailBox(),
                 SliverToBoxAdapter(child: _buildContentWidget),
               ],
@@ -183,56 +203,44 @@ class _StratchFilmPanelState extends StretchFilmBuilder {
     );
   }
 
-  Widget get _buildPaginationWidget => ScrollConfiguration(
-    behavior: ScrollConfiguration.of(
-      context,
-    ).copyWith(scrollbars: true, physics: const ClampingScrollPhysics()),
-    child: Scrollbar(
-      controller: _horizontalScrollController,
-      child: SingleChildScrollView(
-        controller: _horizontalScrollController,
-        scrollDirection: Axis.horizontal,
-        child: TableBottomWidget(
-          pageText: pageText,
-          currentPage: pageNo,
-          pageQty: pageQty,
-          onPagePressed: (pageNumber) {
-            setState(() {
-              pageNo = pageNumber;
-            });
-            callEvent();
-          },
-          onFirstPressed: () {
-            setState(() {
-              pageNo = 1;
-              callEvent();
-            });
-          },
-          onPreviousPressed: () {
-            if (pageNo >= 1) {
-              setState(() {
-                pageNo = pageNo - 1;
-                callEvent();
-              });
-            }
-          },
-          onNextPressed: () {
-            if (pageNo >= 1) {
-              setState(() {
-                pageNo = pageNo + 1;
-                callEvent();
-              });
-            }
-          },
-          onLastPressed: () {
-            setState(() {
-              pageNo = pageQty;
-              callEvent();
-            });
-          },
-        ),
-      ),
-    ),
+  Widget get _buildPaginationWidget => TableBottomWidget(
+    pageText: pageText,
+    currentPage: pageNo,
+    pageQty: pageQty,
+    onPagePressed: (pageNumber) {
+      setState(() {
+        pageNo = pageNumber;
+      });
+      callEvent();
+    },
+    onFirstPressed: () {
+      setState(() {
+        pageNo = 1;
+        callEvent();
+      });
+    },
+    onPreviousPressed: () {
+      if (pageNo >= 1) {
+        setState(() {
+          pageNo = pageNo - 1;
+          callEvent();
+        });
+      }
+    },
+    onNextPressed: () {
+      if (pageNo >= 1) {
+        setState(() {
+          pageNo = pageNo + 1;
+          callEvent();
+        });
+      }
+    },
+    onLastPressed: () {
+      setState(() {
+        pageNo = pageQty;
+        callEvent();
+      });
+    },
   );
 
   Widget get _buildContentWidget => SizedBox(
@@ -245,7 +253,16 @@ class _StratchFilmPanelState extends StretchFilmBuilder {
       },
       listener: (context, state) {
         if (state is InventoryOutStretchFilmLoadedSuccessStatus) {
-          pageText = state.model.pageText;
+          pageText = state.model.pageText ?? '';
+          if (state.model.status == 1) {
+            setState(() {
+              isNotEmpty = true;
+            });
+          } else {
+            setState(() {
+              isNotEmpty = false;
+            });
+          }
           dataSource = null;
           WidgetsBinding.instance.addPostFrameCallback((_) {
             setState(() {
@@ -315,14 +332,54 @@ class _StratchFilmPanelState extends StretchFilmBuilder {
             });
 
             return loadedState.status != 1
-                ? Center(
-                    child: Text(loadedState.message ?? 'Refresh to load data'),
+                ? Column(
+                    children: [
+                      // Table Header
+                      ScrollConfiguration(
+                        behavior: HorizontalMouseScrollBehavior(),
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 16),
+                          color: Colors.grey[100],
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: buildGridColumns()
+                                  .map(
+                                    (column) => Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12.0,
+                                        vertical: 12.0,
+                                      ),
+                                      child: column.label,
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Message below header
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(
+                          state.model.message ?? 'try again later',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
                   )
                 : Column(
                     children: [
                       StretchDetailBox(
                         availableCarton: loadedState.availableCarton.toString(),
-                        totalPieces: loadedState.totalPieces.toString(),
+
+                        totalNetWeight: loadedState.totalNetWeight.toString(),
+                        totalGrossWeight: loadedState.totalGrossWeight
+                            .toString(),
                       ),
                       SizedBox(
                         height: MediaQuery.of(context).size.height * 0.8,

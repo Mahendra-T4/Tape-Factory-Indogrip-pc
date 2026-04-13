@@ -7,10 +7,12 @@ import 'package:indogrip/core/utils/appbar/desktop_appbar.dart';
 import 'package:indogrip/core/utils/appbar/mobile_appbar.dart';
 import 'package:indogrip/core/utils/sidebar.dart';
 import 'package:indogrip/core/utils/widgets/toast_service.dart';
+import 'package:indogrip/features/chalan/data/challan_exporter.dart';
 import 'package:indogrip/features/chalan/presentation/bloc/challan_bloc.dart';
 import 'package:indogrip/features/chalan/presentation/page/chalan_builder.dart';
 import 'package:indogrip/features/global/presentation/bloc/global_bloc.dart';
 import 'package:indogrip/features/global/presentation/widget/data_filtration.dart';
+import 'package:indogrip/features/global/presentation/widget/file_export_button.dart';
 import 'package:indogrip/features/global/presentation/widget/pagination_widget.dart';
 import 'package:indogrip/features/staff/data/models/view_staff_api_param.dart';
 
@@ -53,7 +55,7 @@ class _ChalanPanelState extends ChalanBuilder {
                 } else {
                   ToastService.instance.showError(
                     context,
-                    state.changeStatusEntity.message.toString(),
+                    state.changeStatusEntity.message ?? 'try again later',
                   );
                 }
               } else if (state is GlobalChangeUserStatusErrorStatus) {
@@ -106,6 +108,18 @@ class _ChalanPanelState extends ChalanBuilder {
                         isChalan: true,
                         fromDateController: fromDateController,
                         toDateController: toDateController,
+                        onFromChanged: (fromDate) {
+                          setState(() {
+                            fromDateController.text = fromDate;
+                          });
+                          dataLoadingEventCall();
+                        },
+                        onToChanged: (toDate) {
+                          setState(() {
+                            toDateController.text = toDate;
+                          });
+                          dataLoadingEventCall();
+                        },
                         clientKey: clientKey,
                         staffKey: staffKey,
                         onChanged: (client) {
@@ -130,17 +144,28 @@ class _ChalanPanelState extends ChalanBuilder {
           child: Padding(
             padding: const EdgeInsets.only(right: 20, bottom: 15),
             child: Row(
+              spacing: 16,
               mainAxisAlignment: MainAxisAlignment.end,
-              children: [refreshButton],
+              children: [
+                FileExportButton(
+                  onPressed: () async {
+                    await ChallanExporter.exportChallanExcelFile(
+                      context: context,
+                    );
+                  },
+                ),
+                refreshButton,
+              ],
             ),
           ),
         ),
-        SliverToBoxAdapter(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [_buildPaginationWidget],
+        if (isNotEmpty)
+          SliverToBoxAdapter(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [_buildPaginationWidget],
+            ),
           ),
-        ),
         SliverToBoxAdapter(child: buildContentTableWidget),
         SliverToBoxAdapter(child: SizedBox(height: 100)),
       ],
@@ -188,6 +213,7 @@ class _ChalanPanelState extends ChalanBuilder {
     onPagePressed: (pageNumber) {
       setState(() {
         pageNo = pageNumber;
+
         challanBloc.add(
           FetchChallanRecordsEvent(
             param: ViewRecordApiParam(

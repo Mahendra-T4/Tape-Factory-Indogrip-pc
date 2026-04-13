@@ -2,10 +2,13 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:excel/excel.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:indogrip/core/utils/widgets/toast_service.dart';
 import 'package:indogrip/features/round/domain/repositories/add_round_repo.dart';
+import 'package:indogrip/features/staff/data/models/view_staff_api_param.dart';
+import 'package:intl/intl.dart';
 
 class RoundFileExporter {
   static Future<Uint8List> roundExcelFileGenerator(
@@ -103,22 +106,34 @@ class RoundFileExporter {
 
   static Future<void> exportRoundDataExcelFile({
     required BuildContext context,
+    required ViewRecordApiParam param,
     String? folderPath,
     String fileName = 'round_data.xlsx',
   }) async {
     try {
+      // Generate filename with current date
+      String dateFormatted = DateFormat('dd-MM-yyyy').format(DateTime.now());
+      String fileNameWithDate =
+          'round_data_$dateFormatted.xlsx'; // Default name with date
+
+      // Show directory picker dialog to let user select save location
+      String? selectedDirectory = await FilePicker.platform.getDirectoryPath(
+        dialogTitle: 'Select folder to save round data',
+      );
+
+      if (selectedDirectory == null) {
+        // User cancelled the picker
+        ToastService.instance.showError(context, 'Export cancelled');
+        return;
+      }
+
       List<Map<String, dynamic>> data = await AddRoundRepository()
-          .loadRoundJsonData();
+          .loadRoundJsonData(param);
 
       Uint8List bytes = await roundExcelFileGenerator(data);
 
-      String? savePath;
-
-      if (folderPath != null && folderPath.isNotEmpty) {
-        savePath = '$folderPath/$fileName';
-      } else {
-        savePath = fileName;
-      }
+      // Build the full file path with selected directory and dated filename
+      String savePath = '$selectedDirectory/$fileNameWithDate';
 
       final file = File(savePath);
 
@@ -126,11 +141,12 @@ class RoundFileExporter {
 
       ToastService.instance.showSuccess(
         context,
-        'File exported successfully to $savePath',
+        'File exported successfully: $fileNameWithDate',
       );
 
       try {
-        await Process.start('explorer.exe', [savePath]);
+        // Open the folder where file was saved
+        await Process.start('explorer.exe', ['/select,', savePath]);
       } catch (e) {
         log('Error opening file explorer: $e');
       }

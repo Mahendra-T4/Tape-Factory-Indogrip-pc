@@ -34,6 +34,7 @@ import 'package:printing/printing.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
 abstract class StretchFilmBuilder extends State<StretchFilmPanel> {
+  Key refreshKey = UniqueKey();
   late final InventoryOutBloc inventoryOutBloc;
   late final GlobalBloc globalBloc;
   late final InventoryBloc inventoryBloc;
@@ -94,6 +95,25 @@ abstract class StretchFilmBuilder extends State<StretchFilmPanel> {
     );
   }
 
+  clearFiltersOnRefresh() {
+    searchController.clear();
+    fromDateController.clear();
+    toDateController.clear();
+
+    setState(() {
+      baseID = null;
+      micID = null;
+      filmSizeID = null;
+      coreID = null;
+      vendorKey = null;
+    });
+
+    refreshKey =
+        UniqueKey(); // Force rebuild of filter widgets if they rely on this key
+
+    callEvent();
+  }
+
   String? recordValue, filterValue, entryValue;
 
   StretchFilmDataSource? dataSource;
@@ -104,25 +124,7 @@ abstract class StretchFilmBuilder extends State<StretchFilmPanel> {
     height: 35,
     child: RefreshButton(
       onPressed: () {
-        searchController.clear();
-        baseID = null;
-        micID = null;
-        filmSizeID = null;
-        coreID = null;
-        vendorKey = null;
-        entryValue = null;
-        recordValue = null;
-        micID = null;
-        filmSizeID = null;
-        toDateController.clear();
-        fromDateController.clear();
-
-        tapLengthController.clear();
-
-        setState(() {
-          pageNo = 1;
-        });
-        callEvent();
+        clearFiltersOnRefresh();
       },
     ),
   );
@@ -132,6 +134,7 @@ abstract class StretchFilmBuilder extends State<StretchFilmPanel> {
       horizontal: kDefaultHorizontalPadding - 5,
     ),
     child: Column(
+      key: refreshKey,
       spacing: 10,
       children: [
         Row(
@@ -526,7 +529,6 @@ abstract class StretchFilmBuilder extends State<StretchFilmPanel> {
     listener: (context, state) {
       if (state is InventoryInRecordAddedSuccessStatus) {
         if (state.response.status == 1) {
-         
           context.pushNamed(PrintStretchFilmSticker.routeName, extra: rKey);
           context.pop();
           callEvent();
@@ -540,7 +542,7 @@ abstract class StretchFilmBuilder extends State<StretchFilmPanel> {
           if (context.mounted) {
             ToastService.instance.showError(
               context,
-              state.response.message.toString(),
+              state.response.message ?? 'try again later',
             );
           }
         }
@@ -855,18 +857,18 @@ abstract class StretchFilmBuilder extends State<StretchFilmPanel> {
           ),
         ),
       ),
-      // GridColumn(
-      //   columnName: 'mrp',
-      //   width: 100,
-      //   label: Container(
-      //     color: Colors.grey[100],
-      //     alignment: Alignment.center,
-      //     child: const Text(
-      //       'MRP',
-      //       style: TextStyle(fontWeight: FontWeight.bold),
-      //     ),
-      //   ),
-      // ),
+      GridColumn(
+        columnName: 'qty',
+        width: 100,
+        label: Container(
+          color: Colors.grey[100],
+          alignment: Alignment.center,
+          child: const Text(
+            'Quantity',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+      ),
       GridColumn(
         columnName: StretchFilm.remark,
         width: 150,
@@ -907,6 +909,7 @@ abstract class StretchFilmBuilder extends State<StretchFilmPanel> {
   }
 
   Widget get searchFields => RoundSearchFields(
+    key: refreshKey,
     isStatus: true,
     // controller: searchController,
     onSearch: (keyword) {
@@ -1051,148 +1054,162 @@ abstract class StretchFilmBuilder extends State<StretchFilmPanel> {
           color: PdfColors.black,
         );
 
-        pdf.addPage(
-          pw.Page(
-            pageFormat: PdfPageFormat(
-              PdfPageFormat.inch * 4.9, // width = 4 inches
-              PdfPageFormat.inch * 3.4, // height = 6 inches
-              marginTop: PdfPageFormat.inch * 0.7,
-              marginRight:
-                  PdfPageFormat.inch *
-                  0.15, // equal margins for centered sticker
-              marginLeft:
-                  PdfPageFormat.inch *
-                  0.15, // equal margins for centered sticker
-            ),
-            build: (pw.Context context) {
-              return pw.Container(
-                alignment: pw.Alignment.center,
-                padding: pw.EdgeInsets.all(10),
-                decoration: pw.BoxDecoration(
-                  border: pw.Border.all(color: PdfColors.black, width: 1.2),
-                  borderRadius: pw.BorderRadius.circular(4),
-                ),
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.center,
-                  mainAxisAlignment: pw.MainAxisAlignment.center,
-                  children: [
-                    pw.Row(
-                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                      children: [
-                        if (indogripStickerImage != null)
-                          pw.Image(
-                            indogripStickerImage,
-                            width: 100,
-                            height: 30,
-                            fit: pw.BoxFit.contain,
-                          ),
-                        if (tapFactoryImage != null)
-                          pw.Image(
-                            tapFactoryImage,
-                            width: 80,
-                            height: 30,
-                            fit: pw.BoxFit.contain,
-                          ),
-                      ],
-                    ),
+        // Get quantity from selected item, default to 1 if not available
+        int quantity = 1;
+        if (selectedItem.quantity != null) {
+          try {
+            quantity = int.parse(selectedItem.quantity.toString());
+          } catch (e) {
+            developer.log(name: 'Quantity Parse Error', e.toString());
+            quantity = 1;
+          }
+        }
 
-                    // Top logo (tap factory)
-                    pw.SizedBox(height: 3),
-
-                    //! Barcode - batchcode
-                    pw.Align(
-                      alignment: pw.Alignment.center,
-                      child: pw.BarcodeWidget(
-                        data: record.batchInformation!.batchID.toString(),
-                        barcode: pw.Barcode.code128(),
-                        textStyle: pw.TextStyle(
-                          fontSize: 10,
-                          fontWeight: pw.FontWeight.bold,
-                        ),
-                        width: PdfPageFormat.inch * 2.8,
-                        height: PdfPageFormat.inch * 0.6,
+        // Add pages based on quantity
+        for (int i = 0; i < quantity; i++) {
+          pdf.addPage(
+            pw.Page(
+              pageFormat: PdfPageFormat(
+                PdfPageFormat.inch * 4.9, // width = 4 inches
+                PdfPageFormat.inch * 3.4, // height = 6 inches
+                marginTop: PdfPageFormat.inch * 0.7,
+                marginRight:
+                    PdfPageFormat.inch *
+                    0.15, // equal margins for centered sticker
+                marginLeft:
+                    PdfPageFormat.inch *
+                    0.15, // equal margins for centered sticker
+              ),
+              build: (pw.Context context) {
+                return pw.Container(
+                  alignment: pw.Alignment.center,
+                  padding: pw.EdgeInsets.all(10),
+                  decoration: pw.BoxDecoration(
+                    border: pw.Border.all(color: PdfColors.black, width: 1.2),
+                    borderRadius: pw.BorderRadius.circular(4),
+                  ),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.center,
+                    mainAxisAlignment: pw.MainAxisAlignment.center,
+                    children: [
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          if (indogripStickerImage != null)
+                            pw.Image(
+                              indogripStickerImage,
+                              width: 100,
+                              height: 30,
+                              fit: pw.BoxFit.contain,
+                            ),
+                          if (tapFactoryImage != null)
+                            pw.Image(
+                              tapFactoryImage,
+                              width: 80,
+                              height: 30,
+                              fit: pw.BoxFit.contain,
+                            ),
+                        ],
                       ),
-                    ),
 
-                    // Sticker details
-                    pw.Row(
-                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                      children: [
-                        pw.Text(
-                          'Batch Code: ${record.batchInformation!.batchCode.toString()}',
-                          style: style,
-                        ),
-                        pw.Text(
-                          'Serial Number: ${record.inventoryInformation?.inventoryCode.toString()}',
-                          style: style,
-                        ),
-                      ],
-                    ),
-                    pw.SizedBox(height: 5),
-                    pw.Row(
-                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                      children: [
-                        pw.Text(
-                          'Mic: ${record.batchInformation!.displayMic.toString()}',
-                          style: style,
-                        ),
-                        pw.Text(
-                          'Base: ${record.inventoryInformation!.additionalInfo!.baseLabel ?? "N/A"}',
-                          style: style,
-                        ),
-                      ],
-                    ),
+                      // Top logo (tap factory)
+                      pw.SizedBox(height: 3),
 
-                    pw.SizedBox(height: 5),
-                    pw.Row(
-                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                      children: [
-                        pw.Text(
-                          'MFG: ${record.batchInformation!.displayMFGLabel ?? "N/A"}',
-                          style: style,
+                      //! Barcode - batchcode
+                      pw.Align(
+                        alignment: pw.Alignment.center,
+                        child: pw.BarcodeWidget(
+                          data: record.batchInformation!.batchID.toString(),
+                          barcode: pw.Barcode.code128(),
+                          textStyle: pw.TextStyle(
+                            fontSize: 10,
+                            fontWeight: pw.FontWeight.bold,
+                          ),
+                          width: PdfPageFormat.inch * 2.8,
+                          height: PdfPageFormat.inch * 0.6,
                         ),
-                        pw.Text(
-                          'MRP: ${record.batchInformation!.batchMRP ?? "N/A"}',
-                          style: style,
-                        ),
-                      ],
-                    ),
+                      ),
 
-                    pw.SizedBox(height: 5),
-                    pw.Row(
-                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                      children: [
-                        pw.Text(
-                          'Size/Width: ${record.inventoryInformation!.additionalInfo!.stretchFilmSize ?? "N/A"}',
-                          style: style,
-                        ),
+                      // Sticker details
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pw.Text(
+                            'Batch Code: ${record.batchInformation!.batchCode.toString()}',
+                            style: style,
+                          ),
+                          pw.Text(
+                            'Serial Number: ${record.inventoryInformation?.inventoryCode.toString()}',
+                            style: style,
+                          ),
+                        ],
+                      ),
+                      pw.SizedBox(height: 5),
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pw.Text(
+                            'Mic: ${record.batchInformation!.displayMic.toString()}',
+                            style: style,
+                          ),
+                          pw.Text(
+                            'Base: ${record.inventoryInformation!.additionalInfo!.baseLabel ?? "N/A"}',
+                            style: style,
+                          ),
+                        ],
+                      ),
 
-                        pw.Text(
-                          'Weight: ${record.inventoryInformation!.additionalInfo!.grossWeight?.toString() ?? "N/A"}',
-                          style: style,
-                        ),
-                      ],
-                    ),
-                    pw.SizedBox(height: 5),
-                    pw.Row(
-                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                      children: [
-                        pw.Text(
-                          'Operation: ${record.inventoryInformation!.additionalInfo!.coreCode?.toString() ?? "N/A"}',
-                          style: style,
-                        ),
-                        pw.Text(
-                          'Remark: ${record.batchInformation!.batchRemark?.toString() ?? "N/A"}',
-                          style: style,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        );
+                      pw.SizedBox(height: 5),
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pw.Text(
+                            'MFG: ${record.batchInformation!.displayMFGLabel ?? "N/A"}',
+                            style: style,
+                          ),
+                          pw.Text(
+                            'MRP: ${record.batchInformation!.batchMRP ?? "N/A"}',
+                            style: style,
+                          ),
+                        ],
+                      ),
+
+                      pw.SizedBox(height: 5),
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pw.Text(
+                            'Size/Width: ${record.inventoryInformation!.additionalInfo!.stretchFilmSize ?? "N/A"}',
+                            style: style,
+                          ),
+
+                          pw.Text(
+                            'Weight: ${record.inventoryInformation!.additionalInfo!.grossWeight?.toString() ?? "N/A"}',
+                            style: style,
+                          ),
+                        ],
+                      ),
+                      pw.SizedBox(height: 5),
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pw.Text(
+                            'Operation: ${record.inventoryInformation!.additionalInfo!.coreCode?.toString() ?? "N/A"}',
+                            style: style,
+                          ),
+                          pw.Text(
+                            'Remark: ${record.batchInformation!.batchRemark?.toString() ?? "N/A"}',
+                            style: style,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          );
+        }
       }
 
       // Show printer picker and print
@@ -1204,11 +1221,25 @@ abstract class StretchFilmBuilder extends State<StretchFilmPanel> {
         format: PdfPageFormat.a4,
       );
 
+      // Calculate total stickers printed
+      int totalStickers = 0;
+      for (var item in selectedItems) {
+        int itemQuantity = 1;
+        if (item.quantity != null) {
+          try {
+            itemQuantity = int.parse(item.quantity.toString());
+          } catch (e) {
+            itemQuantity = 1;
+          }
+        }
+        totalStickers += itemQuantity;
+      }
+
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Successfully sent ${selectedItems.length} sticker(s) to printer',
+            'Successfully sent $totalStickers sticker(s) to printer',
           ),
           backgroundColor: Colors.green,
         ),

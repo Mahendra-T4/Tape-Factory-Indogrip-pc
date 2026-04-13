@@ -41,7 +41,7 @@ class _StaffListDropdownState extends State<StaffListDropdown> {
   void _showStaffSearchDialog(BuildContext context, List<dynamic> staffList) {
     TextEditingController dialogSearchController = TextEditingController();
     List<dynamic> dialogFilteredRecords = List.from(staffList);
-    bool dialogShowResults = false;
+    bool dialogShowResults = true;
 
     showDialog(
       context: context,
@@ -78,7 +78,7 @@ class _StaffListDropdownState extends State<StaffListDropdown> {
             }
 
             return AlertDialog(
-              title: Text('Select ${widget.label}'),
+              title: Text(widget.label),
               content: SizedBox(
                 width: MediaQuery.sizeOf(context).width * 0.4,
                 child: Column(

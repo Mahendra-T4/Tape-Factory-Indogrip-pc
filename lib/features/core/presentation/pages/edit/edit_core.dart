@@ -75,22 +75,22 @@ class _EditCorePanelState extends EditCoreBuilder {
   Widget build(BuildContext context) {
     return StreamBuilder(
       stream: InternetConnectionService().connectionStream,
-        initialData: true, // Assume connected initially
-        builder: (context, snapshot) {
-          // Handle error state
-          if (snapshot.hasError) {
-            return const NoInternetConnection();
-          }
+      initialData: true, // Assume connected initially
+      builder: (context, snapshot) {
+        // Handle error state
+        if (snapshot.hasError) {
+          return const NoInternetConnection();
+        }
 
-          // Handle disconnected state
-          if (snapshot.data == false) {
-            return const NoInternetConnection();
-          }
+        // Handle disconnected state
+        if (snapshot.data == false) {
+          return const NoInternetConnection();
+        }
 
-          // Handle loading state
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
+        // Handle loading state
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
         return Scaffold(
           key: statekey,
           appBar: !Responsive.isDesktop(context)
@@ -101,7 +101,7 @@ class _EditCorePanelState extends EditCoreBuilder {
               ? buildCartonDesktopView
               : buildCartonTabletView,
         );
-      }
+      },
     );
   }
 
@@ -186,7 +186,7 @@ class _EditCorePanelState extends EditCoreBuilder {
           if (!context.mounted) return;
           ToastService.instance.showError(
             context,
-            state.successResponse.message.toString(),
+            state.successResponse.message ?? 'try again later',
           );
         }
       } else if (state is EditCoreOnRecordFailureStatus) {

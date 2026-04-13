@@ -44,6 +44,8 @@ class _ViewVendorPanelState extends ViewVendorBuilder {
   List<DataGridRow> selectedRows = [];
   String pageText = '';
 
+  bool isNotEmpty = false;
+
   @override
   void dispose() {
     selectedRows.clear();
@@ -59,10 +61,10 @@ class _ViewVendorPanelState extends ViewVendorBuilder {
       ViewVendorRecordsFetchingEvent(
         param: ViewRecordApiParam(
           keyword: searchController.text,
-          filterBy: recordValue ?? '',
-          orderBy: filterValue ?? '',
+          filterBy: recordValue.toString(),
+          orderBy: filterValue.toString(),
           pageNo: pageNo.toString(),
-          sortBy: entryValue ?? '',
+          sortBy: entryValue.toString(),
           fromDate: fromDateController.text,
           toDate: toDateController.text,
         ),
@@ -71,77 +73,30 @@ class _ViewVendorPanelState extends ViewVendorBuilder {
   }
 
   Widget get searchFields => SearchFields(
+    key: refreshKey,
     isStatus: true,
     controller: searchController,
     onSearch: (keyword) {
-      vendorBloc.add(
-        ViewVendorRecordsFetchingEvent(
-          param: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue.toString(),
-            orderBy: filterValue.toString(),
-            pageNo: pageNo.toString(),
-            sortBy: entryValue.toString(),
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
     },
     orderByValue: filterValue,
     onChangedStatus: (status) {
       setState(() {
         recordValue = status;
       });
-      vendorBloc.add(
-        ViewVendorRecordsFetchingEvent(
-          param: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue.toString(),
-            orderBy: filterValue.toString(),
-            pageNo: pageNo.toString(),
-            sortBy: entryValue.toString(),
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
     },
     onChangedOrder: (order) {
       setState(() {
         filterValue = order;
       });
-      vendorBloc.add(
-        ViewVendorRecordsFetchingEvent(
-          param: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue.toString(),
-            orderBy: filterValue.toString(),
-            pageNo: pageNo.toString(),
-            sortBy: entryValue.toString(),
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
     },
     onChangedSort: (sortBy) {
       setState(() {
         entryValue = sortBy ?? 10;
       });
-      vendorBloc.add(
-        ViewVendorRecordsFetchingEvent(
-          param: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue.toString(),
-            orderBy: filterValue.toString(),
-            pageNo: pageNo.toString(),
-            sortBy: entryValue.toString(),
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
     },
   );
 
@@ -166,6 +121,15 @@ class _ViewVendorPanelState extends ViewVendorBuilder {
               onPressed: () async {
                 await VendorFileExporter.exportVendorExcelFile(
                   context: context,
+                  param: ViewRecordApiParam(
+                    keyword: searchController.text,
+                    filterBy: recordValue,
+                    orderBy: filterValue,
+                    pageNo: pageNo.toString(),
+                    sortBy: entryValue,
+                    fromDate: fromDateController.text,
+                    toDate: toDateController.text,
+                  ),
                 );
               },
             ),
@@ -220,37 +184,13 @@ class _ViewVendorPanelState extends ViewVendorBuilder {
                   );
 
                   // Refresh list after status change
-                  vendorBloc.add(
-                    ViewVendorRecordsFetchingEvent(
-                      param: ViewRecordApiParam(
-                        keyword: searchController.text,
-                        filterBy: recordValue.toString(),
-                        orderBy: filterValue.toString(),
-                        pageNo: pageNo.toString(),
-                        sortBy: entryValue.toString(),
-                        fromDate: fromDateController.text,
-                        toDate: toDateController.text,
-                      ),
-                    ),
-                  );
+                  eventHandler();
                 } else {
                   ToastService.instance.showSuccess(
                     context,
-                    state.changeStatusEntity.message.toString(),
+                    state.changeStatusEntity.message ?? 'try again later',
                   );
-                  vendorBloc.add(
-                    ViewVendorRecordsFetchingEvent(
-                      param: ViewRecordApiParam(
-                        keyword: searchController.text,
-                        filterBy: recordValue.toString(),
-                        orderBy: filterValue.toString(),
-                        pageNo: pageNo.toString(),
-                        sortBy: entryValue.toString(),
-                        fromDate: fromDateController.text,
-                        toDate: toDateController.text,
-                      ),
-                    ),
-                  );
+                  eventHandler();
                 }
               } else if (state is GlobalChangeUserStatusErrorStatus) {
                 ToastService.instance.showError(
@@ -263,19 +203,7 @@ class _ViewVendorPanelState extends ViewVendorBuilder {
                   state.deleteRecordEntity.message.toString(),
                 );
                 // Refresh list after single delete
-                vendorBloc.add(
-                  ViewVendorRecordsFetchingEvent(
-                    param: ViewRecordApiParam(
-                      keyword: searchController.text,
-                      filterBy: recordValue.toString(),
-                      orderBy: filterValue.toString(),
-                      pageNo: pageNo.toString(),
-                      sortBy: entryValue.toString(),
-                      fromDate: fromDateController.text,
-                      toDate: toDateController.text,
-                    ),
-                  ),
-                );
+                eventHandler();
               } else if (state is GlobalDeleteRecordErrorStatus) {
                 ToastService.instance.showError(
                   context,
@@ -290,19 +218,7 @@ class _ViewVendorPanelState extends ViewVendorBuilder {
                   ),
                 );
                 // Refresh list after bulk delete
-                vendorBloc.add(
-                  ViewVendorRecordsFetchingEvent(
-                    param: ViewRecordApiParam(
-                      keyword: searchController.text,
-                      filterBy: recordValue.toString(),
-                      orderBy: filterValue.toString(),
-                      pageNo: pageNo.toString(),
-                      sortBy: entryValue.toString(),
-                      fromDate: fromDateController.text,
-                      toDate: toDateController.text,
-                    ),
-                  ),
-                );
+                eventHandler();
                 // Clear selection
                 setState(() {
                   selectedRows.clear();
@@ -317,18 +233,11 @@ class _ViewVendorPanelState extends ViewVendorBuilder {
             },
             child: buildFilterFieldsDesktop,
           ),
-
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Padding(
+          if (isNotEmpty)
+            Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                mainAxisSize: MainAxisSize.min,
-                children: [_buildPaginationWidget],
-              ),
+              child: _buildPaginationWidget,
             ),
-          ),
           SizedBox(
             height: MediaQuery.sizeOf(context).height,
             child: Padding(
@@ -337,7 +246,16 @@ class _ViewVendorPanelState extends ViewVendorBuilder {
                 bloc: vendorBloc,
                 listener: (context, state) {
                   if (state is ViewVendorRecordsLoadedSuccessStatus) {
-                    pageText = state.viewVendorModel.pageText.toString();
+                    pageText = state.viewVendorModel.pageText ?? '';
+                    if (state.viewVendorModel.status == 1) {
+                      setState(() {
+                        isNotEmpty = true;
+                      });
+                    } else {
+                      setState(() {
+                        isNotEmpty = false;
+                      });
+                    }
                     _dataSource = null;
                   }
                   if (state is ViewVendorRecordsErrorStatus) {
@@ -373,19 +291,7 @@ class _ViewVendorPanelState extends ViewVendorBuilder {
                             ).then((_) {
                               // After dialog closes, refresh the list to reset any UI changes
                               // The API response will update the status if successful
-                              vendorBloc.add(
-                                ViewVendorRecordsFetchingEvent(
-                                  param: ViewRecordApiParam(
-                                    keyword: searchController.text,
-                                    filterBy: recordValue.toString(),
-                                    orderBy: filterValue.toString(),
-                                    pageNo: pageNo.toString(),
-                                    sortBy: entryValue.toString(),
-                                    fromDate: fromDateController.text,
-                                    toDate: toDateController.text,
-                                  ),
-                                ),
-                              );
+                              eventHandler();
                             });
                           } else {
                             // For other statuses, call API directly (no reason required)
@@ -452,19 +358,7 @@ class _ViewVendorPanelState extends ViewVendorBuilder {
                           );
                         },
                         onDelete: (value) {
-                          vendorBloc.add(
-                            ViewVendorRecordsFetchingEvent(
-                              param: ViewRecordApiParam(
-                                keyword: searchController.text,
-                                filterBy: recordValue.toString(),
-                                orderBy: filterValue.toString(),
-                                pageNo: pageNo.toString(),
-                                sortBy: entryValue.toString(),
-                                fromDate: fromDateController.text,
-                                toDate: toDateController.text,
-                              ),
-                            ),
-                          );
+                          eventHandler();
                         },
                         onProfile: (value) {
                           context.pushNamed(
@@ -541,14 +435,49 @@ class _ViewVendorPanelState extends ViewVendorBuilder {
                                 columns: buildGridColumns(),
                               ),
                             )
-                          : Expanded(
-                              child: Center(
-                                child: Text(
-                                  successState.message ??
-                                      'Refresh to load data',
-                                  style: const TextStyle(fontSize: 16),
+                          : Column(
+                              children: [
+                                // Table Header
+                                ScrollConfiguration(
+                                  behavior: HorizontalMouseScrollBehavior(),
+                                  child: Container(
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                    ),
+                                    color: Colors.grey[100],
+                                    child: SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      child: Row(
+                                        children: buildGridColumns()
+                                            .map(
+                                              (column) => Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 12.0,
+                                                      vertical: 12.0,
+                                                    ),
+                                                child: column.label,
+                                              ),
+                                            )
+                                            .toList(),
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
+                                // Message below header
+                                Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Text(
+                                    state.viewVendorModel.message ??
+                                        'try again later',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
                             );
 
                     case const (ViewVendorRecordsErrorStatus):
@@ -720,56 +649,20 @@ class _ViewVendorPanelState extends ViewVendorBuilder {
       setState(() {
         pageNo = pageNumber;
       });
-      vendorBloc.add(
-        ViewVendorRecordsFetchingEvent(
-          param: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue.toString(),
-            orderBy: filterValue.toString(),
-            pageNo: pageNo.toString(),
-            sortBy: entryValue.toString(),
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
       // Page number button clicked
     },
     onFirstPressed: () {
       setState(() {
         pageNo = 1;
-        vendorBloc.add(
-          ViewVendorRecordsFetchingEvent(
-            param: ViewRecordApiParam(
-              keyword: searchController.text,
-              filterBy: recordValue.toString(),
-              orderBy: filterValue.toString(),
-              pageNo: pageNo.toString(),
-              sortBy: entryValue.toString(),
-              fromDate: fromDateController.text,
-              toDate: toDateController.text,
-            ),
-          ),
-        );
+        eventHandler();
       });
     },
     onPreviousPressed: () {
       if (pageNo != null && pageQty != null && pageNo! <= pageQty!) {
         setState(() {
           pageNo = pageNo! - 1;
-          vendorBloc.add(
-            ViewVendorRecordsFetchingEvent(
-              param: ViewRecordApiParam(
-                keyword: searchController.text,
-                filterBy: recordValue.toString(),
-                orderBy: filterValue.toString(),
-                pageNo: pageNo.toString(),
-                sortBy: entryValue.toString(),
-                fromDate: fromDateController.text,
-                toDate: toDateController.text,
-              ),
-            ),
-          );
+          eventHandler();
         });
       }
     },
@@ -777,38 +670,14 @@ class _ViewVendorPanelState extends ViewVendorBuilder {
       if (pageNo != null && pageNo! >= 1) {
         setState(() {
           pageNo = pageNo! + 1;
-          vendorBloc.add(
-            ViewVendorRecordsFetchingEvent(
-              param: ViewRecordApiParam(
-                keyword: searchController.text,
-                filterBy: recordValue.toString(),
-                orderBy: filterValue.toString(),
-                pageNo: pageNo.toString(),
-                sortBy: entryValue.toString(),
-                fromDate: fromDateController.text,
-                toDate: toDateController.text,
-              ),
-            ),
-          );
+          eventHandler();
         });
       }
     },
     onLastPressed: () {
       setState(() {
         pageNo = pageQty;
-        vendorBloc.add(
-          ViewVendorRecordsFetchingEvent(
-            param: ViewRecordApiParam(
-              keyword: searchController.text,
-              filterBy: recordValue.toString(),
-              orderBy: filterValue.toString(),
-              pageNo: pageNo.toString(),
-              sortBy: entryValue.toString(),
-              fromDate: fromDateController.text,
-              toDate: toDateController.text,
-            ),
-          ),
-        );
+        eventHandler();
       });
     },
   );

@@ -36,117 +36,87 @@ abstract class ViewJumboRollBuilder extends State<ViewJumboRollPanel> {
   TextEditingController searchController = TextEditingController();
   final fromDateController = TextEditingController();
   final toDateController = TextEditingController();
+  Key refreshKey = UniqueKey();
   int pageNo = 1;
   int pageQty = 1;
 
   double _fontSize = 9.5;
 
-  List recordList = [
-    "All Records",
-    "Requested",
-    "In-Progress",
-    "Approved",
-    "Rejected",
-    "Block",
-  ];
   List filterList = ["Newest", "Oldest"];
   // List entryList = ["10", "25", "50", "100", "500"];
   var recordValue, filterValue, entryValue;
   String? vendorKey, micID, baseID, widthID, stockStatus;
 
+  eventHandler() {
+    jumboRollBloc.add(
+      FetchViewJumboRollRecordEvent(
+        param: ViewRecordApiParam(
+          keyword: searchController.text.trim(),
+          filterBy: recordValue?.toString() ?? '',
+          orderBy: filterValue?.toString() ?? '',
+          pageNo: pageNo.toString(),
+          sortBy: entryValue?.toString() ?? '',
+          vendorKey: vendorKey,
+          micID: micID,
+          baseID: baseID,
+          widthID: widthID,
+          fromDate: fromDateController.text,
+          toDate: toDateController.text,
+        ),
+      ),
+    );
+  }
+
+  clearFilersOnRefresh() {
+    fromDateController.clear();
+    toDateController.clear();
+    searchController.clear();
+
+    // Change key to force rebuild of dropdown widgets
+    refreshKey = UniqueKey();
+
+    recordValue = null;
+    filterValue = null;
+    entryValue = null;
+    vendorKey = null;
+    micID = null;
+    baseID = null;
+    widthID = null;
+    stockStatus = null;
+
+    eventHandler();
+  }
+
   // Sample data
 
   Widget get searchFields => RoundSearchFields(
+    key: refreshKey,
     isStatus: true,
     controller: searchController,
     onSearch: (keyword) {
       // setState(() {
       //   searchController.text = keyword;
       // });
-      jumboRollBloc.add(
-        FetchViewJumboRollRecordEvent(
-          param: ViewRecordApiParam(
-            keyword: keyword,
-            filterBy: recordValue?.toString() ?? '',
-            orderBy: filterValue?.toString() ?? '',
-            pageNo: pageNo.toString(),
-            sortBy: entryValue?.toString() ?? '',
-            vendorKey: vendorKey,
-            micID: micID,
-            baseID: baseID,
-            widthID: widthID,
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
     },
     orderByValue: filterValue,
     onChangedStatus: (status) {
       setState(() {
         recordValue = status;
       });
-      jumboRollBloc.add(
-        FetchViewJumboRollRecordEvent(
-          param: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue?.toString() ?? '',
-            orderBy: filterValue?.toString() ?? '',
-            pageNo: pageNo.toString(),
-            sortBy: entryValue?.toString() ?? '',
-            vendorKey: vendorKey,
-            micID: micID,
-            baseID: baseID,
-            widthID: widthID,
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
     },
     onChangedOrder: (order) {
       setState(() {
         filterValue = order;
       });
-      jumboRollBloc.add(
-        FetchViewJumboRollRecordEvent(
-          param: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue?.toString() ?? '',
-            orderBy: filterValue?.toString() ?? '',
-            pageNo: pageNo.toString(),
-            sortBy: entryValue?.toString() ?? '',
-            vendorKey: vendorKey,
-            micID: micID,
-            baseID: baseID,
-            widthID: widthID,
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
     },
     onChangedSort: (sortBy) {
       setState(() {
         entryValue = sortBy ?? 10;
       });
-      jumboRollBloc.add(
-        FetchViewJumboRollRecordEvent(
-          param: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue?.toString() ?? '',
-            orderBy: filterValue?.toString() ?? '',
-            pageNo: pageNo.toString(),
-            sortBy: entryValue?.toString() ?? '',
-            vendorKey: vendorKey,
-            micID: micID,
-            baseID: baseID,
-            widthID: widthID,
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
     },
   );
 
@@ -650,6 +620,7 @@ abstract class ViewJumboRollBuilder extends State<ViewJumboRollPanel> {
       horizontal: kDefaultHorizontalPadding - 5,
     ),
     child: Row(
+      key: refreshKey,
       spacing: 16,
       children: [
         Expanded(
@@ -658,23 +629,7 @@ abstract class ViewJumboRollBuilder extends State<ViewJumboRollPanel> {
               setState(() {
                 vendorKey = value;
               });
-              jumboRollBloc.add(
-                FetchViewJumboRollRecordEvent(
-                  param: ViewRecordApiParam(
-                    keyword: searchController.text,
-                    filterBy: recordValue?.toString() ?? '',
-                    orderBy: filterValue?.toString() ?? '',
-                    pageNo: pageNo.toString(),
-                    sortBy: entryValue?.toString() ?? '',
-                    vendorKey: vendorKey,
-                    micID: micID,
-                    baseID: baseID,
-                    widthID: widthID,
-                    fromDate: fromDateController.text,
-                    toDate: toDateController.text,
-                  ),
-                ),
-              );
+              eventHandler();
             },
             isFilter: true,
           ),
@@ -686,23 +641,7 @@ abstract class ViewJumboRollBuilder extends State<ViewJumboRollPanel> {
               setState(() {
                 baseID = value;
               });
-              jumboRollBloc.add(
-                FetchViewJumboRollRecordEvent(
-                  param: ViewRecordApiParam(
-                    keyword: searchController.text,
-                    filterBy: recordValue?.toString() ?? '',
-                    orderBy: filterValue?.toString() ?? '',
-                    pageNo: pageNo.toString(),
-                    sortBy: entryValue?.toString() ?? '',
-                    vendorKey: vendorKey,
-                    micID: micID,
-                    baseID: baseID,
-                    widthID: widthID,
-                    fromDate: fromDateController.text,
-                    toDate: toDateController.text,
-                  ),
-                ),
-              );
+              eventHandler();
             },
           ),
         ),
@@ -712,23 +651,7 @@ abstract class ViewJumboRollBuilder extends State<ViewJumboRollPanel> {
               setState(() {
                 micID = value;
               });
-              jumboRollBloc.add(
-                FetchViewJumboRollRecordEvent(
-                  param: ViewRecordApiParam(
-                    keyword: searchController.text,
-                    filterBy: recordValue?.toString() ?? '',
-                    orderBy: filterValue?.toString() ?? '',
-                    pageNo: pageNo.toString(),
-                    sortBy: entryValue?.toString() ?? '',
-                    vendorKey: vendorKey,
-                    micID: micID,
-                    baseID: baseID,
-                    widthID: widthID,
-                    fromDate: fromDateController.text,
-                    toDate: toDateController.text,
-                  ),
-                ),
-              );
+              eventHandler();
             },
             isFilter: true,
             size: 37,
@@ -740,23 +663,7 @@ abstract class ViewJumboRollBuilder extends State<ViewJumboRollPanel> {
               setState(() {
                 widthID = value;
               });
-              jumboRollBloc.add(
-                FetchViewJumboRollRecordEvent(
-                  param: ViewRecordApiParam(
-                    keyword: searchController.text,
-                    filterBy: recordValue?.toString() ?? '',
-                    orderBy: filterValue?.toString() ?? '',
-                    pageNo: pageNo.toString(),
-                    sortBy: entryValue?.toString() ?? '',
-                    vendorKey: vendorKey,
-                    micID: micID,
-                    baseID: baseID,
-                    widthID: widthID,
-                    fromDate: fromDateController.text,
-                    toDate: toDateController.text,
-                  ),
-                ),
-              );
+              eventHandler();
             },
             isFilter: true,
             size: 37,
@@ -775,23 +682,7 @@ abstract class ViewJumboRollBuilder extends State<ViewJumboRollPanel> {
         setState(() {
           pageNo = 1;
         });
-        jumboRollBloc.add(
-          FetchViewJumboRollRecordEvent(
-            param: ViewRecordApiParam(
-              keyword: searchController.text,
-              filterBy: recordValue?.toString() ?? '',
-              orderBy: filterValue?.toString() ?? '',
-              pageNo: pageNo.toString(),
-              sortBy: entryValue?.toString() ?? '',
-              vendorKey: vendorKey,
-              micID: micID,
-              baseID: baseID,
-              widthID: widthID,
-              fromDate: fromDateController.text,
-              toDate: toDateController.text,
-            ),
-          ),
-        );
+        clearFilersOnRefresh();
       },
     ),
   );
@@ -805,45 +696,13 @@ abstract class ViewJumboRollBuilder extends State<ViewJumboRollPanel> {
           setState(() {
             fromDateController.text = value;
           });
-          jumboRollBloc.add(
-            FetchViewJumboRollRecordEvent(
-              param: ViewRecordApiParam(
-                keyword: searchController.text,
-                filterBy: recordValue?.toString() ?? '',
-                orderBy: filterValue?.toString() ?? '',
-                pageNo: pageNo.toString(),
-                sortBy: entryValue?.toString() ?? '',
-                vendorKey: vendorKey,
-                micID: micID,
-                baseID: baseID,
-                widthID: widthID,
-                fromDate: fromDateController.text,
-                toDate: toDateController.text,
-              ),
-            ),
-          );
+          eventHandler();
         },
         onToChanged: (value) {
           setState(() {
             toDateController.text = value;
           });
-          jumboRollBloc.add(
-            FetchViewJumboRollRecordEvent(
-              param: ViewRecordApiParam(
-                keyword: searchController.text,
-                filterBy: recordValue?.toString() ?? '',
-                orderBy: filterValue?.toString() ?? '',
-                pageNo: pageNo.toString(),
-                sortBy: entryValue?.toString() ?? '',
-                vendorKey: vendorKey,
-                micID: micID,
-                baseID: baseID,
-                widthID: widthID,
-                fromDate: fromDateController.text,
-                toDate: toDateController.text,
-              ),
-            ),
-          );
+          eventHandler();
         },
       ),
       searchFields,
@@ -862,6 +721,19 @@ abstract class ViewJumboRollBuilder extends State<ViewJumboRollPanel> {
             onPressed: () async {
               await JumboRollExporter.exportJumboRollExcelFile(
                 context: context,
+                param: ViewRecordApiParam(
+                  keyword: searchController.text.trim(),
+                  filterBy: recordValue?.toString() ?? '',
+                  orderBy: filterValue?.toString() ?? '',
+                  pageNo: pageNo.toString(),
+                  sortBy: entryValue?.toString() ?? '',
+                  vendorKey: vendorKey,
+                  micID: micID,
+                  baseID: baseID,
+                  widthID: widthID,
+                  fromDate: fromDateController.text,
+                  toDate: toDateController.text,
+                ),
               );
             },
           ),

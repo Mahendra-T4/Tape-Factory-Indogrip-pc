@@ -215,7 +215,7 @@ class _EditStaffDetailsPageState extends EditStaffBuilder {
           } else {
             ToastService.instance.showError(
               context,
-              state.successResponse.message.toString(),
+              state.successResponse.message ?? 'try again later',
             );
           }
         } else if (state is UpdateStaffLoadedFailureStatus) {

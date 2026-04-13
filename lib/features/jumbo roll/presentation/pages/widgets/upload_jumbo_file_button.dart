@@ -192,7 +192,7 @@ class _MyWidgetState extends State<UploadJumboFileButton> {
             if (!context.mounted) return;
             ToastService.instance.showError(
               context,
-              state.successResponse.message.toString(),
+              state.successResponse.message ?? 'try again later',
             );
             if (state.successResponse.missRecord != null) {
               context.pop();
@@ -204,10 +204,7 @@ class _MyWidgetState extends State<UploadJumboFileButton> {
           }
         } else if (state is UploadJumboCSVFileFailureState) {
           if (!context.mounted) return;
-          ToastService.instance.showError(
-            context,
-            state.errorMessage.toString(),
-          );
+          ToastService.instance.showError(context, state.errorMessage);
         }
       },
       builder: (context, state) {

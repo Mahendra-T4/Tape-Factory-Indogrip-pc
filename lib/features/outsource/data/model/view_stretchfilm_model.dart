@@ -6,6 +6,8 @@ class ViewStretchFilmModel {
   String? pageText;
   int? totalPieces;
   int? availableCarton;
+  dynamic totalNetWeight;
+  dynamic totalGrossWeight;
 
   ViewStretchFilmModel({
     this.status,
@@ -14,6 +16,8 @@ class ViewStretchFilmModel {
     this.pageQty,
     this.totalPieces,
     this.availableCarton,
+    this.totalNetWeight,
+    this.totalGrossWeight,
   });
 
   ViewStretchFilmModel.fromJson(Map<String, dynamic> json) {
@@ -29,6 +33,8 @@ class ViewStretchFilmModel {
     pageText = json['pageText'];
     totalPieces = json['totalPieces'];
     availableCarton = json['availableCarton'];
+    totalNetWeight = json['totalNetWeight'];
+    totalGrossWeight = json['totalGrossWeight'];
   }
 
   Map<String, dynamic> toJson() {
@@ -42,6 +48,8 @@ class ViewStretchFilmModel {
     data['pageText'] = this.pageText;
     data['totalPieces'] = this.totalPieces;
     data['availableCarton'] = this.availableCarton;
+    data['totalNetWeight'] = this.totalNetWeight;
+    data['totalGrossWeight'] = this.totalGrossWeight;
     return data;
   }
 }

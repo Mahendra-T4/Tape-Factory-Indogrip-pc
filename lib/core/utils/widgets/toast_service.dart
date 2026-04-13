@@ -25,26 +25,24 @@ class ToastService {
     _isVisible = true;
 
     _currentToast = OverlayEntry(
-      builder:
-          (context) => TweenAnimationBuilder<double>(
-            tween: Tween<double>(begin: 0.0, end: _isVisible ? 1.0 : 0.0),
-            duration: _animationDuration,
-            builder:
-                (context, value, child) =>
-                    Opacity(opacity: value, child: child),
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Align(
-                  alignment: Alignment.topCenter,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: AppToast(message: message, type: type),
-                  ),
-                ),
+      builder: (context) => TweenAnimationBuilder<double>(
+        tween: Tween<double>(begin: 0.0, end: _isVisible ? 1.0 : 0.0),
+        duration: _animationDuration,
+        builder: (context, value, child) =>
+            Opacity(opacity: value, child: child),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Material(
+                color: Colors.transparent,
+                child: AppToast(message: message, type: type),
               ),
             ),
           ),
+        ),
+      ),
     );
 
     overlay.insert(_currentToast!);

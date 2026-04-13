@@ -53,6 +53,7 @@ abstract class ViewRoundBuilder extends State<ViewRoundPanel> {
   final reasonController = TextEditingController();
   final batchRemarkController = TextEditingController();
   final TextEditingController searchController = TextEditingController();
+  Key refreshKey = UniqueKey();
 
   var recordValue, filterValue, entryValue;
 
@@ -61,6 +62,23 @@ abstract class ViewRoundBuilder extends State<ViewRoundPanel> {
   String? cutMMMeter;
 
   late final GlobalBloc globalBloc;
+
+  clearFiltersOnRefresh() {
+    recordValue = null;
+    filterValue = null;
+    entryValue = null;
+    selectedBase = null;
+    selectedMic = null;
+    cutMMMeter = null;
+
+    fromDateController.clear();
+    toDateController.clear();
+    searchController.clear();
+
+    refreshKey = UniqueKey();
+
+    callEvent();
+  }
 
   @override
   void initState() {
@@ -305,6 +323,7 @@ abstract class ViewRoundBuilder extends State<ViewRoundPanel> {
   }
 
   Widget get searchFields => RoundSearchFields(
+    key: refreshKey,
     isStatus: true,
     controller: searchController,
     onSearch: (keyword) {
@@ -346,6 +365,7 @@ abstract class ViewRoundBuilder extends State<ViewRoundPanel> {
       horizontal: kDefaultHorizontalPadding - 5,
     ),
     child: Row(
+      key: refreshKey,
       spacing: 16,
       children: [
         Expanded(
@@ -483,12 +503,13 @@ abstract class ViewRoundBuilder extends State<ViewRoundPanel> {
         setState(() {
           pageNo = 1;
         });
-        callEvent();
+        clearFiltersOnRefresh();
       },
     ),
   );
 
   Widget get buildFilterFieldsDesktop => Column(
+    key: refreshKey,
     children: [
       extraFilterFields,
       SizedBox(height: 15),
@@ -503,6 +524,19 @@ abstract class ViewRoundBuilder extends State<ViewRoundPanel> {
             onPressed: () async {
               await RoundFileExporter.exportRoundDataExcelFile(
                 context: context,
+                param: ViewRecordApiParam(
+                  keyword: searchController.text,
+                  filterBy: recordValue ?? '',
+                  orderBy: filterValue.toString(),
+                  pageNo: pageNo.toString(),
+                  sortBy: entryValue.toString(),
+                  cutMMMeterID: cutMMMeter,
+                  micID: selectedMic,
+                  baseID: selectedBase,
+                  fromDate: fromDateController.text,
+                  toDate: toDateController.text,
+                  tapeLength: tapeLengthController.text,
+                ),
               );
             },
           ),

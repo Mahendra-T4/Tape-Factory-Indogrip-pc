@@ -77,7 +77,7 @@ class _ClientsListDropdownState extends State<ClientsListDropdown> {
             }
 
             return AlertDialog(
-              title: Text('Select ${widget.label}'),
+              title: Text(widget.label),
               content: SizedBox(
                 width: MediaQuery.sizeOf(context).width * 0.4,
                 child: Column(

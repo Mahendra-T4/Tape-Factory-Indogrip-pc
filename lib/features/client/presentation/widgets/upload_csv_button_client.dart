@@ -103,11 +103,12 @@ class _MyWidgetState extends State<UploadClientFileButton> {
               context,
               state.successResponse.message.toString(),
             );
+            GoRouter.of(context).pop();
           } else {
             if (!context.mounted) return;
             ToastService.instance.showError(
               context,
-              state.successResponse.message.toString(),
+              state.successResponse.message ?? 'try again later',
             );
 
             if (state.successResponse.missRecord != null) {
@@ -120,10 +121,7 @@ class _MyWidgetState extends State<UploadClientFileButton> {
           }
         } else if (state is UploadClientCSVFileFailureStatus) {
           if (!context.mounted) return;
-          ToastService.instance.showError(
-            context,
-            state.errorMessage.toString(),
-          );
+          ToastService.instance.showError(context, state.errorMessage);
         }
       },
       builder: (context, state) {

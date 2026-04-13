@@ -28,14 +28,7 @@ abstract class ViewStaffBuilder extends State<ViewStaffPanel> {
   int? pageNo = 1;
   int? pageQty;
 
-  TextEditingController reasonController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    pageNo = 1;
-    staffBloc = StaffBloc();
-    globalBloc = GlobalBloc(globalRepository: GlobalManagerRepository());
+  eventHandler() {
     staffBloc.add(
       ViewStaffRecordsFetchingEvent(
         viewStaffApiParam: ViewRecordApiParam(
@@ -49,6 +42,39 @@ abstract class ViewStaffBuilder extends State<ViewStaffPanel> {
         ),
       ),
     );
+  }
+
+  // Key to force rebuild of dropdown widgets on refresh
+  Key refreshKey = UniqueKey();
+
+  TextEditingController reasonController = TextEditingController();
+
+  void clearDateFilters() {
+    fromDateController.clear();
+    toDateController.clear();
+    searchController.clear();
+
+    changeStatus = null;
+
+    // Change key to force rebuild of dropdown widgets
+    refreshKey = UniqueKey();
+
+    setState(() {
+      recordValue = null;
+      filterValue = null;
+      entryValue = null;
+    });
+
+    eventHandler();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    pageNo = 1;
+    staffBloc = StaffBloc();
+    globalBloc = GlobalBloc(globalRepository: GlobalManagerRepository());
+    eventHandler();
   }
 
   bool isMultipleSelection = false;
@@ -160,19 +186,7 @@ abstract class ViewStaffBuilder extends State<ViewStaffPanel> {
           // Only close dialog after successful status change
           Navigator.of(context).pop();
           // Refresh the staff list
-          staffBloc.add(
-            ViewStaffRecordsFetchingEvent(
-              viewStaffApiParam: ViewRecordApiParam(
-                keyword: searchController.text,
-                filterBy: recordValue ?? '',
-                orderBy: filterValue.toString(),
-                pageNo: pageNo.toString(),
-                sortBy: entryValue.toString(),
-                fromDate: fromDateController.text,
-                toDate: toDateController.text,
-              ),
-            ),
-          );
+          eventHandler();
         } else {
           if (!context.mounted) return;
           ToastService.instance.showError(
@@ -236,7 +250,7 @@ abstract class ViewStaffBuilder extends State<ViewStaffPanel> {
       ),
       GridColumn(
         columnName: 'staff_name',
-        width: 150,
+        // width: 150,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -249,7 +263,7 @@ abstract class ViewStaffBuilder extends State<ViewStaffPanel> {
       ),
       GridColumn(
         columnName: 'department',
-        width: 150,
+        // width: 150,
         label: Container(
           color: Colors.grey[100],
           child: Center(child: TextFieldlabelText("Role")),
@@ -265,7 +279,7 @@ abstract class ViewStaffBuilder extends State<ViewStaffPanel> {
       // ),
       GridColumn(
         columnName: 'mobile',
-        width: 130,
+        // width: 130,
         label: Container(
           color: Colors.grey[100],
           child: Center(child: TextFieldlabelText("Mobile")),
@@ -273,7 +287,7 @@ abstract class ViewStaffBuilder extends State<ViewStaffPanel> {
       ),
       GridColumn(
         columnName: 'altmobile',
-        width: 150,
+        // width: 150,
         label: Container(
           color: Colors.grey[100],
           child: Center(child: TextFieldlabelText("Alternate Mobile")),
@@ -281,7 +295,7 @@ abstract class ViewStaffBuilder extends State<ViewStaffPanel> {
       ),
       GridColumn(
         columnName: 'email',
-        width: 200,
+        // width: 200,
         label: Container(
           color: Colors.grey[100],
           child: Center(child: TextFieldlabelText("Email")),
@@ -289,7 +303,7 @@ abstract class ViewStaffBuilder extends State<ViewStaffPanel> {
       ),
       GridColumn(
         columnName: 'personalemail',
-        width: 220,
+        // width: 220,
         label: Container(
           color: Colors.grey[100],
           child: Center(child: TextFieldlabelText("Personal Email")),
@@ -339,42 +353,19 @@ abstract class ViewStaffBuilder extends State<ViewStaffPanel> {
   }
 
   Widget get searchFields => SearchFields(
+    key: refreshKey,
     isStatus: true,
     controller: searchController,
     onSearch: (keyword) {
-      staffBloc.add(
-        ViewStaffRecordsFetchingEvent(
-          viewStaffApiParam: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue ?? '',
-            orderBy: filterValue.toString(),
-            pageNo: pageNo.toString(),
-            sortBy: entryValue.toString(),
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
     },
     panelStatus: Expanded(
       child: ViewStaffMasterStatus(
-        value: recordValue.toString(),
+        value: recordValue ?? '',
 
         onChanged: (value) {
           recordValue = value;
-          staffBloc.add(
-            ViewStaffRecordsFetchingEvent(
-              viewStaffApiParam: ViewRecordApiParam(
-                keyword: searchController.text,
-                filterBy: recordValue ?? '',
-                orderBy: filterValue.toString(),
-                pageNo: pageNo.toString(),
-                sortBy: entryValue.toString(),
-                fromDate: fromDateController.text,
-                toDate: toDateController.text,
-              ),
-            ),
-          );
+          eventHandler();
         },
       ),
     ),
@@ -382,37 +373,13 @@ abstract class ViewStaffBuilder extends State<ViewStaffPanel> {
       setState(() {
         filterValue = order;
       });
-      staffBloc.add(
-        ViewStaffRecordsFetchingEvent(
-          viewStaffApiParam: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue ?? '',
-            orderBy: filterValue.toString(),
-            pageNo: pageNo.toString(),
-            sortBy: entryValue.toString(),
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
     },
     onChangedSort: (sortBy) {
       setState(() {
         entryValue = sortBy ?? 10;
       });
-      staffBloc.add(
-        ViewStaffRecordsFetchingEvent(
-          viewStaffApiParam: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue ?? '',
-            orderBy: filterValue.toString(),
-            pageNo: pageNo.toString(),
-            sortBy: entryValue.toString(),
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
     },
   );
 
@@ -426,6 +393,18 @@ abstract class ViewStaffBuilder extends State<ViewStaffPanel> {
     child: Column(
       children: [
         DateFiltration(
+          onFromChanged: (from) {
+            setState(() {
+              fromDateController.text = from;
+            });
+            eventHandler();
+          },
+          onToChanged: (to) {
+            setState(() {
+              toDateController.text = to;
+            });
+            eventHandler();
+          },
           fromDateController: fromDateController,
           toDateController: toDateController,
         ),
@@ -465,52 +444,8 @@ abstract class ViewStaffBuilder extends State<ViewStaffPanel> {
         setState(() {
           pageNo = 1;
         });
-        staffBloc.add(
-          ViewStaffRecordsFetchingEvent(
-            viewStaffApiParam: ViewRecordApiParam(
-              keyword: searchController.text,
-              filterBy: recordValue ?? '',
-              orderBy: filterValue.toString(),
-              pageNo: pageNo.toString(),
-              sortBy: entryValue.toString(),
-              fromDate: fromDateController.text,
-              toDate: toDateController.text,
-            ),
-          ),
-        );
+        clearDateFilters();
       },
     ),
   );
-
-  //! tablet
-
-  // Widget get buildFilterFieldsTablet => Padding(
-  //   padding: const EdgeInsets.only(top: kDefaultVerticalPadding),
-  //   child: Column(
-  //     spacing: 16,
-  //     children: [
-  //       searchFields,
-
-  //       // SizedBox(height: 15),
-  //       Row(
-  //         mainAxisAlignment: MainAxisAlignment.end,
-  //         children: [
-  //           TextButton.icon(
-  //             onPressed: toggleMultipleSelection,
-  //             icon: Icon(
-  //               isMultipleSelection
-  //                   ? Icons.check_box
-  //                   : Icons.check_box_outline_blank,
-  //               color: Colors.blue,
-  //             ),
-  //             label: Text(
-  //               isMultipleSelection ? 'Multiple Selection' : 'Single Selection',
-  //               style: const TextStyle(color: Colors.blue),
-  //             ),
-  //           ),
-  //         ],
-  //       ),
-  //     ],
-  //   ),
-  // );
 }

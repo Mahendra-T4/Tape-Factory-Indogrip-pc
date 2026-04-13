@@ -90,7 +90,7 @@ abstract class RoundMissRecordPanelBuilder extends State<RoundMissRecordPanel> {
       ),
       GridColumn(
         columnName: 'Reason',
-        width: 120,
+        width: 450,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),

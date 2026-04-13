@@ -38,6 +38,8 @@ class _ViewClientPanelState extends ViewClientBuilder {
   final GlobalKey _key = GlobalKey();
   late final GlobalBloc globalBloc;
 
+  bool isNotEmpty = false;
+
   late Map<String, double> columnWidths = {};
   bool isChecked = false;
   late ClientDataSource? _dataSource;
@@ -66,37 +68,13 @@ class _ViewClientPanelState extends ViewClientBuilder {
                   );
 
                   // Refresh list after status change
-                  clientBloc.add(
-                    ViewClientRecordsFetchingEvent(
-                      viewClientApiParam: ViewRecordApiParam(
-                        keyword: searchController.text,
-                        filterBy: recordValue ?? '',
-                        orderBy: filterValue.toString(),
-                        pageNo: pageNo.toString(),
-                        sortBy: entryValue.toString(),
-                        fromDate: fromDateController.text,
-                        toDate: toDateController.text,
-                      ),
-                    ),
-                  );
+                  eventHandler();
                 } else {
                   ToastService.instance.showSuccess(
                     context,
                     state.changeStatusEntity.message.toString(),
                   );
-                  clientBloc.add(
-                    ViewClientRecordsFetchingEvent(
-                      viewClientApiParam: ViewRecordApiParam(
-                        keyword: searchController.text,
-                        filterBy: recordValue ?? '',
-                        orderBy: filterValue.toString(),
-                        pageNo: pageNo.toString(),
-                        sortBy: entryValue.toString(),
-                        fromDate: fromDateController.text,
-                        toDate: toDateController.text,
-                      ),
-                    ),
-                  );
+                  eventHandler();
                 }
               } else if (state is GlobalChangeUserStatusErrorStatus) {
                 ToastService.instance.showError(
@@ -109,19 +87,7 @@ class _ViewClientPanelState extends ViewClientBuilder {
                   state.deleteRecordEntity.message.toString(),
                 );
                 // Refresh list after single delete
-                clientBloc.add(
-                  ViewClientRecordsFetchingEvent(
-                    viewClientApiParam: ViewRecordApiParam(
-                      keyword: searchController.text,
-                      filterBy: recordValue ?? '',
-                      orderBy: filterValue.toString(),
-                      pageNo: pageNo.toString(),
-                      sortBy: entryValue.toString(),
-                      fromDate: fromDateController.text,
-                      toDate: toDateController.text,
-                    ),
-                  ),
-                );
+                eventHandler();
               } else if (state is GlobalDeleteRecordErrorStatus) {
                 ToastService.instance.showError(
                   context,
@@ -136,19 +102,7 @@ class _ViewClientPanelState extends ViewClientBuilder {
                   ),
                 );
                 // Refresh list after bulk delete
-                clientBloc.add(
-                  ViewClientRecordsFetchingEvent(
-                    viewClientApiParam: ViewRecordApiParam(
-                      keyword: searchController.text,
-                      filterBy: recordValue ?? '',
-                      orderBy: filterValue.toString(),
-                      pageNo: pageNo.toString(),
-                      sortBy: entryValue.toString(),
-                      fromDate: fromDateController.text,
-                      toDate: toDateController.text,
-                    ),
-                  ),
-                );
+                eventHandler();
                 // Clear selection
                 setState(() {
                   selectedRows.clear();
@@ -164,18 +118,11 @@ class _ViewClientPanelState extends ViewClientBuilder {
             child: buildFilterFieldsDesktop,
           ),
           SizedBox(height: 10),
-
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Padding(
+          if (isNotEmpty)
+            Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                mainAxisSize: MainAxisSize.min,
-                children: [_buildPaginationWidget],
-              ),
+              child: _buildPaginationWidget,
             ),
-          ),
           SizedBox(
             height: MediaQuery.sizeOf(context).height,
             child: BlocConsumer(
@@ -183,6 +130,16 @@ class _ViewClientPanelState extends ViewClientBuilder {
               listener: (context, state) {
                 if (state is ViewClientRecordsLoadedSuccessStatus) {
                   pageText = state.viewClientModel.pageText.toString();
+
+                  if (state.viewClientModel.status == 1) {
+                    setState(() {
+                      isNotEmpty = true;
+                    });
+                  } else {
+                    setState(() {
+                      isNotEmpty = false;
+                    });
+                  }
                   log('Client Page Text: $pageText');
                   _dataSource = null;
                   // Reset data source when new data is fetched
@@ -265,19 +222,7 @@ class _ViewClientPanelState extends ViewClientBuilder {
                           ),
                         );
 
-                        clientBloc.add(
-                          ViewClientRecordsFetchingEvent(
-                            viewClientApiParam: ViewRecordApiParam(
-                              keyword: searchController.text,
-                              filterBy: recordValue ?? '',
-                              orderBy: filterValue.toString(),
-                              pageNo: pageNo.toString(),
-                              sortBy: entryValue.toString(),
-                              fromDate: fromDateController.text,
-                              toDate: toDateController.text,
-                            ),
-                          ),
-                        );
+                        eventHandler();
                       },
                       onProfile: (staff) {
                         context.pushNamed(
@@ -296,19 +241,7 @@ class _ViewClientPanelState extends ViewClientBuilder {
                             ),
                           ),
                         );
-                        clientBloc.add(
-                          ViewClientRecordsFetchingEvent(
-                            viewClientApiParam: ViewRecordApiParam(
-                              keyword: searchController.text,
-                              filterBy: recordValue ?? '',
-                              orderBy: filterValue.toString(),
-                              pageNo: pageNo.toString(),
-                              sortBy: entryValue.toString(),
-                              fromDate: fromDateController.text,
-                              toDate: toDateController.text,
-                            ),
-                          ),
-                        );
+                        eventHandler();
                         // For other statuses, call API directly (no reason required)
                       },
                     );
@@ -383,12 +316,49 @@ class _ViewClientPanelState extends ViewClientBuilder {
                               ),
                             ),
                           )
-                        : Expanded(
-                            child: Center(
-                              child: Text(
-                                successState.message ?? 'Refresh to load data',
+                        : Column(
+                            children: [
+                              // Table Header
+                              ScrollConfiguration(
+                                behavior: HorizontalMouseScrollBehavior(),
+                                child: Container(
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
+                                  color: Colors.grey[100],
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                      children: buildGridColumns()
+                                          .map(
+                                            (column) => Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 12.0,
+                                                    vertical: 12.0,
+                                                  ),
+                                              child: column.label,
+                                            ),
+                                          )
+                                          .toList(),
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
+                              // Message below header
+                              Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Text(
+                                  state.viewClientModel.message ??
+                                      'try again later',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ],
                           );
                   case const (ViewClientRecordsErrorStatus):
                     return Center(
@@ -590,56 +560,20 @@ class _ViewClientPanelState extends ViewClientBuilder {
       setState(() {
         pageNo = pageNumber;
       });
-      clientBloc.add(
-        ViewClientRecordsFetchingEvent(
-          viewClientApiParam: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue ?? '',
-            orderBy: filterValue.toString(),
-            pageNo: pageNo.toString(),
-            sortBy: entryValue.toString(),
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
       // Page number button clicked
     },
     onFirstPressed: () {
       setState(() {
         pageNo = 1;
-        clientBloc.add(
-          ViewClientRecordsFetchingEvent(
-            viewClientApiParam: ViewRecordApiParam(
-              keyword: searchController.text,
-              filterBy: recordValue ?? '',
-              orderBy: filterValue.toString(),
-              pageNo: pageNo.toString(),
-              sortBy: entryValue.toString(),
-              fromDate: fromDateController.text,
-              toDate: toDateController.text,
-            ),
-          ),
-        );
+        eventHandler();
       });
     },
     onPreviousPressed: () {
       if (pageNo >= 1) {
         setState(() {
           pageNo = pageNo - 1;
-          clientBloc.add(
-            ViewClientRecordsFetchingEvent(
-              viewClientApiParam: ViewRecordApiParam(
-                keyword: searchController.text,
-                filterBy: recordValue ?? '',
-                orderBy: filterValue.toString(),
-                pageNo: pageNo.toString(),
-                sortBy: entryValue.toString(),
-                fromDate: fromDateController.text,
-                toDate: toDateController.text,
-              ),
-            ),
-          );
+          eventHandler();
         });
       }
     },
@@ -647,38 +581,14 @@ class _ViewClientPanelState extends ViewClientBuilder {
       if (pageNo <= pageQty) {
         setState(() {
           pageNo = pageNo + 1;
-          clientBloc.add(
-            ViewClientRecordsFetchingEvent(
-              viewClientApiParam: ViewRecordApiParam(
-                keyword: searchController.text,
-                filterBy: recordValue ?? '',
-                orderBy: filterValue.toString(),
-                pageNo: pageNo.toString(),
-                sortBy: entryValue.toString(),
-                fromDate: fromDateController.text,
-                toDate: toDateController.text,
-              ),
-            ),
-          );
+          eventHandler();
         });
       }
     },
     onLastPressed: () {
       setState(() {
         pageNo = pageQty;
-        clientBloc.add(
-          ViewClientRecordsFetchingEvent(
-            viewClientApiParam: ViewRecordApiParam(
-              keyword: searchController.text,
-              filterBy: recordValue ?? '',
-              orderBy: filterValue.toString(),
-              pageNo: pageNo.toString(),
-              sortBy: entryValue.toString(),
-              fromDate: fromDateController.text,
-              toDate: toDateController.text,
-            ),
-          ),
-        );
+        eventHandler();
       });
     },
   );

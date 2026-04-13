@@ -276,7 +276,7 @@ class _EditClientState extends EditClientBuilder {
             if (!context.mounted) return;
             ToastService.instance.showError(
               context,
-              state.successResponse.message.toString(),
+              state.successResponse.message ?? 'try again later',
             );
           }
         } else if (state is UpdateClientDetailsOnRecordFailureStatus) {

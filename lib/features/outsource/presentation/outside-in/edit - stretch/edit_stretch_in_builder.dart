@@ -685,7 +685,7 @@ abstract class EditStretchOutsourceInBuilder
         } else {
           ToastService.instance.showSuccess(
             context,
-            state.response.message.toString(),
+            state.response.message ?? 'try again later',
           );
         }
       } else if (state is InventoryInRecordAddErrorStatus) {

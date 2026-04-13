@@ -109,7 +109,7 @@ class _EditRoundPanelState extends EditRoundBuilder {
             // spacing: 30,
             // crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              headerButton,
+              // headerButton,
               SizedBox(height: 15),
               Row(
                 spacing: 16,

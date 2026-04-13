@@ -43,6 +43,8 @@ class _ViewRoundPanelState extends ViewRoundBuilder {
   List<DataGridRow> selectedRows = [];
   String pageText = '';
 
+  bool isNotEmpty = false;
+
   @override
   void dispose() {
     selectedRows.clear();
@@ -90,7 +92,7 @@ class _ViewRoundPanelState extends ViewRoundBuilder {
                 } else {
                   ToastService.instance.showError(
                     context,
-                    state.changeStatusEntity.message.toString(),
+                    state.changeStatusEntity.message ?? 'try again later',
                   );
                 }
               } else if (state is GlobalChangeUserStatusErrorStatus) {
@@ -136,19 +138,14 @@ class _ViewRoundPanelState extends ViewRoundBuilder {
           ),
         ),
         SliverToBoxAdapter(child: SizedBox(height: 15)),
-        SliverToBoxAdapter(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
+
+        if (isNotEmpty)
+          SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                mainAxisSize: MainAxisSize.min,
-                children: [_buildPaginationWidget],
-              ),
+              child: _buildPaginationWidget,
             ),
           ),
-        ),
         // Padding(
         //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
         //   child: RoundDetailBox(),
@@ -163,6 +160,15 @@ class _ViewRoundPanelState extends ViewRoundBuilder {
                 listener: (context, state) {
                   if (state is ViewRoundRecordsLoadedSuccessStatus) {
                     pageText = state.viewRoundModel.pageText.toString();
+                    if (state.viewRoundModel.status == 1) {
+                      setState(() {
+                        isNotEmpty = true;
+                      });
+                    } else {
+                      setState(() {
+                        isNotEmpty = false;
+                      });
+                    }
                     _dataSource = null;
                   }
                   if (state is ViewRoundRecordsLoadedSuccessStatus &&
@@ -393,14 +399,49 @@ class _ViewRoundPanelState extends ViewRoundBuilder {
                               ),
                             ],
                           )
-                        : Expanded(
-                            child: Center(
-                              child: Text(
-                                state.viewRoundModel.message ??
-                                    'Refresh to load data',
-                                style: const TextStyle(fontSize: 16),
+                        : Column(
+                            children: [
+                              // Table Header
+                              ScrollConfiguration(
+                                behavior: HorizontalMouseScrollBehavior(),
+                                child: Container(
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
+                                  color: Colors.grey[100],
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                      children: buildGridColumns()
+                                          .map(
+                                            (column) => Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 12.0,
+                                                    vertical: 12.0,
+                                                  ),
+                                              child: column.label,
+                                            ),
+                                          )
+                                          .toList(),
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
+                              // Message below header
+                              Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Text(
+                                  state.viewRoundModel.message ??
+                                      'try again later',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ],
                           );
                   } else if (state is ViewRoundRecordsErrorStatus) {
                     developer.log(

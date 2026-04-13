@@ -46,10 +46,10 @@ class JumboUploadFileResponseModel {
 }
 
 class JumboMissRecord {
-  final String? vendorKey;
-  final String? billDate;
-  final String? billNumber;
-  final String? rollNumber;
+  final dynamic vendorKey;
+  final dynamic billDate;
+  final dynamic billNumber;
+  final dynamic rollNumber;
   final dynamic base;
   final dynamic mic;
   final dynamic length;
@@ -58,9 +58,9 @@ class JumboMissRecord {
   final dynamic totalSquareMtr;
   final dynamic amountPerKG;
   final dynamic rollCost;
-  final String? remark;
-  final String? rKey;
-  final String? msg;
+  final dynamic remark;
+  final dynamic rKey;
+  final dynamic msg;
 
   JumboMissRecord({
     this.vendorKey,

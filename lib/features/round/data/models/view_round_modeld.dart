@@ -26,7 +26,7 @@ class ViewRoundModel {
       });
     }
     pageQty = json['pageQty'];
-    pageText = json['pageText'];
+    pageText = json['pageText'] ?? '';
     totalPieces = json['totalPieces'];
     availableCarton = json['availableCarton'];
   }

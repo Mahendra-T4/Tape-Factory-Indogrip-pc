@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:indogrip/core/utils/scroll_behavier.dart';
 import 'package:indogrip/features/jumbo%20roll/data/jumbo_roll_miss_record_datasource.dart';
 import 'package:indogrip/features/jumbo%20roll/data/models/jumbo_uploadfile_response_model.dart';
 import 'package:indogrip/features/jumbo%20roll/data/models/view_jumbo_roll_model.dart';
@@ -56,23 +57,26 @@ abstract class JumboRollMissRecordPanelBuilder
   Widget get buildTableRecordWidget => Expanded(
     child: Padding(
       padding: const EdgeInsets.all(20),
-      child: SfDataGrid(
-        showHorizontalScrollbar: true,
-        key: _key,
-        rowsPerPage: 4,
-        allowPullToRefresh: true,
-        allowColumnsResizing: true,
-        columnResizeMode: ColumnResizeMode.onResizeEnd,
-        isScrollbarAlwaysShown: true,
-        showVerticalScrollbar: true,
-        onColumnResizeUpdate: (ColumnResizeUpdateDetails details) {
-          setState(() {
-            columnWidths[details.column.columnName] = details.width;
-          });
-          return true;
-        },
-        source: _dataSource!,
-        columns: buildGridColumns(),
+      child: ScrollConfiguration(
+        behavior: HorizontalMouseScrollBehavior(),
+        child: SfDataGrid(
+          showHorizontalScrollbar: true,
+          key: _key,
+          rowsPerPage: 4,
+          allowPullToRefresh: true,
+          allowColumnsResizing: true,
+          columnResizeMode: ColumnResizeMode.onResizeEnd,
+          isScrollbarAlwaysShown: true,
+          showVerticalScrollbar: true,
+          onColumnResizeUpdate: (ColumnResizeUpdateDetails details) {
+            setState(() {
+              columnWidths[details.column.columnName] = details.width;
+            });
+            return true;
+          },
+          source: _dataSource!,
+          columns: buildGridColumns(),
+        ),
       ),
     ),
   );
@@ -97,81 +101,31 @@ abstract class JumboRollMissRecordPanelBuilder
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Roll Number')),
+          child: const Center(child: TextFieldlabelText('Roll Code')),
         ),
       ),
       GridColumn(
-        columnName: 'Description',
-        width: 200,
-        label: Container(
-          color: Colors.grey[100],
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Remark')),
-        ),
-      ),
-      GridColumn(
-        columnName: 'Width (mm)',
+        columnName: 'Roll Cost',
         width: 120,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Width (mm)')),
+          child: const Center(child: TextFieldlabelText('Roll Cost')),
         ),
       ),
       GridColumn(
-        columnName: 'Length (m)',
-        width: 120,
+        columnName: 'Reason',
+        width: 450,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Length (m)')),
+          child: const Center(child: TextFieldlabelText('Reason')),
         ),
       ),
       GridColumn(
-        columnName: 'Weight (kg)',
-        width: 120,
-        label: Container(
-          color: Colors.grey[100],
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Net Weight')),
-        ),
-      ),
-      GridColumn(
-        columnName: 'Grammage (gsm)',
-        width: 130,
-        label: Container(
-          color: Colors.grey[100],
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Base')),
-        ),
-      ),
-      // GridColumn(
-      //   columnName: 'Supplier',
-      //   width: 180,
-      //   label: Container(
-      //     color: Colors.grey[100],
-      //     padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      //     alignment: Alignment.center,
-      //     child: const Center(child: TextFieldlabelText('Vendor Key')),
-      //   ),
-      // ),
-      GridColumn(
-        columnName: 'Batch Number',
-        width: 150,
-        label: Container(
-          color: Colors.grey[100],
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Bill Number')),
-        ),
-      ),
-      GridColumn(
-        columnName: 'Date Received',
+        columnName: 'Bill Date',
         width: 150,
         label: Container(
           color: Colors.grey[100],
@@ -181,13 +135,33 @@ abstract class JumboRollMissRecordPanelBuilder
         ),
       ),
       GridColumn(
-        columnName: 'Quality',
+        columnName: 'Bill Number',
+        width: 150,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Bill Number')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Roll Number',
+        width: 140,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Roll Number')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Base',
         width: 120,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Error Message')),
+          child: const Center(child: TextFieldlabelText('Base')),
         ),
       ),
       GridColumn(
@@ -198,6 +172,36 @@ abstract class JumboRollMissRecordPanelBuilder
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           alignment: Alignment.center,
           child: const Center(child: TextFieldlabelText('MIC')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Length',
+        width: 120,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Length')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Width',
+        width: 120,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Width')),
+        ),
+      ),
+      GridColumn(
+        columnName: 'Net Weight',
+        width: 120,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Center(child: TextFieldlabelText('Net Weight')),
         ),
       ),
       GridColumn(
@@ -221,13 +225,13 @@ abstract class JumboRollMissRecordPanelBuilder
         ),
       ),
       GridColumn(
-        columnName: 'Roll Cost',
-        width: 120,
+        columnName: 'Remark',
+        width: 200,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           alignment: Alignment.center,
-          child: const Center(child: TextFieldlabelText('Roll Cost')),
+          child: const Center(child: TextFieldlabelText('Remark')),
         ),
       ),
     ];

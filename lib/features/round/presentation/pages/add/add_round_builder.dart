@@ -309,7 +309,7 @@ abstract class AddRoundBuilder extends State<AddRoundPanel> {
         } else {
           ToastService.instance.showError(
             context,
-            state.successResponse.message.toString(),
+            state.successResponse.message ?? 'try again later',
           );
         }
       }

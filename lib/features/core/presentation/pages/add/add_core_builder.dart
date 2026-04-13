@@ -479,7 +479,7 @@ abstract class AddCoreBuilder extends State<AddCorePanel> {
           if (!context.mounted) return;
           ToastService.instance.showError(
             context,
-            state.addCoreEntity.message.toString(),
+            state.addCoreEntity.message ?? 'try again later',
           );
         }
       } else if (state is AddCoreOnRecordFailureStatus) {

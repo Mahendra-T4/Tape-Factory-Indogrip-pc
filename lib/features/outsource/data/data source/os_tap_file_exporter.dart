@@ -2,9 +2,12 @@ import 'dart:developer';
 import 'dart:typed_data';
 import 'dart:io';
 import 'package:excel/excel.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:indogrip/core/utils/widgets/toast_service.dart';
 import 'package:indogrip/features/outsource/data/repositories/os_export_master_repo.dart';
+import 'package:indogrip/features/staff/data/models/view_staff_api_param.dart';
+import 'package:intl/intl.dart';
 
 class OSTapFileExporter {
   static Future<Uint8List> generateTapeExcel(
@@ -94,38 +97,48 @@ class OSTapFileExporter {
 
   static Future<void> exportTapeExcel({
     required BuildContext context,
+    required ViewRecordApiParam param,
     String? folderPath,
     String fileName = 'tape_export.xlsx',
   }) async {
     try {
+      // Generate filename with current date
+      String dateFormatted = DateFormat('dd-MM-yyyy').format(DateTime.now());
+      String fileNameWithDate =
+          'tape_data_$dateFormatted.xlsx'; // Default name with date
+
+      // Show directory picker dialog to let user select save location
+      String? selectedDirectory = await FilePicker.platform.getDirectoryPath(
+        dialogTitle: 'Select folder to save tape data',
+      );
+
+      if (selectedDirectory == null) {
+        // User cancelled the picker
+        ToastService.instance.showError(context, 'Export cancelled');
+        return;
+      }
+
       List<Map<String, dynamic>> data = await OsExportManagerRepository()
-          .exportToExcel('1');
+          .exportToExcel(param);
 
       Uint8List bytes = await generateTapeExcel(data);
 
-      // Save file to specified folder
-      String savePath;
-      if (folderPath != null && folderPath.isNotEmpty) {
-        savePath = '$folderPath/$fileName';
-      } else {
-        // Default to current directory
-        savePath = fileName;
-      }
+      // Build the full file path with selected directory and dated filename
+      String savePath = '$selectedDirectory/$fileNameWithDate';
 
       // Use dart:io to save file
-
       final file = File(savePath);
       await file.writeAsBytes(bytes);
 
       // Show success toast
       ToastService.instance.showSuccess(
         context,
-        'File exported successfully to $savePath',
+        'File exported successfully: $fileNameWithDate',
       );
 
-      // Open the file in Excel (Windows)
+      // Open the folder where file was saved
       try {
-        await Process.start('explorer.exe', [savePath]);
+        await Process.start('explorer.exe', ['/select,', savePath]);
       } catch (openError) {
         log('Could not open Excel file: $openError');
       }

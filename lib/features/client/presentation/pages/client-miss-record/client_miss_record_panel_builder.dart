@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:indogrip/core/utils/scroll_behavier.dart';
 import 'package:indogrip/features/client/data/client_miss_record_datasource.dart';
 import 'package:indogrip/features/client/data/model/upload_client_model.dart';
 import 'package:indogrip/features/client/data/model/view_staff_modeld.dart';
@@ -39,25 +40,28 @@ abstract class ClientMissRecordPanelBuilder
   Widget get buildTableRecordWidget => Expanded(
     child: Padding(
       padding: const EdgeInsets.all(20),
-      child: SfDataGrid(
-        showHorizontalScrollbar: true,
-        key: _key,
-        rowsPerPage: 4,
-        allowPullToRefresh: true,
-        allowColumnsResizing: true,
-        columnResizeMode: ColumnResizeMode.onResizeEnd,
-        isScrollbarAlwaysShown: true,
-        showVerticalScrollbar: true,
+      child: ScrollConfiguration(
+        behavior: HorizontalMouseScrollBehavior(),
+        child: SfDataGrid(
+          showHorizontalScrollbar: true,
+          key: _key,
+          rowsPerPage: 4,
+          allowPullToRefresh: true,
+          allowColumnsResizing: true,
+          columnResizeMode: ColumnResizeMode.onResizeEnd,
+          isScrollbarAlwaysShown: true,
+          showVerticalScrollbar: true,
 
-        onColumnResizeUpdate: (ColumnResizeUpdateDetails details) {
-          setState(() {
-            columnWidths[details.column.columnName] = details.width;
-          });
-          return true;
-        },
-        source: _dataSource!,
+          onColumnResizeUpdate: (ColumnResizeUpdateDetails details) {
+            setState(() {
+              columnWidths[details.column.columnName] = details.width;
+            });
+            return true;
+          },
+          source: _dataSource!,
 
-        columns: buildGridColumns(),
+          columns: buildGridColumns(),
+        ),
       ),
     ),
   );
@@ -77,7 +81,7 @@ abstract class ClientMissRecordPanelBuilder
       ),
       GridColumn(
         columnName: 'Reason',
-        width: 300,
+        width: 450,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),

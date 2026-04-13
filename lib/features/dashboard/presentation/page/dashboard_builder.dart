@@ -824,12 +824,12 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
         } else {
           ToastService.instance.showError(
             context,
-            state.predictCalculationModel.message.toString(),
+            state.predictCalculationModel.message ?? 'try again later',
           );
         }
       }
       if (state is PredictCalculationErrorStatus) {
-        ToastService.instance.showError(context, state.message.toString());
+        ToastService.instance.showError(context, state.message);
       }
     },
     builder: (context, state) {
@@ -1176,7 +1176,7 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Pieces Per Carton',
+                            'Cost Per Carton',
                             style: TextStyle(color: Colors.grey[600]),
                           ),
                           const SizedBox(height: 8),

@@ -55,7 +55,7 @@ class _TableBottomWidgetState extends State<TableBottomWidget> {
 
     // Google-style pagination: show exactly 10 page numbers when total > 10
     List<Widget> pageButtons = [];
-    const int maxVisiblePages = 10;
+    const int maxVisiblePages = 5;
 
     // Calculate start and end page numbers to show exactly 10 pages
     int startPage = (currentPage - (maxVisiblePages ~/ 2)).clamp(
@@ -125,7 +125,7 @@ class _TableBottomWidgetState extends State<TableBottomWidget> {
         child: Text(
           '$pageNumber',
           style: TextStyle(
-            fontSize: 15,
+            fontSize: 13,
             fontWeight: FontWeight.w500,
             color: widget.currentPage == pageNumber ? Colors.blue : Colors.grey,
           ),
@@ -172,7 +172,7 @@ class _TableBottomWidgetState extends State<TableBottomWidget> {
             SizedBox(height: 15),
           ],
         ),
-        SizedBox(width: MediaQuery.sizeOf(context).width * 0.07),
+
         Container(
           height: 40,
           // width: 300,
@@ -181,7 +181,7 @@ class _TableBottomWidgetState extends State<TableBottomWidget> {
           margin: EdgeInsets.only(
             left: Responsive.kHZRowPaddingTB + 10,
             bottom: Responsive.kHZRowPaddingTB,
-            right: Responsive.kHZRowPaddingTB,
+            right: Responsive.kHZRowPaddingTB - 20,
           ),
           decoration: BoxDecoration(
             color: Color(0xFFeeeeee),

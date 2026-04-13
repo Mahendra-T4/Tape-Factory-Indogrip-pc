@@ -23,7 +23,7 @@ class UploadTapRecordModel {
 }
 
 class TapMissRecord {
-  final String? inventoryCode;
+  final dynamic inventoryCode;
   final String? vendorKey;
   final String? date;
   final String? billNumber;
@@ -31,7 +31,7 @@ class TapMissRecord {
   final dynamic transportAmount;
   final int? productType;
   final dynamic cutMMMeter;
-  final String? base;
+  final dynamic base;
   final dynamic mic;
   final dynamic tapeLength;
   final dynamic tapeWeight;
@@ -39,7 +39,7 @@ class TapMissRecord {
   final String? coreID;
   final dynamic netWeight;
   final dynamic grossWeight;
-  final String? quantity;
+  final dynamic quantity;
   final String? remarks;
   final String? reason;
 

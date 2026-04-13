@@ -79,23 +79,23 @@ class _EditVendorPanelState extends EditVendorPanelBuilder {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-       stream: InternetConnectionService().connectionStream,
-        initialData: true, // Assume connected initially
-        builder: (context, snapshot) {
-          // Handle error state
-          if (snapshot.hasError) {
-            return const NoInternetConnection();
-          }
+      stream: InternetConnectionService().connectionStream,
+      initialData: true, // Assume connected initially
+      builder: (context, snapshot) {
+        // Handle error state
+        if (snapshot.hasError) {
+          return const NoInternetConnection();
+        }
 
-          // Handle disconnected state
-          if (snapshot.data == false) {
-            return const NoInternetConnection();
-          }
+        // Handle disconnected state
+        if (snapshot.data == false) {
+          return const NoInternetConnection();
+        }
 
-          // Handle loading state
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
+        // Handle loading state
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
         return Scaffold(
           key: _statekey,
           appBar: !Responsive.isDesktop(context)
@@ -103,10 +103,12 @@ class _EditVendorPanelState extends EditVendorPanelBuilder {
               : null,
           drawer: !Responsive.isDesktop(context) ? SideMenuWidget() : null,
           body: SafeArea(
-            child: Responsive.isDesktop(context) ? _desktopView() : _tabletView(),
+            child: Responsive.isDesktop(context)
+                ? _desktopView()
+                : _tabletView(),
           ),
         );
-      }
+      },
     );
   }
 
@@ -204,7 +206,7 @@ class _EditVendorPanelState extends EditVendorPanelBuilder {
           } else {
             ToastService.instance.showError(
               context,
-              state.successResponse.message.toString(),
+              state.successResponse.message ?? 'try again later',
             );
           }
         } else if (state is UpdateVendorOnRecordFailureStatus) {

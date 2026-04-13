@@ -47,48 +47,44 @@ class VendorDataSource extends DataGridSource {
 
   void buildDataGridRows() {
     dataGridRows = vendorData.asMap().entries.map<DataGridRow>((entry) {
-      // final index = entry.key;
       final data = entry.value;
       return DataGridRow(
         cells: [
           DataGridCell<String>(
             columnName: Vendor.srNo,
-            value: data.sNo.toString(),
+            value: data.sNo?.toString() ?? '',
           ),
           DataGridCell<String>(
             columnName: Vendor.vendorCode,
-            value: data.vCode.toString(),
+            value: data.vCode ?? '',
           ),
           DataGridCell<String>(
             columnName: Vendor.ownerName,
-            value: data.vVendorName.toString(),
+            value: data.vVendorName ?? '',
           ),
-
           DataGridCell<String>(
             columnName: Vendor.ownerMobile,
-            value: data.vVendorMobileNumber.toString(),
+            value: data.vVendorMobileNumber ?? '',
           ),
           DataGridCell<String>(
             columnName: Vendor.companyName,
-            value: data.vCompanyName.toString(),
+            value: data.vCompanyName ?? '',
           ),
-
           DataGridCell<String>(
             columnName: Vendor.mobileNumber,
-            value: data.vCompanyMobileNumber.toString(),
+            value: data.vCompanyMobileNumber ?? '',
           ),
           DataGridCell<String>(
             columnName: Vendor.gstin,
-            value: data.vCompanyGSTIN.toString(),
+            value: data.vCompanyGSTIN ?? '',
           ),
-
           DataGridCell<String>(
             columnName: Vendor.representativeManager,
-            value: data.vRepresentativeName.toString(),
+            value: data.vRepresentativeName ?? '',
           ),
           DataGridCell<String>(
             columnName: Vendor.representativeMobile,
-            value: data.vRepresentativeNumber.toString(),
+            value: data.vRepresentativeNumber ?? '',
           ),
           DataGridCell<Widget>(
             columnName: 'Status',

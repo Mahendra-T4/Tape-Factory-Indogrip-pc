@@ -19,6 +19,7 @@ abstract class ChalanBuilder extends State<ChalanPanel> {
   final TextEditingController searchController = TextEditingController();
   final fromDateController = TextEditingController();
   final toDateController = TextEditingController();
+  Key refreshKey = UniqueKey();
   List<DataGridRow> selectedRows = [];
   bool isMultipleSelection = false;
   String? clientKey;
@@ -31,6 +32,7 @@ abstract class ChalanBuilder extends State<ChalanPanel> {
   int? pageNo = 1;
   int? pageQty = 1;
   String? pageText;
+  bool isNotEmpty = false;
   @override
   void initState() {
     super.initState();
@@ -57,6 +59,23 @@ abstract class ChalanBuilder extends State<ChalanPanel> {
     );
   }
 
+  clearFiltersOnRefresh() {
+    searchController.clear();
+    fromDateController.clear();
+    toDateController.clear();
+    setState(() {
+      recordValue = null;
+      filterValue = null;
+      entryValue = null;
+      clientKey = null;
+      staffKey = null;
+    });
+
+    refreshKey = UniqueKey();
+
+    dataLoadingEventCall();
+  }
+
   ChalanDataSource? dataSource;
   late Map<String, double> columnWidths = {};
   bool isChecked = false;
@@ -72,7 +91,7 @@ abstract class ChalanBuilder extends State<ChalanPanel> {
         height: 35,
         child: RefreshButton(
           onPressed: () {
-            dataLoadingEventCall();
+            clearFiltersOnRefresh();
           },
         ),
       ),
@@ -80,6 +99,7 @@ abstract class ChalanBuilder extends State<ChalanPanel> {
   );
 
   Widget get searchFields => SearchFields(
+    key: refreshKey,
     isStatus: true,
     controller: searchController,
     onSearch: (keyword) {
@@ -111,8 +131,18 @@ abstract class ChalanBuilder extends State<ChalanPanel> {
       if (state is ChallanRecordLoadedSuccessState) {
         setState(() {
           pageQty = state.model.pageQty ?? 1;
-          pageText = state.model.pageText.toString();
+          pageText = state.model.pageText ?? '';
         });
+
+        if (state.model.status == 1) {
+          setState(() {
+            isNotEmpty = true;
+          });
+        } else {
+          setState(() {
+            isNotEmpty = false;
+          });
+        }
       }
     },
     builder: (context, state) {
@@ -160,8 +190,42 @@ abstract class ChalanBuilder extends State<ChalanPanel> {
             );
           }
           return state.model.status != 1
-              ? Center(
-                  child: Text(state.model.message ?? 'Refresh to load data'),
+              ? Column(
+                  children: [
+                    // Table Header
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      color: Colors.grey[100],
+                      child: Row(
+                        children: buildColumns()
+                            .map(
+                              (column) => Expanded(
+                                flex: 1,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8.0,
+                                    vertical: 12.0,
+                                  ),
+                                  child: column.label,
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                    ),
+                    // Message below header
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        state.model.message ?? 'try again later',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
                 )
               : Padding(
                   padding: const EdgeInsets.symmetric(

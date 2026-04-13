@@ -93,23 +93,23 @@ class _EditJumboRollPanelState extends EditJumboRollBuilder {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-       stream: InternetConnectionService().connectionStream,
-        initialData: true, // Assume connected initially
-        builder: (context, snapshot) {
-          // Handle error state
-          if (snapshot.hasError) {
-            return const NoInternetConnection();
-          }
+      stream: InternetConnectionService().connectionStream,
+      initialData: true, // Assume connected initially
+      builder: (context, snapshot) {
+        // Handle error state
+        if (snapshot.hasError) {
+          return const NoInternetConnection();
+        }
 
-          // Handle disconnected state
-          if (snapshot.data == false) {
-            return const NoInternetConnection();
-          }
+        // Handle disconnected state
+        if (snapshot.data == false) {
+          return const NoInternetConnection();
+        }
 
-          // Handle loading state
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
+        // Handle loading state
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
         return Scaffold(
           key: _stateKey,
           appBar: !Responsive.isDesktop(context)
@@ -118,12 +118,12 @@ class _EditJumboRollPanelState extends EditJumboRollBuilder {
           drawer: !Responsive.isDesktop(context)
               ? const SideMenuWidget()
               : const SizedBox(),
-        
+
           body: Responsive.isDesktop(context)
               ? _jumboDesktopView
               : _jumboTabletView,
         );
-      }
+      },
     );
   }
 
@@ -254,7 +254,7 @@ class _EditJumboRollPanelState extends EditJumboRollBuilder {
             if (!context.mounted) return;
             ToastService.instance.showError(
               context,
-              state.successResponse.message.toString(),
+              state.successResponse.message ?? 'try again later',
             );
           }
         }

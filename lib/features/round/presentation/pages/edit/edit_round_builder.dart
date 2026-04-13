@@ -271,7 +271,7 @@ abstract class EditRoundBuilder extends State<EditRoundPanel> {
         } else {
           ToastService.instance.showError(
             context,
-            state.successResponse.message.toString(),
+            state.successResponse.message ?? 'try again later',
           );
         }
       }

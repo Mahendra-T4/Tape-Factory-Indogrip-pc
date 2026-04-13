@@ -48,6 +48,7 @@ abstract class TapeBuilder extends State<TapPanel> {
   final tapLengthController = TextEditingController();
   final tapWidthController = TextEditingController();
   final displayMFGController = TextEditingController();
+  Key refreshKey = UniqueKey();
 
   final weightController = TextEditingController();
   final batchMRPController = TextEditingController();
@@ -100,6 +101,25 @@ abstract class TapeBuilder extends State<TapPanel> {
     );
   }
 
+  clearFiltersOnRefresh() {
+    fromDateController.clear();
+    toDateController.clear();
+    tapLengthController.clear();
+    tapWidthController.clear();
+    searchController.clear();
+    stockStatus = null;
+    recordValue = null;
+    filterValue = null;
+    entryValue = null;
+    widthID = null;
+    baseID = null;
+    micID = null;
+
+    refreshKey = UniqueKey();
+
+    eventCall();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -111,7 +131,7 @@ abstract class TapeBuilder extends State<TapPanel> {
     inventoryOutBloc.add(
       ViewTapInventoryFetchingEvent(
         param: ViewRecordApiParam(
-          keyword: searchController.text,
+          keyword: searchController.text.trim(),
           filterBy: stockStatus?.toString() ?? '',
           orderBy: filterValue?.toString() ?? '',
           pageNo: pageNo.toString(),
@@ -120,8 +140,8 @@ abstract class TapeBuilder extends State<TapPanel> {
           baseID: baseID,
           micID: micID,
           widthID: widthID,
-          fromDate: fromDateController.text,
-          toDate: toDateController.text,
+          fromDate: fromDateController.text.trim(),
+          toDate: toDateController.text.trim(),
         ),
       ),
     );
@@ -143,12 +163,13 @@ abstract class TapeBuilder extends State<TapPanel> {
   // double _fontSize = 11;
   String? status;
   Widget get searchFields => RoundSearchFields(
+    key: refreshKey,
     isStatus: true,
-    // controller: searchController,
+    controller: searchController,
     onSearch: (keyword) {
-      setState(() {
-        searchController.text = keyword;
-      });
+      // setState(() {
+      //   searchController.text = keyword;
+      // });
       eventCall();
     },
     onChangedStatus: (status) {
@@ -184,7 +205,7 @@ abstract class TapeBuilder extends State<TapPanel> {
               setState(() {
                 pageNo = 1;
               });
-              eventCall();
+              clearFiltersOnRefresh();
             },
           ),
         ),
@@ -200,6 +221,7 @@ abstract class TapeBuilder extends State<TapPanel> {
           horizontal: kDefaultHorizontalPadding - 5,
         ),
         child: Row(
+          key: refreshKey,
           spacing: 16,
           children: [
             Expanded(
@@ -256,6 +278,7 @@ abstract class TapeBuilder extends State<TapPanel> {
           horizontal: kDefaultHorizontalPadding - 5,
         ),
         child: Row(
+          key: refreshKey,
           spacing: 16,
           children: [
             Expanded(
@@ -1096,169 +1119,183 @@ abstract class TapeBuilder extends State<TapPanel> {
           color: PdfColors.black,
         );
 
-        pdf.addPage(
-          pw.Page(
-            pageFormat: PdfPageFormat(
-              PdfPageFormat.inch * 4.9, // width = 4.9 inches
-              PdfPageFormat.inch * 3.4, // height = 3.4 inches
-              marginTop: PdfPageFormat.inch * 0.7,
-              marginRight:
-                  PdfPageFormat.inch *
-                  0.15, // equal margins for centered sticker
-              marginLeft:
-                  PdfPageFormat.inch *
-                  0.15, // equal margins for centered sticker
-            ),
-            build: (pw.Context context) {
-              return pw.Container(
-                alignment: pw.Alignment.center,
-                padding: pw.EdgeInsets.all(10),
-                decoration: pw.BoxDecoration(
-                  border: pw.Border.all(color: PdfColors.black, width: 1.2),
-                  borderRadius: pw.BorderRadius.circular(4),
-                ),
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.center,
-                  mainAxisAlignment: pw.MainAxisAlignment.center,
-                  children: [
-                    pw.Row(
-                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                      children: [
-                        if (indogripStickerImage != null)
-                          pw.Image(
-                            indogripStickerImage,
-                            width: 100,
-                            height: 30,
-                            fit: pw.BoxFit.contain,
-                          ),
-                        if (tapFactoryImage != null)
-                          pw.Image(
-                            tapFactoryImage,
-                            width: 80,
-                            height: 30,
-                            fit: pw.BoxFit.contain,
-                          ),
-                      ],
-                    ),
+        // Get quantity from selected item, default to 1 if not available
+        int quantity = 1;
+        if (selectedItem.quantity != null) {
+          try {
+            quantity = int.parse(selectedItem.quantity.toString());
+          } catch (e) {
+            log(name: 'Quantity Parse Error', e.toString());
+            quantity = 1;
+          }
+        }
 
-                    // Top logo (tap factory)
-                    pw.SizedBox(height: 3),
-
-                    //! Barcode - batchcode
-                    pw.Align(
-                      alignment: pw.Alignment.center,
-                      child: pw.BarcodeWidget(
-                        data: record.batchInformation!.batchID.toString(),
-                        barcode: pw.Barcode.code128(),
-                        textStyle: pw.TextStyle(
-                          fontSize: 10,
-                          fontWeight: pw.FontWeight.bold,
-                        ),
-                        width: PdfPageFormat.inch * 2.8,
-                        height: PdfPageFormat.inch * 0.6,
+        // Add pages based on quantity
+        for (int i = 0; i < quantity; i++) {
+          pdf.addPage(
+            pw.Page(
+              pageFormat: PdfPageFormat(
+                PdfPageFormat.inch * 4.9, // width = 4.9 inches
+                PdfPageFormat.inch * 3.4, // height = 3.4 inches
+                marginTop: PdfPageFormat.inch * 0.7,
+                marginRight:
+                    PdfPageFormat.inch *
+                    0.15, // equal margins for centered sticker
+                marginLeft:
+                    PdfPageFormat.inch *
+                    0.15, // equal margins for centered sticker
+              ),
+              build: (pw.Context context) {
+                return pw.Container(
+                  alignment: pw.Alignment.center,
+                  padding: pw.EdgeInsets.all(10),
+                  decoration: pw.BoxDecoration(
+                    border: pw.Border.all(color: PdfColors.black, width: 1.2),
+                    borderRadius: pw.BorderRadius.circular(4),
+                  ),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.center,
+                    mainAxisAlignment: pw.MainAxisAlignment.center,
+                    children: [
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          if (indogripStickerImage != null)
+                            pw.Image(
+                              indogripStickerImage,
+                              width: 100,
+                              height: 30,
+                              fit: pw.BoxFit.contain,
+                            ),
+                          if (tapFactoryImage != null)
+                            pw.Image(
+                              tapFactoryImage,
+                              width: 80,
+                              height: 30,
+                              fit: pw.BoxFit.contain,
+                            ),
+                        ],
                       ),
-                    ),
-                    // Serial Number
-                    // pw.Row(
-                    //   mainAxisAlignment: pw.MainAxisAlignment.start,
-                    //   children: [
-                    //     pw.Text(
-                    //       'Serial Number: ${record.inventoryInformation!.inventoryCode.toString()}',
-                    //       style: style,
-                    //     ),
-                    //   ],
-                    // ),
-                    // pw.SizedBox(height: 5),
 
-                    // Vendor Name and Pieces/Carton
-                    pw.Row(
-                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                      children: [
-                        pw.Text(
-                          'Serial Number: ${record.inventoryInformation!.inventoryCode.toString()}',
-                          style: style,
-                        ),
-                        pw.Text(
-                          'Pieces/Carton: ${record.inventoryInformation!.additionalInfo!.piecesPerCarton}',
-                          style: style,
-                        ),
-                      ],
-                    ),
-                    pw.SizedBox(height: 5),
+                      // Top logo (tap factory)
+                      pw.SizedBox(height: 3),
 
-                    // Width and Mic
-                    pw.Row(
-                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                      children: [
-                        pw.Text(
-                          'Width: ${record.inventoryInformation!.additionalInfo!.cutMMMeter}',
-                          style: style,
+                      //! Barcode - batchcode
+                      pw.Align(
+                        alignment: pw.Alignment.center,
+                        child: pw.BarcodeWidget(
+                          data: record.batchInformation!.batchID.toString(),
+                          barcode: pw.Barcode.code128(),
+                          textStyle: pw.TextStyle(
+                            fontSize: 10,
+                            fontWeight: pw.FontWeight.bold,
+                          ),
+                          width: PdfPageFormat.inch * 2.8,
+                          height: PdfPageFormat.inch * 0.6,
                         ),
-                        pw.Text(
-                          'Mic: ${record.batchInformation!.displayMic}',
-                          style: style,
-                        ),
-                      ],
-                    ),
-                    pw.SizedBox(height: 5),
+                      ),
+                      // Serial Number
+                      // pw.Row(
+                      //   mainAxisAlignment: pw.MainAxisAlignment.start,
+                      //   children: [
+                      //     pw.Text(
+                      //       'Serial Number: ${record.inventoryInformation!.inventoryCode.toString()}',
+                      //       style: style,
+                      //     ),
+                      //   ],
+                      // ),
+                      // pw.SizedBox(height: 5),
 
-                    // Length/Weight and Base
-                    pw.Row(
-                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                      children: [
-                        record.batchInformation?.showFor == 1
-                            ? pw.Text(
-                                'Length: ${record.batchInformation!.displayValue}',
-                                style: style,
-                              )
-                            : pw.Text(
-                                'Weight: ${record.batchInformation!.displayValue}',
-                                style: style,
-                              ),
-                        pw.Text(
-                          'Base: ${record.inventoryInformation!.additionalInfo!.baseLabel}',
-                          style: style,
-                        ),
-                      ],
-                    ),
-                    pw.SizedBox(height: 5),
+                      // Vendor Name and Pieces/Carton
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pw.Text(
+                            'Serial Number: ${record.inventoryInformation!.inventoryCode.toString()}',
+                            style: style,
+                          ),
+                          pw.Text(
+                            'Pieces/Carton: ${record.inventoryInformation!.additionalInfo!.piecesPerCarton}',
+                            style: style,
+                          ),
+                        ],
+                      ),
+                      pw.SizedBox(height: 5),
 
-                    // MFG and MRP
-                    pw.Row(
-                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                      children: [
-                        pw.Text(
-                          'MFG: ${record.batchInformation!.displayMFGLabel}',
-                          style: style,
-                        ),
-                        pw.Text(
-                          'MRP: ${record.batchInformation!.batchMRP}',
-                          style: style,
-                        ),
-                      ],
-                    ),
-                    pw.SizedBox(height: 5),
+                      // Width and Mic
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pw.Text(
+                            'Width: ${record.inventoryInformation!.additionalInfo!.cutMMMeter}',
+                            style: style,
+                          ),
+                          pw.Text(
+                            'Mic: ${record.batchInformation!.displayMic}',
+                            style: style,
+                          ),
+                        ],
+                      ),
+                      pw.SizedBox(height: 5),
 
-                    // Remark and Batch Code
-                    pw.Row(
-                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                      children: [
-                        pw.Text(
-                          'Remark: ${record.inventoryInformation!.remark}',
-                          style: style,
-                        ),
-                        pw.Text(
-                          'Batch Code: ${record.batchInformation!.batchCode}',
-                          style: style,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        );
+                      // Length/Weight and Base
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          record.batchInformation?.showFor == 1
+                              ? pw.Text(
+                                  'Length: ${record.batchInformation!.displayValue}',
+                                  style: style,
+                                )
+                              : pw.Text(
+                                  'Weight: ${record.batchInformation!.displayValue}',
+                                  style: style,
+                                ),
+                          pw.Text(
+                            'Base: ${record.inventoryInformation!.additionalInfo!.baseLabel}',
+                            style: style,
+                          ),
+                        ],
+                      ),
+                      pw.SizedBox(height: 5),
+
+                      // MFG and MRP
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pw.Text(
+                            'MFG: ${record.batchInformation!.displayMFGLabel}',
+                            style: style,
+                          ),
+                          pw.Text(
+                            'MRP: ${record.batchInformation!.batchMRP}',
+                            style: style,
+                          ),
+                        ],
+                      ),
+                      pw.SizedBox(height: 5),
+
+                      // Remark and Batch Code
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pw.Text(
+                            'Remark: ${record.inventoryInformation!.remark}',
+                            style: style,
+                          ),
+                          pw.Text(
+                            'Batch Code: ${record.batchInformation!.batchCode}',
+                            style: style,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          );
+        }
       }
 
       // Show printer picker and print
@@ -1270,11 +1307,25 @@ abstract class TapeBuilder extends State<TapPanel> {
         format: PdfPageFormat.a4,
       );
 
+      // Calculate total stickers printed
+      int totalStickers = 0;
+      for (var item in selectedItems) {
+        int itemQuantity = 1;
+        if (item.quantity != null) {
+          try {
+            itemQuantity = int.parse(item.quantity.toString());
+          } catch (e) {
+            itemQuantity = 1;
+          }
+        }
+        totalStickers += itemQuantity;
+      }
+
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Successfully sent ${selectedItems.length} sticker(s) to printer',
+            'Successfully sent $totalStickers sticker(s) to printer',
           ),
           backgroundColor: Colors.green,
         ),

@@ -749,6 +749,4 @@ abstract class EditStaffBuilder extends State<EditStaffDetailsPage> {
   }
 
   //! Permission and Rights Section
-
-
 }

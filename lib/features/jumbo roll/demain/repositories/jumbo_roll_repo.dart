@@ -193,7 +193,7 @@ class JumboRollRepository {
       final formData = FormData.fromMap({
         'activity': 'upload-csv-file',
         'userKey': HiveService.getUserId(),
-        'rType': param.rType,
+        'rType': '1',
         'billNumber': param.billNumber,
         'vendorKey': param.selectedVendor,
         'billDate': param.date,
@@ -227,6 +227,11 @@ class JumboRollRepository {
           response.data.toString(),
           name: 'Upload CSV File Response Parse',
         );
+
+        developer.log(
+          formData.fields.toString(),
+          name: 'FormData for Upload Jumbo CSV File',
+        );
         developer.log(
           successResponse.message.toString(),
           name: 'Upload CSV File Response',
@@ -246,12 +251,25 @@ class JumboRollRepository {
     return successResponse;
   }
 
-  static Future<List<Map<String, dynamic>>> getJumboRollJsonData() async {
+  static Future<List<Map<String, dynamic>>> getJumboRollJsonData(
+    ViewRecordApiParam param,
+  ) async {
     try {
       final response = await DioService.dioPostApiCall(
         data: FormData.fromMap({
           'activity': 'view-jumbo-roll',
           'userKey': HiveService.getUserId(),
+          'keyword': param.keyword,
+          'filterBy': param.filterBy,
+          'sortBy': param.sortBy,
+          'orderBy': param.orderBy,
+          'pageNo': param.pageNo,
+          'vendorKey': param.vendorKey,
+          'baseID': param.baseID,
+          'micID': param.micID,
+          'widthID': param.widthID,
+          'fromDate': param.fromDate ?? '',
+          'toDate': param.toDate ?? '',
         }),
       );
 

@@ -222,8 +222,6 @@ abstract class EditOutsourceInBuilder extends State<EditOutSourceIN> {
     ),
   );
 
-
-
   //! Product Header Section
 
   Widget get buildProductHeaderDesktop => Padding(
@@ -549,7 +547,7 @@ abstract class EditOutsourceInBuilder extends State<EditOutSourceIN> {
         } else {
           ToastService.instance.showSuccess(
             context,
-            state.response.message.toString(),
+            state.response.message ?? 'try again later',
           );
         }
       } else if (state is InventoryInRecordAddErrorStatus) {

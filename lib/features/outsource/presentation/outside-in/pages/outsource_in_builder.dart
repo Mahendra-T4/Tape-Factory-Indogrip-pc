@@ -248,12 +248,13 @@ abstract class OutsourceInBuilder extends State<OutSourceIN> {
               context,
               state.response.message.toString(),
             );
-          }
-          if (state.response.missRecord != null) {
-            GoRouter.of(
-              context,
-            ).pushNamed(TapeMissRecordPanel.routeName, extra: state.response);
-            context.pop();
+
+            if (state.response.missRecord != null) {
+              GoRouter.of(
+                context,
+              ).pushNamed(TapeMissRecordPanel.routeName, extra: state.response);
+              context.pop();
+            }
           }
         } else if (state is InventoryInUploadCSVFileFailedErrorStatus) {
           if (!context.mounted) return;
@@ -271,13 +272,14 @@ abstract class OutsourceInBuilder extends State<OutSourceIN> {
               context,
               state.response.message.toString(),
             );
-          }
-          if (state.response.missRecord != null) {
-            GoRouter.of(context).pushNamed(
-              StretchFilmMissRecordPanel.routeName,
-              extra: state.response,
-            );
-            context.pop();
+
+            if (state.response.missRecord != null) {
+              GoRouter.of(context).pushNamed(
+                StretchFilmMissRecordPanel.routeName,
+                extra: state.response,
+              );
+              context.pop();
+            }
           }
         }
       },
@@ -884,7 +886,7 @@ abstract class OutsourceInBuilder extends State<OutSourceIN> {
         } else {
           ToastService.instance.showSuccess(
             context,
-            state.response.message.toString(),
+            state.response.message ?? 'try again later',
           );
         }
       } else if (state is InventoryInRecordAddErrorStatus) {

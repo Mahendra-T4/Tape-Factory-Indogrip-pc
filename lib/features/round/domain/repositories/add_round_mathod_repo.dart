@@ -30,5 +30,7 @@ abstract class AddRoundMethodRepository {
 
   Future<BatchDetailsModel> fetchBatchDetails(String rKey);
 
-  Future<List<Map<String, dynamic>>> loadRoundJsonData();
+  Future<List<Map<String, dynamic>>> loadRoundJsonData(
+    ViewRecordApiParam param,
+  );
 }

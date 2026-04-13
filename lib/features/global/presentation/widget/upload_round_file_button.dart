@@ -191,7 +191,7 @@ class _MyWidgetState extends State<UploadRoundFileButton> {
             if (!context.mounted) return;
             ToastService.instance.showError(
               context,
-              state.successResponse.message.toString(),
+              state.successResponse.message ?? 'try again later',
             );
           }
           if (state.successResponse.missRecord != null) {

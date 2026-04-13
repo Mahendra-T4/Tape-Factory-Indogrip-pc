@@ -263,12 +263,21 @@ class AddClientRepository {
     return successResponse;
   }
 
-  static Future<List<Map<String, dynamic>>> loadClientJsonData() async {
+  static Future<List<Map<String, dynamic>>> loadClientJsonData(
+    ViewRecordApiParam param,
+  ) async {
     try {
       final response = await DioService.dioPostApiCall(
         data: FormData.fromMap({
           'activity': 'view-client',
           'userKey': HiveService.getUserId(),
+          'keyword': param.keyword ?? '',
+          'filterBy': param.filterBy ?? '',
+          'sortBy': param.sortBy ?? '',
+          'orderBy': param.orderBy ?? '',
+          'pageNo': param.pageNo,
+          'fromDate': param.fromDate ?? '',
+          'toDate': param.toDate ?? '',
         }),
       );
 

@@ -172,10 +172,10 @@ class StretchFilmDataSource extends DataGridSource {
             value: data.additionalInfo?.margin?.toString() ?? '',
           ),
           // 21. MRP
-          // DataGridCell<String>(
-          //   columnName: 'mrp',
-          //   value: data.batchInformation?.batchMRP?.toString() ?? '',
-          // ),
+          DataGridCell<String>(
+            columnName: 'qty',
+            value: data.quantity?.toString() ?? '',
+          ),
           // 22. Remarks
           DataGridCell<String>(
             columnName: StretchFilm.remark,

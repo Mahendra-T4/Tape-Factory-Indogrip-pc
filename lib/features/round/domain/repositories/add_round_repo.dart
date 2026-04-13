@@ -404,12 +404,25 @@ class AddRoundRepository implements AddRoundMethodRepository {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> loadRoundJsonData() async {
+  Future<List<Map<String, dynamic>>> loadRoundJsonData(
+    ViewRecordApiParam param,
+  ) async {
     try {
       final response = await DioService.dioPostApiCall(
         data: FormData.fromMap({
           'activity': 'view-round',
           'userKey': HiveService.getUserId(),
+          'keyword': param.keyword ?? '',
+          'filterBy': param.filterBy ?? '',
+          'sortBy': param.sortBy ?? '',
+          'orderBy': param.orderBy ?? '',
+          'pageNo': param.pageNo ?? 1,
+          'cutMMMeterID': param.cutMMMeterID,
+          'micID': param.micID,
+          'baseID': param.baseID,
+          'fromDate': param.fromDate ?? '',
+          'toDate': param.toDate ?? '',
+          'tapeLength': param.tapeLength,
         }),
       );
 

@@ -23,16 +23,16 @@ class UploadRoundRecordModel {
 class RoundMissRecord {
   final String? vendorKey;
   final String? billDate;
-  final String? billNumber;
-  final String? rollNumber;
-  final String? base;
-  final String? mic;
+  final dynamic billNumber;
+  final dynamic rollNumber;
+  final dynamic base;
+  final dynamic mic;
   final dynamic length;
-  final String? width;
-  final String? netWeight;
-  final String? totalSquareMtr;
+  final dynamic width;
+  final dynamic netWeight;
+  final dynamic totalSquareMtr;
   final dynamic amountPerKG;
-  final String? rollCost;
+  final dynamic rollCost;
   final String? remark;
   final String? rKey;
   final String? msg;

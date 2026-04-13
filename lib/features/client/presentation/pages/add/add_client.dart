@@ -227,7 +227,7 @@ class _AddClientPanelState extends AddClientPanelBuilder {
             if (!context.mounted) return;
             ToastService.instance.showError(
               context,
-              state.successResponse.message.toString(),
+              state.successResponse.message ?? 'try again later',
             );
           }
         }

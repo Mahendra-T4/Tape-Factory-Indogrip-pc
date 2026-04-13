@@ -428,7 +428,7 @@ abstract class AddCartonBuilder extends State<AddCartonPanel> {
         } else {
           ToastService.instance.showError(
             context,
-            state.addCartonEntity.message.toString(),
+            state.addCartonEntity.message ?? 'try again later',
           );
         }
       } else if (state is AddCartonOnRecordFailureStatus) {

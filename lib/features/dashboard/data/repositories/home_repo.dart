@@ -88,6 +88,7 @@ class HomeRepository implements HomeManagerRepository {
           'Failed to load predict calculation data',
           name: 'Predict Calculation Failed',
         );
+        return model..message = 'Failed to load predict calculation data';
       }
     } catch (e) {
       developer.log(e.toString(), name: 'Predict Calculation Error');
@@ -137,6 +138,7 @@ class HomeRepository implements HomeManagerRepository {
           'Failed to load predict calculation data',
           name: 'Predict Calculation Failed',
         );
+        return model..message = 'Failed to load predict calculation data';
       }
     } catch (e) {
       developer.log(e.toString(), name: 'Predict Calculation Error');

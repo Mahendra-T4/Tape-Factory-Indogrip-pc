@@ -5,7 +5,13 @@ class ViewVendorModel {
   int? pageQty;
   String? pageText;
 
-  ViewVendorModel({this.status, this.message, this.record, this.pageQty});
+  ViewVendorModel({
+    this.status,
+    this.message,
+    this.record,
+    this.pageQty,
+    this.pageText,
+  });
 
   ViewVendorModel.fromJson(Map<String, dynamic> json) {
     status = json['status'];
@@ -13,7 +19,7 @@ class ViewVendorModel {
     if (json['record'] != null) {
       record = <VendorRecord>[];
       json['record'].forEach((v) {
-        record!.add(new VendorRecord.fromJson(v));
+        record!.add(VendorRecord.fromJson(v));
       });
     }
     pageQty = json['pageQty'];
@@ -21,14 +27,14 @@ class ViewVendorModel {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['status'] = this.status;
-    data['message'] = this.message;
-    if (this.record != null) {
-      data['record'] = this.record!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['status'] = status;
+    data['message'] = message;
+    if (record != null) {
+      data['record'] = record!.map((v) => v.toJson()).toList();
     }
-    data['pageQty'] = this.pageQty;
-    data['pageText'] = this.pageText;
+    data['pageQty'] = pageQty;
+    data['pageText'] = pageText;
     return data;
   }
 }
@@ -49,55 +55,56 @@ class VendorRecord {
   String? rKey;
   int? rStatus;
 
-  VendorRecord(
-      {this.sNo,
-      this.vCode,
-      this.vCompanyName,
-      this.vCompanyMobileNumber,
-      this.vAlternateNumber,
-      this.vCompanyGSTIN,
-      this.vVendorName,
-      this.vVendorMobileNumber,
-      this.vVenderAlternateNumber,
-      this.vRepresentativeName,
-      this.vRepresentativeNumber,
-      this.vRAlternateNumber,
-      this.rKey,
-      this.rStatus});
+  VendorRecord({
+    this.sNo,
+    this.vCode,
+    this.vCompanyName,
+    this.vCompanyMobileNumber,
+    this.vAlternateNumber,
+    this.vCompanyGSTIN,
+    this.vVendorName,
+    this.vVendorMobileNumber,
+    this.vVenderAlternateNumber,
+    this.vRepresentativeName,
+    this.vRepresentativeNumber,
+    this.vRAlternateNumber,
+    this.rKey,
+    this.rStatus,
+  });
 
   VendorRecord.fromJson(Map<String, dynamic> json) {
     sNo = json['SNo'];
-    vCode = json['vCode'];
-    vCompanyName = json['vCompanyName'];
-    vCompanyMobileNumber = json['vCompanyMobileNumber'];
-    vAlternateNumber = json['vAlternateNumber'];
-    vCompanyGSTIN = json['vCompanyGSTIN'];
-    vVendorName = json['vVendorName'];
-    vVendorMobileNumber = json['vVendorMobileNumber'];
-    vVenderAlternateNumber = json['vVenderAlternateNumber'];
-    vRepresentativeName = json['vRepresentativeName'];
-    vRepresentativeNumber = json['vRepresentativeNumber'];
-    vRAlternateNumber = json['vRAlternateNumber'];
-    rKey = json['rKey'];
+    vCode = json['vCode']?.toString();
+    vCompanyName = json['vCompanyName']?.toString();
+    vCompanyMobileNumber = json['vCompanyMobileNumber']?.toString();
+    vAlternateNumber = json['vAlternateNumber']?.toString();
+    vCompanyGSTIN = json['vCompanyGSTIN']?.toString();
+    vVendorName = json['vVendorName']?.toString();
+    vVendorMobileNumber = json['vVendorMobileNumber']?.toString();
+    vVenderAlternateNumber = json['vVenderAlternateNumber']?.toString();
+    vRepresentativeName = json['vRepresentativeName']?.toString();
+    vRepresentativeNumber = json['vRepresentativeNumber']?.toString();
+    vRAlternateNumber = json['vRAlternateNumber']?.toString();
+    rKey = json['rKey']?.toString();
     rStatus = json['rStatus'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['SNo'] = this.sNo;
-    data['vCode'] = this.vCode;
-    data['vCompanyName'] = this.vCompanyName;
-    data['vCompanyMobileNumber'] = this.vCompanyMobileNumber;
-    data['vAlternateNumber'] = this.vAlternateNumber;
-    data['vCompanyGSTIN'] = this.vCompanyGSTIN;
-    data['vVendorName'] = this.vVendorName;
-    data['vVendorMobileNumber'] = this.vVendorMobileNumber;
-    data['vVenderAlternateNumber'] = this.vVenderAlternateNumber;
-    data['vRepresentativeName'] = this.vRepresentativeName;
-    data['vRepresentativeNumber'] = this.vRepresentativeNumber;
-    data['vRAlternateNumber'] = this.vRAlternateNumber;
-    data['rKey'] = this.rKey;
-    data['rStatus'] = this.rStatus;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['SNo'] = sNo;
+    data['vCode'] = vCode;
+    data['vCompanyName'] = vCompanyName;
+    data['vCompanyMobileNumber'] = vCompanyMobileNumber;
+    data['vAlternateNumber'] = vAlternateNumber;
+    data['vCompanyGSTIN'] = vCompanyGSTIN;
+    data['vVendorName'] = vVendorName;
+    data['vVendorMobileNumber'] = vVendorMobileNumber;
+    data['vVenderAlternateNumber'] = vVenderAlternateNumber;
+    data['vRepresentativeName'] = vRepresentativeName;
+    data['vRepresentativeNumber'] = vRepresentativeNumber;
+    data['vRAlternateNumber'] = vRAlternateNumber;
+    data['rKey'] = rKey;
+    data['rStatus'] = rStatus;
     return data;
   }
 }

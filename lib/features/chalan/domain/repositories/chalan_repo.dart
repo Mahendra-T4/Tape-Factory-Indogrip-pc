@@ -194,4 +194,40 @@ abstract class ChallanRepository {
     }
     return model;
   }
+
+  static Future<List<Map<String, dynamic>>> getChallanJsonData() async {
+    try {
+      final response = await DioService.dioPostApiCall(
+        data: FormData.fromMap({
+          'activity': 'challan-list',
+          'userKey': HiveService.getUserId(),
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = response.data;
+
+        final challanList = jsonData is Map && jsonData['record'] is List
+            ? (jsonData['record'] as List)
+                  .where((item) => item is Map)
+                  .map((item) => Map<String, dynamic>.from(item as Map))
+                  .toList()
+            : <Map<String, dynamic>>[];
+
+        return challanList;
+      } else {
+        developer.log(
+          'Failed to fetch Challan JSON data',
+          name: 'Fetch Challan JSON',
+        );
+        throw Exception('Failed to fetch Challan JSON data');
+      }
+    } catch (e) {
+      developer.log(
+        'Error fetching Challan JSON data: $e',
+        name: 'Fetch Challan JSON',
+      );
+      throw Exception('Error fetching Challan JSON data: $e');
+    }
+  }
 }

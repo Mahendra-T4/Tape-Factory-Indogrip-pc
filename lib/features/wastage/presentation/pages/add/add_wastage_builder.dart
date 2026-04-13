@@ -494,7 +494,7 @@ abstract class AddWastageBuilder extends State<AddWastagePanel> {
               } else {
                 ToastService.instance.showError(
                   context,
-                  state.successResponse.message.toString(),
+                  state.successResponse.message ?? 'try again later',
                 );
               }
             } else if (state is AddWastageONRecordsFailureStatus) {

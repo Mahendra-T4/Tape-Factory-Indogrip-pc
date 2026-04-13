@@ -7,6 +7,7 @@ import 'package:indogrip/features/global/presentation/widget/search_fields.dart'
 import 'package:indogrip/features/staff/data/models/view_staff_api_param.dart';
 
 abstract class ViewCoreBuilder extends State<ViewCorePanel> {
+  Key refreshKey = UniqueKey();
   late CoreBloc coreBloc;
   bool isMultipleSelection = false;
   List<CoreDataRecord> selectedItems = [];
@@ -26,6 +27,37 @@ abstract class ViewCoreBuilder extends State<ViewCorePanel> {
     });
   }
 
+  eventHandler() {
+    coreBloc.add(
+      ViewCoreRecordEvent(
+        param: ViewRecordApiParam(
+          keyword: searchController.text.trim(),
+          filterBy: recordValue ?? '',
+          orderBy: filterValue.toString(),
+          pageNo: currentPage.toString(),
+          sortBy: entryValue.toString(),
+          fromDate: fromDateController.text,
+          toDate: toDateController.text,
+        ),
+      ),
+    );
+  }
+
+  clearFiltersOnRefresh() {
+    searchController.clear();
+    fromDateController.clear();
+    toDateController.clear();
+    setState(() {
+      recordValue = null;
+      filterValue = null;
+      entryValue = null;
+    });
+
+    refreshKey = UniqueKey();
+
+    eventHandler();
+  }
+
   Widget get refreshButton => Row(
     mainAxisAlignment: MainAxisAlignment.end,
     children: [
@@ -34,19 +66,7 @@ abstract class ViewCoreBuilder extends State<ViewCorePanel> {
         height: 35,
         child: RefreshButton(
           onPressed: () {
-            coreBloc.add(
-              ViewCoreRecordEvent(
-                param: ViewRecordApiParam(
-                  keyword: searchController.text,
-                  filterBy: recordValue ?? '',
-                  orderBy: filterValue.toString(),
-                  pageNo: currentPage.toString(),
-                  sortBy: entryValue.toString(),
-                  fromDate: fromDateController.text,
-                  toDate: toDateController.text,
-                ),
-              ),
-            );
+            clearFiltersOnRefresh();
           },
         ),
       ),
@@ -68,76 +88,29 @@ abstract class ViewCoreBuilder extends State<ViewCorePanel> {
   }
 
   Widget get searchFields => SearchFields(
+    key: refreshKey,
     isStatus: true,
     controller: searchController,
     onSearch: (keyword) {
-      coreBloc.add(
-        ViewCoreRecordEvent(
-          param: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue ?? '',
-            orderBy: filterValue.toString(),
-            pageNo: currentPage.toString(),
-            sortBy: entryValue.toString(),
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
     },
     onChangedStatus: (status) {
       setState(() {
         recordValue = status;
       });
-      coreBloc.add(
-        ViewCoreRecordEvent(
-          param: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue ?? '',
-            orderBy: filterValue.toString(),
-            pageNo: currentPage.toString(),
-            sortBy: entryValue.toString(),
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
     },
     onChangedOrder: (order) {
       setState(() {
         filterValue = order;
       });
-      coreBloc.add(
-        ViewCoreRecordEvent(
-          param: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue ?? '',
-            orderBy: filterValue.toString(),
-            pageNo: currentPage.toString(),
-            sortBy: entryValue.toString(),
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
     },
     onChangedSort: (sortBy) {
       setState(() {
         entryValue = sortBy ?? 10;
       });
-      coreBloc.add(
-        ViewCoreRecordEvent(
-          param: ViewRecordApiParam(
-            keyword: searchController.text,
-            filterBy: recordValue ?? '',
-            orderBy: filterValue.toString(),
-            pageNo: currentPage.toString(),
-            sortBy: entryValue.toString(),
-            fromDate: fromDateController.text,
-            toDate: toDateController.text,
-          ),
-        ),
-      );
+      eventHandler();
     },
   );
 }
