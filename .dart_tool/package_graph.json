@@ -5,7 +5,7 @@
   "packages": [
     {
       "name": "indogrip",
-      "version": "1.0.1",
+      "version": "1.2.0+1",
       "dependencies": [
         "bloc",
         "carousel_slider",

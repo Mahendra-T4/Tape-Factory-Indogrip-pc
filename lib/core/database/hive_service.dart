@@ -22,10 +22,12 @@ class HiveService {
   static const String kLanguage = 'language';
   static const String kAppVersion = 'appVersion';
   static const String kAppBuildNumber = 'appBuildNumber';
+  static const String kAppInstallMarker =
+      'appInstallMarker'; // NEW: Track app installation
 
   // Update this version number whenever you release a new version
   // This helps clear stale login data when app is updated or reinstalled
-  static const String currentAppVersion = '1.0.0';
+  static const String currentAppVersion = '1.2.0';
 
   /// Initialize Hive and open box
   static Future<void> init() async {
@@ -41,25 +43,37 @@ class HiveService {
   /// This helps fix the issue where reinstalled apps still show "already logged in"
   static Future<void> _validateAndClearStaleData() async {
     try {
-      final storedVersion = get(kAppVersion);
+      final previousInstallMarker = get(kAppInstallMarker);
+      final currentInstallMarker = DateTime.now().year
+          .toString(); // Changes yearly
 
-      // If app version changed or first time running, clear old login data
+      // Generate a unique marker for this app installation/version
+      // This helps detect app reinstalls or version changes
+      final installMarker = '$currentAppVersion-$currentInstallMarker';
+
+      // If installation marker doesn't exist (first time) or doesn't match (reinstalled)
+      // then clear all login data to force re-authentication
+      if (previousInstallMarker == null ||
+          previousInstallMarker != installMarker) {
+        await clearLoginData(); // Force clear on app install/version change
+        await save(key: kAppInstallMarker, value: installMarker);
+        return;
+      }
+
+      // Check version change
+      final storedVersion = get(kAppVersion);
       if (storedVersion == null || storedVersion != currentAppVersion) {
-        await clearUserData();
-        // Save current version
+        await clearLoginData();
         await save(key: kAppVersion, value: currentAppVersion);
         return;
       }
 
-      // Simple approach: Clear login data if the stored token is invalid
-      // or if the last login was more than 30 days ago (customize as needed)
+      // Check if last login was more than 30 days ago
       final lastLogin = getLastLogin();
       if (lastLogin != null) {
         final daysSinceLogin = DateTime.now().difference(lastLogin).inDays;
-
-        // If more than 30 days have passed, clear login data
         if (daysSinceLogin > 30) {
-          await clearUserData();
+          await clearLoginData();
         }
       }
     } catch (e) {
