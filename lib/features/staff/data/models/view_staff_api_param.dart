@@ -12,6 +12,7 @@ class ViewRecordApiParam {
   final String? coreID;
   final String? filmSizeID;
   final String? fromDate;
+  final String? lowStock;
   final String? toDate;
   final String? staffKey;
   final String? clientKey;
@@ -30,6 +31,7 @@ class ViewRecordApiParam {
     this.widthID,
     this.cutMMMeterID,
     this.coreID,
+    this.lowStock,
     this.filmSizeID,
     this.fromDate,
     this.toDate,

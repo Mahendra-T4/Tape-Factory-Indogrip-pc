@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:indogrip/features/chalan/data/model/challan_product_verify_model.dart';
+import 'package:indogrip/features/chalan/data/model/challaninfo_param.dart';
 import 'package:indogrip/features/chalan/data/model/return_product.dart';
+import 'package:indogrip/features/chalan/data/model/round_details_model.dart';
+import 'package:indogrip/features/chalan/data/model/submit_batch_model.dart';
 import 'package:indogrip/features/chalan/data/model/verify_challan_product_param.dart';
 import 'package:indogrip/features/chalan/domain/repositories/chalan_repo.dart';
 import 'package:indogrip/features/global/data/model/change_status_model.dart';
@@ -43,6 +46,9 @@ class GlobalBloc extends Bloc<GlobalEvent, GlobalState> {
     on<VerifyChallanProductEvent>(verifyChallanProductEvent);
     on<UnVerifyProductEvent>(unVerifyProductEvent);
     on<ReturnChallanProductEvent>(returnChallanProductEvent);
+    on<AddChallanInfoEvent>(addChallanInfoEvent);
+    on<FetchRoundDetailsEvent>(_fetchRoundDetailsEvent);
+    on<SubmitRoundScannedDataEvent>(_submitRoundScannedDataEvent);
   }
 
   FutureOr<void> _globalChangeUserStatusEvent(
@@ -248,6 +254,52 @@ class GlobalBloc extends Bloc<GlobalEvent, GlobalState> {
       emit(ReturnChallanProductSuccessState(model: model));
     } catch (e) {
       emit(ReturnChallanProductFailureState(errorMessage: e.toString()));
+    }
+  }
+
+  FutureOr<void> addChallanInfoEvent(
+    AddChallanInfoEvent event,
+    Emitter<GlobalState> emit,
+  ) async {
+    emit(GlobalLoadingStatus3());
+    try {
+      final model = await ChallanRepository.challanInfo(data: event.param);
+      emit(AddChallanInfoSuccessState(model: model));
+    } catch (e) {
+      emit(AddChallanInfoFailureState(errorMessage: e.toString()));
+    }
+  }
+
+  FutureOr<void> _fetchRoundDetailsEvent(
+    FetchRoundDetailsEvent event,
+    Emitter<GlobalState> emit,
+  ) async {
+    emit(GlobalLoadingStatus());
+    try {
+      final RoundDetails dataModel = await ChallanRepository.fetchRoundDetails(
+        batchCode: event.batchCode,
+      );
+      emit(ChallanRoundDetailsLoadedSuccessStatus(dataModel: dataModel));
+    } catch (e) {
+      emit(ChallanRoundDetailsLoadedFailureStatus(errorMessage: e.toString()));
+    }
+  }
+
+  FutureOr<void> _submitRoundScannedDataEvent(
+    SubmitRoundScannedDataEvent event,
+    Emitter<GlobalState> emit,
+  ) async {
+    emit(GlobalLoadingStatus());
+    try {
+      final batchCodes = await ChallanRepository.submitBatchInfo(
+        event.batchCodes,
+        event.batchQty,
+        event.unitIndex,
+        event.clientKey,
+      );
+      emit(SubmitRoundScannedDataSuccessStatus(model: batchCodes));
+    } catch (e) {
+      emit(SubmitRoundScannedDataFailureStatus(errorMessage: e.toString()));
     }
   }
 }

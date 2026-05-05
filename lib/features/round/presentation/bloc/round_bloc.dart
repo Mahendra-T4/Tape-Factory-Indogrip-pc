@@ -5,7 +5,9 @@ import 'package:bloc/bloc.dart';
 import 'package:indogrip/features/round/data/models/add_batch_model.dart';
 import 'package:indogrip/features/round/data/models/add_batch_param.dart';
 import 'package:indogrip/features/round/data/models/batch_details_model.dart';
+import 'package:indogrip/features/round/data/models/change_jumbo_status_model.dart';
 import 'package:indogrip/features/round/data/models/edit_round_success_model.dart';
+import 'package:indogrip/features/round/data/models/jumbo_info_model.dart';
 import 'package:indogrip/features/round/data/models/master_roll_size_entity.dart';
 import 'package:indogrip/features/round/data/models/show_model.dart';
 import 'package:indogrip/features/round/data/models/view_round_modeld.dart';
@@ -28,6 +30,8 @@ class RoundBloc extends Bloc<RoundEvent, RoundState> {
     on<FetchShowForGetterEvent>(_fetchShowForGetterEvent);
     on<FetchMasterRollSizeEvent>(_fetchMasterRollSizeEvent);
     on<FetchRoundDetailsEvent>(_fetchRoundDetailsEvent);
+    on<FetchJumboInformationsEvent>(_fetchJumboInformationsEvent);
+    
   }
 
   FutureOr<void> _addRoundONRecordEvent(
@@ -132,4 +136,21 @@ class RoundBloc extends Bloc<RoundEvent, RoundState> {
       emit(RoundDetailsErrorFailedStatus(error: e.toString()));
     }
   }
+
+  FutureOr<void> _fetchJumboInformationsEvent(
+    FetchJumboInformationsEvent event,
+    Emitter<RoundState> emit,
+  ) async {
+    emit(RoundLoadingStatus());
+    try {
+      final model = await AddRoundRepository().loadJubmoInformations(
+        jumboID: event.jumboID,
+      );
+      emit(FetchJumboInformationsLoadedSuccessStatus(model: model));
+    } catch (e) {
+      emit(FetchJumboInformationsErrorFailedStatus(error: e.toString()));
+    }
+  }
+
+  
 }

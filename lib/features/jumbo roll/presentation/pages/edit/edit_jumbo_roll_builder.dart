@@ -103,7 +103,7 @@ abstract class EditJumboRollBuilder extends State<EditJumboRollPanel> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: _buildTextField('Bill No.', [
-                      FilteringTextInputFormatter.digitsOnly,
+                      // FilteringTextInputFormatter.digitsOnly,
                       // LengthLimitingTextInputFormatter(10),
                     ], billNoController),
                   ),

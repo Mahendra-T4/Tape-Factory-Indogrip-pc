@@ -65,6 +65,18 @@ class _WidthDropdownWidgetState extends State<WidthDropdownDBWidget> {
                                 textAlign: TextAlign.center,
                               ),
                             ),
+                            Expanded(
+                              child: Text(
+                                'Jumbo Count',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF9B59B6),
+                                  letterSpacing: 0.5,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -104,6 +116,17 @@ class _WidthDropdownWidgetState extends State<WidthDropdownDBWidget> {
                                 Expanded(
                                   child: Text(
                                     item.availableLength.toString(),
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF2C3E50),
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    item.jumboCount.toString(),
                                     style: const TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w500,

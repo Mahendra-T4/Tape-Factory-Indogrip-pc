@@ -56,3 +56,15 @@ final class CoreListErrorStatus extends HomeState {
 
   CoreListErrorStatus({required this.message});
 }
+
+final class TapeStockRecordsLoadedSuccessStatus extends HomeState {
+  final TapeStockModel tapeStockModel;
+
+  TapeStockRecordsLoadedSuccessStatus({required this.tapeStockModel});
+}
+
+final class TapeStockRecordsErrorStatus extends HomeState {
+  final String message;
+
+  TapeStockRecordsErrorStatus({required this.message});
+}

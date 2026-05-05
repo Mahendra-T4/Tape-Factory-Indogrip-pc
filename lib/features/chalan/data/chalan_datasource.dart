@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:indogrip/Assets/assets.dart';
+import 'package:indogrip/core/utils/widgets/delete_alert.dart';
 import 'package:indogrip/features/chalan/data/model/chalanlist_model.dart';
 import 'package:indogrip/features/core/data/models/view_core_model.dart';
 
@@ -24,22 +25,24 @@ class ChalanDataSource extends DataGridSource {
   List<DataGridRow> dataGridRows = [];
   List<ChalanRecord> chalanData = [];
   bool isAllChecked;
+  final BuildContext context;
   int? highlightedRowIndex;
   final Function(bool) onStatusChanged;
   final Function(bool, int) onCheckboxChanged;
   // final Function(ChalanRecord) onEdit;
-  // final Function(ChalanRecord) onDelete;
+  final Function(ChalanRecord) onDelete;
   final Function(ChalanRecord) onProfile;
   final void Function(String?, ChalanRecord) onChanged;
 
   ChalanDataSource({
+    required this.context,
     required this.chalanData,
     required this.isAllChecked,
     this.highlightedRowIndex,
     required this.onStatusChanged,
     required this.onCheckboxChanged,
     // required this.onEdit,
-    // required this.onDelete,
+    required this.onDelete,
     required this.onProfile,
     required this.onChanged,
   }) {
@@ -160,15 +163,27 @@ class ChalanDataSource extends DataGridSource {
           //     constraints: const BoxConstraints(),
           //   ),
           // ),
-          // SizedBox(
-          //   width: 35,
-          //   child: DeleteRecordButton(
-          //     rKey: core.rKey.toString(),
-          //     rPanel: 'view-core',
-          //     item: coreData,
-          //     index: coreData.indexOf(core),
-          //     onPressed: () => onDelete(core),
-          //   ),
+          // IconButton(
+          //   icon: const Icon(Icons.delete, size: 20),
+          //   visualDensity: VisualDensity.compact,
+          //   padding: EdgeInsets.zero,
+          //   constraints: const BoxConstraints(minWidth: 35, minHeight: 35),
+          //   onPressed: () {
+          //     DeleteConfirmationAlert.show(
+          //       context,
+          //       title: 'Delete Record',
+          //       message: 'Are Your to Delete This client Record',
+          //       itemName: '${chalan.challanNumber}',
+
+          //       onConfirm: () {
+          //         onDelete(chalan);
+          //       },
+          //       rPanel: 'view-client',
+          //       item: chalanData,
+          //       index: chalanData.indexOf(chalan),
+          //       rKey: chalan.rKey.toString(),
+          //     );
+          //   },
           // ),
           SizedBox(
             width: 35,

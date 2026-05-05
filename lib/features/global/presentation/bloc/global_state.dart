@@ -183,3 +183,39 @@ final class ReturnChallanProductFailureState extends GlobalState {
 
   ReturnChallanProductFailureState({required this.errorMessage});
 }
+
+final class AddChallanInfoSuccessState extends GlobalState {
+  final SuccessResponse model;
+
+  AddChallanInfoSuccessState({required this.model});
+}
+
+final class AddChallanInfoFailureState extends GlobalState {
+  final String errorMessage;
+
+  AddChallanInfoFailureState({required this.errorMessage});
+}
+
+final class ChallanRoundDetailsLoadedSuccessStatus extends GlobalState {
+  final RoundDetails dataModel;
+
+  ChallanRoundDetailsLoadedSuccessStatus({required this.dataModel});
+}
+
+final class ChallanRoundDetailsLoadedFailureStatus extends GlobalState {
+  final String errorMessage;
+
+  ChallanRoundDetailsLoadedFailureStatus({required this.errorMessage});
+}
+
+final class SubmitRoundScannedDataSuccessStatus extends GlobalState {
+  final SubmitBatchModel model;
+
+  SubmitRoundScannedDataSuccessStatus({required this.model});
+}
+
+final class SubmitRoundScannedDataFailureStatus extends GlobalState {
+  final String errorMessage;
+
+  SubmitRoundScannedDataFailureStatus({required this.errorMessage});
+}

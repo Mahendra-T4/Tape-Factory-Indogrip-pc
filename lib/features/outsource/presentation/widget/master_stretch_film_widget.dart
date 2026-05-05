@@ -61,7 +61,7 @@ class _MasterStretchFilmWidgetState extends State<MasterStretchFilmWidget> {
                       )
                     : null,
                 child: DropdownButtonFormField<String>(
-                  hint: Text('Select Stretch Film'),
+                  hint: Text('Select StretchFilm'),
                   value:
                       widget.value != null &&
                           (data.record!.any(

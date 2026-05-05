@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:indogrip/core/utils/widgets/delete_alert.dart';
 import 'package:indogrip/features/global/presentation/widget/delete_record_button.dart';
+import 'package:indogrip/features/global/presentation/widget/stock_status.dart';
 import 'package:indogrip/features/jumbo%20roll/data/models/view_jumbo_roll_model.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
@@ -21,6 +22,7 @@ class JumboRollDataSource extends DataGridSource {
   final Function(JumboRollRecord) onEdit;
   final Function(JumboRollRecord) onDelete;
   // final Function(JumboRollRecord) onProfile;
+  final void Function(String?, JumboRollRecord) onChanged;
   final Function(JumboRollRecord) stickerPopup;
   final BuildContext context;
 
@@ -35,6 +37,7 @@ class JumboRollDataSource extends DataGridSource {
     // required this.onProfile,
     required this.stickerPopup,
     required this.context,
+    required this.onChanged,
   }) {
     _highlightedRowIndex = highlightedRowIndex;
     buildDataGridRows();
@@ -122,9 +125,18 @@ class JumboRollDataSource extends DataGridSource {
             columnName: JumboRoll.remark,
             value: data.jRemark.toString(),
           ),
-          DataGridCell<String>(
+          // DataGridCell<String>(
+          //   columnName: JumboRoll.jumboStatusLabel,
+          //   value: data.jumboStatusLabel.toString(),
+          // ),
+          DataGridCell<Widget>(
             columnName: JumboRoll.jumboStatusLabel,
-            value: data.jumboStatusLabel.toString(),
+            value: StockStatus(
+              initialStatus: data.rStatus?.toString(),
+              isShowLabel: false,
+              isCustomized: false,
+              onChanged: (value) => onChanged(value, data),
+            ),
           ),
 
           DataGridCell<Widget>(
@@ -178,7 +190,8 @@ class JumboRollDataSource extends DataGridSource {
 
     return DataGridRowAdapter(
       cells: row.getCells().map<Widget>((cell) {
-        if (cell.columnName == 'actions') {
+        if (cell.columnName == 'actions' ||
+            cell.columnName == JumboRoll.jumboStatusLabel) {
           return Container(
             alignment: Alignment.center,
             padding: const EdgeInsets.symmetric(horizontal: 4),

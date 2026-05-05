@@ -31,13 +31,20 @@ class Record {
   int? mWidthId;
   int? mWidthName;
   dynamic availableLength;
+  int? jumboCount;
 
-  Record({this.mWidthId, this.mWidthName, this.availableLength});
+  Record({
+    this.mWidthId,
+    this.mWidthName,
+    this.availableLength,
+    this.jumboCount,
+  });
 
   Record.fromJson(Map<String, dynamic> json) {
     mWidthId = json['mWidthId'];
     mWidthName = json['mWidthName'];
     availableLength = json['availableLength'];
+    jumboCount = json['jumboCount'];
   }
 
   Map<String, dynamic> toJson() {
@@ -45,6 +52,7 @@ class Record {
     data['mWidthId'] = this.mWidthId;
     data['mWidthName'] = this.mWidthName;
     data['availableLength'] = this.availableLength;
+    data['jumboCount'] = this.jumboCount;
     return data;
   }
 }

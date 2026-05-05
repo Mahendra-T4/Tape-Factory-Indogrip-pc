@@ -308,7 +308,7 @@ abstract class EditStretchOutsourceInBuilder
               child: GeneralOptionalField(
                 labelText: 'Bill Number',
                 inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
+                  // FilteringTextInputFormatter.digitsOnly,
                   // LengthLimitingTextInputFormatter(10),
                 ],
                 controller: billNoController,

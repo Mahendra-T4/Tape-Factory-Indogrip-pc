@@ -1,10 +1,9 @@
 import 'dart:async';
-
 import 'package:bloc/bloc.dart';
 import 'package:indogrip/features/chalan/data/model/chalanlist_model.dart';
 import 'package:indogrip/features/chalan/data/model/challan_details_model.dart';
-import 'package:indogrip/features/chalan/data/model/challan_product_verify_model.dart';
-import 'package:indogrip/features/chalan/data/model/verify_challan_product_param.dart';
+import 'package:indogrip/features/chalan/data/model/round_details_model.dart';
+import 'package:indogrip/features/chalan/data/model/submit_batch_model.dart';
 import 'package:indogrip/features/chalan/domain/repositories/chalan_repo.dart';
 import 'package:indogrip/features/staff/data/models/view_staff_api_param.dart';
 import 'package:meta/meta.dart';

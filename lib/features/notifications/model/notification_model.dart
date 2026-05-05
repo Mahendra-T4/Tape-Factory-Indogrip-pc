@@ -38,18 +38,19 @@ class Record {
   String? notificationMsg;
   String? notificationDate;
   String? notificationAction;
-  int? notificationPanel;
-  int? notificationStatus;
+  dynamic notificationPanel;
+  dynamic notificationStatus;
   String? notificationKey;
 
-  Record(
-      {this.sNo,
-      this.notificationMsg,
-      this.notificationDate,
-      this.notificationAction,
-      this.notificationPanel,
-      this.notificationStatus,
-      this.notificationKey});
+  Record({
+    this.sNo,
+    this.notificationMsg,
+    this.notificationDate,
+    this.notificationAction,
+    this.notificationPanel,
+    this.notificationStatus,
+    this.notificationKey,
+  });
 
   Record.fromJson(Map<String, dynamic> json) {
     sNo = json['SNo'];

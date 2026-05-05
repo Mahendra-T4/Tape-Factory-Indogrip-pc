@@ -18,3 +18,9 @@ final class PredictCalculationByMicEvent extends HomeEvent {
 }
 
 final class FetchCoreListEvent extends HomeEvent {}
+
+final class LoadTapeStockRecordsEvent extends HomeEvent {
+  final TapeStockEntity param;
+
+  LoadTapeStockRecordsEvent({required this.param});
+}

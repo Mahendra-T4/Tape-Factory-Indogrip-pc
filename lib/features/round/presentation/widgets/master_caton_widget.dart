@@ -111,7 +111,7 @@ class _MasterJumboRollState extends State<MasterCarton> {
                         border: Border.all(color: Colors.grey.shade700),
                       ),
                       child: Center(
-                        child: Text(data.message ?? 'No response from server'),
+                        child: Text(data.message ?? 'Refresh to load data'),
                       ),
                     ),
                   ],

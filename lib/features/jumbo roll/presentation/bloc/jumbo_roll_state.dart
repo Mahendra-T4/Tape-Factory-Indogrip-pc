@@ -89,3 +89,15 @@ final class UploadJumboCSVFileFailureState extends JumboRollState {
 
   UploadJumboCSVFileFailureState({required this.errorMessage});
 }
+
+final class ChangeJumboStatusLoadedSuccessStatus extends JumboRollState {
+  final ChangeJumboStatusModel model;
+
+  ChangeJumboStatusLoadedSuccessStatus({required this.model});
+}
+
+final class ChangeJumboStatusErrorFailedStatus extends JumboRollState {
+  final String error;
+
+  ChangeJumboStatusErrorFailedStatus({required this.error});
+}

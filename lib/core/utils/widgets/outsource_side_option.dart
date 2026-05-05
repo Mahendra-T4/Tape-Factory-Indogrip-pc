@@ -1,27 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:indogrip/Assets/assets.dart';
 
 class OutSourceSidePanelBuilder extends StatefulWidget {
   OutSourceSidePanelBuilder({
     super.key,
     required this.currentTap,
     required this.onTap,
-    required this.icon,
+    // required this.icon,
     required this.title,
     required this.routeName,
     this.panel1,
     this.panel2,
-    // this.panel3,
-    // this.panel4,
+    this.panel3,
+    this.panel4,
   });
   final bool currentTap;
   final VoidCallback onTap;
-  final IconData icon;
+  // final IconData icon;
   final String title;
   String? panel1;
   String? panel2;
-  // String? panel3;
-  // String? panel4;
+  String? panel3;
+  String? panel4;
   final List<String> routeName;
 
   @override
@@ -91,10 +92,10 @@ class _SidebarPanelBuilderState extends State<OutSourceSidePanelBuilder>
               color: Colors.white.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              widget.icon,
-              size: 20,
-              color: Colors.white.withOpacity(0.9),
+            child: Image.asset(
+              Assets.assetsImagesViewInventory,
+              height: 20,
+              width: 20,
             ),
           ),
           title: Text(
@@ -177,62 +178,62 @@ class _SidebarPanelBuilderState extends State<OutSourceSidePanelBuilder>
                     ),
                   ),
                 ),
-                // Container(
-                //   margin: const EdgeInsets.symmetric(
-                //     horizontal: 8,
-                //     vertical: 2,
-                //   ),
-                //   decoration: BoxDecoration(
-                //     borderRadius: BorderRadius.circular(8),
-                //     color: Colors.white.withOpacity(0.05),
-                //   ),
-                //   child: ListTile(
-                //     onTap: () {
-                //       context.goNamed(widget.routeName[2]);
-                //     },
-                //     leading: Icon(
-                //       Icons.grain,
-                //       size: 20,
-                //       color: Colors.white.withOpacity(0.9),
-                //     ),
-                //     title: Text(
-                //       widget.panel3 ?? 'Silica',
-                //       style: TextStyle(
-                //         fontSize: 14,
-                //         fontWeight: FontWeight.w500,
-                //         color: Colors.white.withOpacity(0.9),
-                //       ),
-                //     ),
-                //   ),
-                // ),
-                // Container(
-                //   margin: const EdgeInsets.symmetric(
-                //     horizontal: 8,
-                //     vertical: 2,
-                //   ),
-                //   decoration: BoxDecoration(
-                //     borderRadius: BorderRadius.circular(8),
-                //     color: Colors.white.withOpacity(0.05),
-                //   ),
-                //   child: ListTile(
-                //     onTap: () {
-                //       context.goNamed(widget.routeName[3]);
-                //     },
-                //     leading: Icon(
-                //       Icons.add_box,
-                //       size: 20,
-                //       color: Colors.white.withOpacity(0.9),
-                //     ),
-                //     title: Text(
-                //       widget.panel4 ?? 'Packing Strip',
-                //       style: TextStyle(
-                //         fontSize: 14,
-                //         fontWeight: FontWeight.w500,
-                //         color: Colors.white.withOpacity(0.9),
-                //       ),
-                //     ),
-                //   ),
-                // ),
+                Container(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.white.withOpacity(0.05),
+                  ),
+                  child: ListTile(
+                    onTap: () {
+                      context.goNamed(widget.routeName[2]);
+                    },
+                    leading: Icon(
+                      Icons.grain,
+                      size: 20,
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                    title: Text(
+                      widget.panel3 ?? 'Silica',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white.withOpacity(0.9),
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.white.withOpacity(0.05),
+                  ),
+                  child: ListTile(
+                    onTap: () {
+                      context.goNamed(widget.routeName[3]);
+                    },
+                    leading: Icon(
+                      Icons.add_box,
+                      size: 20,
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                    title: Text(
+                      widget.panel4 ?? 'Packing Strip',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white.withOpacity(0.9),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

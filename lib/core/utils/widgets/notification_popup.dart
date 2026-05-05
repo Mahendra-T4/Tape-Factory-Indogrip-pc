@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:indogrip/features/notifications/model/notification_model.dart';
 
 class NotificationPopup {
@@ -77,7 +78,7 @@ class NotificationPopup {
                         icon: const Icon(Icons.close, color: Colors.white),
                         onPressed: () {
                           onClose();
-                          Navigator.pop(context);
+                          context.pop();
                         },
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
@@ -134,7 +135,7 @@ class NotificationPopup {
                             child: TextButton(
                               onPressed: () {
                                 onClose();
-                                Navigator.pop(context);
+                                context.pop();
                               },
                               style: TextButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(
@@ -159,7 +160,7 @@ class NotificationPopup {
                             child: ElevatedButton(
                               onPressed: () {
                                 onPressed();
-                                Navigator.pop(context);
+                                context.pop();
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: color,

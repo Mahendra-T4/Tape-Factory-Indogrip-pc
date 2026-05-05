@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:indogrip/app.dart';
+import 'package:indogrip/core/database/round_db_hive.dart';
 import 'package:indogrip/core/service/connectivity/internate%20connectivity-checker.dart';
 import 'package:indogrip/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:indogrip/features/carton/presentation/bloc/carton_bloc.dart';
@@ -21,6 +22,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   InternetConnectionService().startMonitoring();
+  RoundDBHive.initialize();
 
   // Initialize Hive for local storage
   await HiveService.init();

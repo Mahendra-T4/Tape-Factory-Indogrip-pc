@@ -67,16 +67,26 @@ class _VendorListWidgetState extends State<VendorListWidget> {
                   spacing: 10,
                   children: [
                     TextFieldlabelText('Vendor*'),
-                    Container(
-                      // margin: const EdgeInsets.only(top: 30),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5),
-                        border: Border.all(color: Colors.grey.shade700),
-                      ),
-                      child: Center(
-                        child: Text(
-                          state.viewVendorModel.message ??
-                              'No response from server',
+                    InkWell(
+                      onTap: () {
+                        _vendorBloc.add(
+                          ViewVendorRecordsFetchingEvent(
+                            param: ViewRecordApiParam(filterBy: '1'),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        height: 50,
+                        // margin: const EdgeInsets.only(top: 30),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5),
+                          border: Border.all(color: Colors.grey.shade700),
+                        ),
+                        child: Center(
+                          child: Text(
+                            state.viewVendorModel.message ??
+                                'Refresh to load data',
+                          ),
                         ),
                       ),
                     ),

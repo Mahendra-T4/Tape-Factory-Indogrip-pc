@@ -76,6 +76,7 @@ abstract class OutsourceInBuilder extends State<OutSourceIN> {
   final totalAmountController = TextEditingController();
   final weightController = TextEditingController();
   final srNoController = TextEditingController();
+  //  final marginController = TextEditingController();
 
   // Dropdown Values
   String? selectedProduct;
@@ -142,6 +143,17 @@ abstract class OutsourceInBuilder extends State<OutSourceIN> {
     }
     return false;
   }
+
+  Widget get marginField => Expanded(
+    child: GeneralOptionalField(
+      labelText: 'Margin',
+      inputFormatters: [
+        FilteringTextInputFormatter.digitsOnly,
+        // LengthLimitingTextInputFormatter(10),
+      ],
+      controller: marginController,
+    ),
+  );
 
   // Reset form
   void resetForm() {
@@ -653,7 +665,18 @@ abstract class OutsourceInBuilder extends State<OutSourceIN> {
                 controller: weightController,
               ),
             ),
-
+            marginField,
+          ],
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: kDefaultHorizontalPadding + 20,
+          vertical: 10,
+        ),
+        child: Row(
+          spacing: 16,
+          children: [
             Expanded(
               // flex: 2,
               child: GeneralOptionalField(
@@ -666,6 +689,10 @@ abstract class OutsourceInBuilder extends State<OutSourceIN> {
                 labelText: 'Remark',
               ),
             ),
+
+            Expanded(child: SizedBox()),
+
+            Expanded(child: SizedBox()),
           ],
         ),
       ),
@@ -762,18 +789,7 @@ abstract class OutsourceInBuilder extends State<OutSourceIN> {
         child: Row(
           spacing: 16,
           children: [
-            Expanded(
-              // flex: 2,
-              child: GeneralOptionalField(
-                controller: marginController,
-
-                inputFormatters: [
-                  // FilteringTextInputFormatter.digitsOnly,
-                  // LengthLimitingTextInputFormatter(10),
-                ],
-                labelText: 'Margin',
-              ),
-            ),
+            marginField,
             Expanded(
               // flex: 2,
               child: GeneralOptionalField(

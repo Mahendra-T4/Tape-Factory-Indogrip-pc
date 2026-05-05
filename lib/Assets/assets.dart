@@ -208,6 +208,16 @@ class Assets {
   static const String assetsImagesExportExcelFileIcon =
       "assets/images/file.png";
 
+  static const String assetsImagesTheTapePng = "assets/images/tap-png.png";
+
+  static const String assetsImagesInventory = "assets/images/inventory.png";
+
+  static const String assetsImagesViewInventory =
+      "assets/images/view-inventory.png";
+
+  static const String assetsImagesIndogripPng =
+      "assets/images/Indogrip-png.png";
+
   /// Assets for assetsImagesTrophy
   /// assets/images/trophy.svg
   static const String assetsImagesTrophy = "assets/images/trophy.svg";

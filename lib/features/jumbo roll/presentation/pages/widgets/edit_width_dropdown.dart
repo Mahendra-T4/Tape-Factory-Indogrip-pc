@@ -29,7 +29,7 @@ class EWidthDropdownWidget extends ConsumerWidget {
     final widthProvider = ref.watch(masterWidthProvider);
     return widthProvider.when(
       data: (data) => data.status != 1
-          ? Center(child: Text(data.message ?? 'No response from server'))
+          ? Center(child: Text(data.message ?? 'Refresh to load data'))
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

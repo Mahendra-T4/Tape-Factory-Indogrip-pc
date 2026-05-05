@@ -82,3 +82,29 @@ final class ReturnChallanProductEvent extends GlobalEvent {
 
   ReturnChallanProductEvent({required this.param});
 }
+
+final class AddChallanInfoEvent extends GlobalEvent {
+  final ChallaninfoParam param;
+
+  AddChallanInfoEvent({required this.param});
+}
+
+final class FetchRoundDetailsEvent extends GlobalEvent {
+  final String batchCode;
+
+  FetchRoundDetailsEvent({required this.batchCode});
+}
+
+final class SubmitRoundScannedDataEvent extends GlobalEvent {
+  final List<String> batchCodes;
+  final List<String> batchQty;
+  final String unitIndex;
+  final String clientKey;
+
+  SubmitRoundScannedDataEvent({
+    required this.batchCodes,
+    required this.batchQty,
+    required this.unitIndex,
+    required this.clientKey,
+  });
+}

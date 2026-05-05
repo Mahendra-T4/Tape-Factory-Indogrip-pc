@@ -98,6 +98,7 @@ class _MasterJumboRollState extends State<MasterJumboRoll> {
   void _updateSearchFieldDisplay() {
     if (selectedRecords.isEmpty) {
       searchController.text = '';
+      widget.controller.text = '';
     } else {
       final selectedTexts = selectedRecords.values
           .map((record) {
@@ -105,6 +106,8 @@ class _MasterJumboRollState extends State<MasterJumboRoll> {
           })
           .join('\n');
       searchController.text = selectedTexts;
+      widget.controller.text =
+          selectedTexts; // Also update the passed controller
     }
   }
 
@@ -174,7 +177,7 @@ class _MasterJumboRollState extends State<MasterJumboRoll> {
                         border: Border.all(color: Colors.grey.shade700),
                       ),
                       child: Center(
-                        child: Text(data.message ?? 'No response from server'),
+                        child: Text(data.message ?? 'Refresh to load data'),
                       ),
                     ),
                   ],
@@ -247,71 +250,115 @@ class _MasterJumboRollState extends State<MasterJumboRoll> {
                           ),
                           // Results List
                           if (showResults && filteredRecords.isNotEmpty)
-                            Container(
-                              margin: const EdgeInsets.only(top: 8),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey.shade300),
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                              constraints: const BoxConstraints(maxHeight: 300),
-                              child: ListView.builder(
-                                shrinkWrap: true,
-                                itemCount: filteredRecords.length,
-                                itemBuilder: (context, index) {
-                                  final record = filteredRecords[index];
-                                  final isSelected = selectedRecords
-                                      .containsKey(record.rKey.toString());
-                                  return InkWell(
-                                    onTap: () {
-                                      _toggleSelection(record);
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 12,
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Checkbox(
-                                            value: isSelected,
-                                            onChanged: (_) {
-                                              _toggleSelection(record);
-                                            },
+                            Stack(
+                              children: [
+                                Container(
+                                  margin: const EdgeInsets.only(top: 8),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: Colors.grey.shade300,
+                                    ),
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  constraints: const BoxConstraints(
+                                    maxHeight: 300,
+                                  ),
+                                  child: ListView.builder(
+                                    shrinkWrap: true,
+                                    itemCount: filteredRecords.length,
+                                    itemBuilder: (context, index) {
+                                      final record = filteredRecords[index];
+                                      final isSelected = selectedRecords
+                                          .containsKey(record.rKey.toString());
+                                      return InkWell(
+                                        onTap: () {
+                                          _toggleSelection(record);
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 12,
                                           ),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  '${record.jRollNumber} , ${record.baseLabel} , ${record.micLabel} , ${record.jLength}(${record.availableLength})',
-                                                  style: const TextStyle(
-                                                    fontSize: 13,
-                                                    color: Color(0xFF3D475C),
-                                                  ),
-                                                ),
-                                                if (index <
-                                                    filteredRecords.length - 1)
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                          top: 8,
+                                          child: Row(
+                                            children: [
+                                              Checkbox(
+                                                value: isSelected,
+                                                onChanged: (_) {
+                                                  _toggleSelection(record);
+                                                },
+                                              ),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      '${record.jRollNumber} , ${record.baseLabel} , ${record.micLabel} , ${record.jLength}(${record.availableLength})',
+                                                      style: const TextStyle(
+                                                        fontSize: 13,
+                                                        color: Color(
+                                                          0xFF3D475C,
                                                         ),
-                                                    child: Divider(
-                                                      height: 1,
-                                                      color:
-                                                          Colors.grey.shade300,
+                                                      ),
                                                     ),
-                                                  ),
-                                              ],
+                                                    if (index <
+                                                        filteredRecords.length -
+                                                            1)
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets.only(
+                                                              top: 8,
+                                                            ),
+                                                        child: Divider(
+                                                          height: 1,
+                                                          color: Colors
+                                                              .grey
+                                                              .shade300,
+                                                        ),
+                                                      ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                                // Close button on the side
+                                Positioned(
+                                  top: 8,
+                                  right: 8,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        showResults = false;
+                                      });
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(
+                                              0.1,
                                             ),
+                                            blurRadius: 4,
                                           ),
                                         ],
                                       ),
+                                      child: const Icon(
+                                        Icons.close,
+                                        size: 20,
+                                        color: Color(0xFF2D8FCF),
+                                      ),
                                     ),
-                                  );
-                                },
-                              ),
+                                  ),
+                                ),
+                              ],
                             ),
                           // No Results Message
                           if (showResults &&

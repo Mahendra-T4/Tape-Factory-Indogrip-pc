@@ -186,10 +186,14 @@ class _ViewRoundPanelState extends ViewRoundBuilder {
                     );
                   }
                 },
-                buildWhen: (previous, current) {
-                  // Always rebuild to handle state changes
-                  return true;
-                },
+                // buildWhen: (previous, current) {
+                //   // Don't rebuild the grid for change-status states
+                //   if (current is ChangeJumboStatusLoadedSuccessStatus ||
+                //       current is ChangeJumboStatusErrorFailedStatus) {
+                //     return false;
+                //   }
+                //   return true;
+                // },
                 builder: (context, state) {
                   if (state is RoundLoadingStatus) {
                     return const Center(
@@ -278,16 +282,26 @@ class _ViewRoundPanelState extends ViewRoundBuilder {
                         },
 
                         onChanged: (statusValue, record) {
-                          globalBloc.add(
-                            GlobalChangeUserStatusEvent(
-                              param: ChangeStaffParam(
-                                rKey: record.rKey.toString(),
-                                rPanel: 'view-round',
-                                rStatus: statusValue.toString(),
-                                statusReason: '',
-                              ),
-                            ),
+                          developer.log(
+                            name: 'StockStatus onChanged',
+                            'statusValue=$statusValue, rKey=${record.rKey}',
                           );
+                          // roundBloc.add(
+                          //   ChangeJumboStatusEvent(
+                          //     rKey: record.rKey.toString(),
+                          //     rStatus: statusValue.toString(),
+                          //   ),
+                          // );
+                          // globalBloc.add(
+                          //   GlobalChangeUserStatusEvent(
+                          //     param: ChangeStaffParam(
+                          //       rKey: record.rKey.toString(),
+                          //       rPanel: 'view-round',
+                          //       rStatus: statusValue.toString(),
+                          //       statusReason: '',
+                          //     ),
+                          //   ),
+                          // );
                           callEvent();
                         },
                       );
@@ -303,11 +317,15 @@ class _ViewRoundPanelState extends ViewRoundBuilder {
                         ? Column(
                             children: [
                               RoundDetailBox(
-                                availableCarton: state
+                                totalAvailableCarton: state
                                     .viewRoundModel
                                     .availableCarton
                                     .toString(),
-                                totalPieces: state.viewRoundModel.totalPieces
+                                fromInventory: state
+                                    .viewRoundModel
+                                    .inventoryCarton
+                                    .toString(),
+                                fromJumbo: state.viewRoundModel.roundCarton
                                     .toString(),
                               ),
                               SizedBox(

@@ -10,7 +10,7 @@ class CustomButton extends StatelessWidget {
   }) : super(key: key);
   final String label;
   final Color? color;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {

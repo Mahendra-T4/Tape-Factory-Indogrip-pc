@@ -210,6 +210,7 @@ class VendorInfo {
 
 class BatchInformation {
   dynamic batchID;
+  dynamic batchScanCode;
   String? batchCode;
   String? batchDateText;
   dynamic showFor;
@@ -237,6 +238,7 @@ class BatchInformation {
     this.batchType,
     this.batchMRP,
     this.batchKey,
+    this.batchScanCode,
   });
 
   BatchInformation.fromJson(Map<String, dynamic> json) {
@@ -253,6 +255,7 @@ class BatchInformation {
     batchType = json['batchType'];
     batchMRP = json['batchMRP'];
     batchKey = json['batchKey'];
+    batchScanCode = json['batchScanCode'];
   }
 
   Map<String, dynamic> toJson() {
@@ -270,6 +273,7 @@ class BatchInformation {
     data['batchType'] = this.batchType;
     data['batchMRP'] = this.batchMRP;
     data['batchKey'] = this.batchKey;
+    data['batchScanCode'] = this.batchScanCode;
     return data;
   }
 }

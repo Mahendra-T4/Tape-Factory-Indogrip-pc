@@ -20,7 +20,10 @@ class CustomDatePicker extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (labelText != null) LabelText(labelText.toString()),
+        if (labelText != null) ...[
+          LabelText(labelText.toString()),
+          const SizedBox(height: 8),
+        ],
         Container(
           //height: 38,
           // margin: const EdgeInsets.only(top: 10),

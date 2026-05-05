@@ -154,6 +154,7 @@ abstract class ChalanBuilder extends State<ChalanPanel> {
           dummyData = successState.model.record ?? [];
           if (state.model.status == 1) {
             dataSource = ChalanDataSource(
+              context: context,
               chalanData: state.model.record ?? [],
               isAllChecked: isChecked,
               highlightedRowIndex: highlightedRowIndex,
@@ -186,6 +187,14 @@ abstract class ChalanBuilder extends State<ChalanPanel> {
               onChanged: (String? value, ChalanRecord record) {
                 // Handle status change
                 print('Status changed to: $value for ${record.challanNumber}');
+              },
+              onDelete: (ChalanRecord challan) {
+                globalBloc.add(
+                  GlobalDeleteRecordEvent(
+                    rKey: challan.rKey.toString(),
+                    rPanel: 'challan-details',
+                  ),
+                );
               },
             );
           }
@@ -328,7 +337,7 @@ abstract class ChalanBuilder extends State<ChalanPanel> {
       ),
       GridColumn(
         columnName: Chalan.dateTime,
-        width: 300,
+        width: double.nan,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -341,7 +350,7 @@ abstract class ChalanBuilder extends State<ChalanPanel> {
       ),
       GridColumn(
         columnName: Chalan.cCode,
-        width: 200,
+        width: double.nan,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -354,7 +363,7 @@ abstract class ChalanBuilder extends State<ChalanPanel> {
       ),
       GridColumn(
         columnName: Chalan.cConsigneeName,
-        width: 400,
+        width: double.nan,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -367,7 +376,7 @@ abstract class ChalanBuilder extends State<ChalanPanel> {
       ),
       GridColumn(
         columnName: Chalan.unitName,
-        width: 200,
+        width: double.nan,
         label: Container(
           color: Colors.grey[100],
           padding: const EdgeInsets.symmetric(horizontal: 8.0),

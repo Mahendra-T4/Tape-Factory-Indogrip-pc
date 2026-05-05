@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:typed_data';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:indogrip/core/responsive/responsive.dart';
 import 'package:indogrip/core/service/connectivity/internate%20connectivity-checker.dart';
 import 'package:indogrip/core/service/connectivity/not_connected.dart';
@@ -13,10 +15,12 @@ import 'package:indogrip/core/utils/widgets/text_field.dart';
 import 'package:indogrip/features/chalan/data/model/challan_details_model.dart';
 import 'package:indogrip/features/chalan/presentation/bloc/challan_bloc.dart';
 import 'package:indogrip/features/chalan/presentation/page/bill/bill_format_buiilder.dart';
+import 'package:indogrip/features/chalan/presentation/page/scanned-carton/scanned_carton.dart';
 import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:http/http.dart' as http;
 
 class BillFormate extends StatefulWidget {
   const BillFormate({super.key, required this.orderKey});
@@ -36,364 +40,479 @@ class _BillFormateState extends BillFormatBuilder {
     fontWeight: pw.FontWeight.bold,
   );
 
-  void _printBill(List<ChallanRecord>? data) async {
-    final logoImage = await rootBundle.load('assets/images/tap_factory.jpg');
-    final logo = pw.MemoryImage(logoImage.buffer.asUint8List());
+  pw.TextStyle get _billTextStyle => pw.TextStyle(fontSize: 7);
+
+  Future<Uint8List> _loadImageBytes(String imagePath) async {
+    if (imagePath.startsWith('http')) {
+      // Load from network
+      final response = await http.get(Uri.parse(imagePath));
+      if (response.statusCode == 200) {
+        return response.bodyBytes;
+      } else {
+        throw Exception('Failed to load network image: ${response.statusCode}');
+      }
+    } else {
+      // Load from local assets
+      return (await rootBundle.load(imagePath)).buffer.asUint8List();
+    }
+  }
+
+  void _printBill(List<ChallanRecord>? data, bool isDisplay) async {
+    final tapeLogoBytes = await _loadImageBytes(
+      data!.first.additionalInfo!.mainLogo!,
+    );
+    final tapeLogo = pw.MemoryImage(tapeLogoBytes);
+
+    final indogripLogoBytes = await _loadImageBytes(
+      data.first.additionalInfo!.secondaryLogo!,
+    );
+    final indogripLogo = pw.MemoryImage(indogripLogoBytes);
+    final List<String> termList = data.first.additionalInfo?.termList ?? [];
 
     await Printing.layoutPdf(
       onLayout: (PdfPageFormat format) async {
         final pdf = pw.Document();
         pdf.addPage(
-          pw.Page(
+          pw.MultiPage(
             pageFormat: format,
+
             build: (pw.Context context) {
-              return pw.Container(
-                padding: pw.EdgeInsets.all(12),
-                margin: pw.EdgeInsets.all(12),
-                decoration: pw.BoxDecoration(
-                  color: PdfColor(0.97, 0.93, 0.89),
-                  border: pw.Border.all(
-                    color: PdfColor(1, 0.34, 0.13),
-                    width: 1,
+              return [
+                pw.Container(
+                  padding: pw.EdgeInsets.all(8),
+                  margin: pw.EdgeInsets.all(8),
+                  decoration: pw.BoxDecoration(
+                    color: PdfColor(0.97, 0.93, 0.89),
+                    border: pw.Border.all(
+                      color: PdfColor(1, 0.34, 0.13),
+                      width: 1,
+                    ),
+                    // borderRadius: pw.BorderRadius.circular(12),
                   ),
-                  // borderRadius: pw.BorderRadius.circular(12),
-                ),
-                child: pw.Column(
-                  children: [
-                    // topHeaderRow
-                    pw.Row(
-                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                      children: [
-                        pw.Text(
-                          'GSTIN: 08AAYPS5383A2Z4',
-                          style: pw.TextStyle(fontSize: 16),
-                        ),
-                        pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.end,
-                          children: [
-                            pw.Text(
-                              'CALL : +91 75979 18725',
-                              style: pw.TextStyle(fontSize: 16),
-                            ),
-                            pw.Text(
-                              'WhatsApp: +91 97996 45000',
-                              style: pw.TextStyle(fontSize: 16),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    pw.SizedBox(height: 15),
-                    // logoRowNo2
-                    pw.Row(
-                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                      children: [
-                        pw.Image(logo, width: 120, height: 50),
-                        pw.Image(logo, width: 120, height: 50),
-                      ],
-                    ),
-                    pw.SizedBox(height: 15),
-                    // businessInfoWidget
-                    pw.Column(
-                      children: [
-                        pw.Row(
-                          children: [
-                            pw.Text(
-                              'Manufacture of: ',
-                              style: pw.TextStyle(
-                                fontWeight: pw.FontWeight.bold,
-                                color: PdfColor(1, 0.34, 0.13),
-                              ),
-                            ),
-                            pw.Expanded(
-                              child: pw.Text(
-                                'Stretch Films, Bopp Packing Tapes, Self Adhesive Packing Tapes, Abro Tapes',
-                              ),
-                            ),
-                          ],
-                        ),
-                        pw.Row(
-                          children: [
-                            pw.Text(
-                              'Wholesaler: ',
-                              style: pw.TextStyle(
-                                fontWeight: pw.FontWeight.bold,
-                                color: PdfColor(1, 0.34, 0.13),
-                              ),
-                            ),
-                            pw.Expanded(
-                              child: pw.Text(
-                                'Silica Gel, Plastic Roll, LD, HD Packing Strips, Sutli',
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    pw.SizedBox(height: 15),
-                    // Divider
-                    pw.Divider(thickness: 3, color: PdfColor(1, 0.34, 0.13)),
-                    pw.SizedBox(height: 15),
-                    // Row with details
-                    pw.Row(
-                      children: [
-                        pw.Expanded(
-                          child: pw.Column(
-                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  child: pw.Column(
+                    mainAxisSize: pw.MainAxisSize.min,
+                    children: [
+                      // topHeaderRow
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pw.Text(
+                            'GSTIN: ${data.first.additionalInfo!.gSTIN ?? ''}',
+                            style: pw.TextStyle(fontSize: 12),
+                          ),
+                          pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.end,
                             children: [
                               pw.Text(
-                                'M/s. ${data!.first.clientInformation!.cConsigneeName ?? ''}',
+                                'CALL : ${data.first.additionalInfo!.mobileNumber ?? ''}',
+                                style: pw.TextStyle(fontSize: 12),
                               ),
-                              pw.SizedBox(height: 5),
-                              pw.Text('________________________________'),
-                              pw.SizedBox(height: 5),
-                              pw.Text('Contact No.:______________________'),
-                              pw.SizedBox(height: 5),
-                              pw.Text('Party\'s GSTIN:_____________________'),
+                              pw.Text(
+                                'WhatsApp: ${data.first.additionalInfo!.whatsApp ?? ''}',
+                                style: pw.TextStyle(fontSize: 12),
+                              ),
                             ],
                           ),
-                        ),
-                        pw.Container(
-                          width: 3,
-                          height: 60,
-                          color: PdfColor(1, 0.34, 0.13),
-                        ),
-                        pw.SizedBox(width: 8),
-                        pw.Expanded(
-                          child: pw.Column(
-                            // border: pw.TableBorder.all(),
+                        ],
+                      ),
+                      pw.SizedBox(height: 8),
+                      // logoRowNo2
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pw.Image(tapeLogo, width: 80, height: 35),
+                          pw.Image(indogripLogo, width: 80, height: 35),
+                        ],
+                      ),
+                      pw.SizedBox(height: 8),
+                      // businessInfoWidget
+                      pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Row(
                             children: [
-                              pw.Text('ChallanNo.: ______________________'),
-                              pw.SizedBox(height: 5),
-                              pw.Text('DT._____________________________'),
-                              pw.SizedBox(height: 5),
-                              pw.Text('Order No.:_______________________'),
-                              pw.SizedBox(height: 5),
-                              pw.Text('DT._____________________________'),
+                              pw.Expanded(
+                                child: pw.Text(
+                                  data.first.additionalInfo!.manufactureOf ??
+                                      '',
+                                  style: pw.TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: pw.FontWeight.bold,
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
-                        ),
-                      ],
-                    ),
-                    pw.SizedBox(height: 15),
-                    // dataTableWidget
-                    pw.Table(
-                      border: pw.TableBorder.all(),
-
-                      children: [
-                        pw.TableRow(
-                          children: [
-                            pw.Padding(
-                              padding: pw.EdgeInsets.all(4),
-                              child: pw.Center(child: pw.Text('S.NO.')),
-                            ),
-                            pw.Padding(
-                              padding: pw.EdgeInsets.all(4),
-                              child: pw.Center(
-                                child: pw.Text('Display Material'),
+                          pw.Row(
+                            children: [
+                              pw.Expanded(
+                                child: pw.Text(
+                                  data.first.additionalInfo!.wholesaler ?? '',
+                                  style: pw.TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: pw.FontWeight.bold,
+                                  ),
+                                ),
                               ),
-                            ),
-                            pw.Padding(
-                              padding: pw.EdgeInsets.all(4),
-                              child: pw.Center(
-                                child: pw.Text('Actual Material'),
-                              ),
-                            ),
-                            pw.Padding(
-                              padding: pw.EdgeInsets.all(4),
-                              child: pw.Center(child: pw.Text('HSN Code')),
-                            ),
-                            pw.Padding(
-                              padding: pw.EdgeInsets.all(4),
-                              child: pw.Center(child: pw.Text('Unit Price')),
-                            ),
-                            pw.Padding(
-                              padding: pw.EdgeInsets.all(4),
-                              child: pw.Center(
-                                child: pw.Text('Display Quantity'),
-                              ),
-                            ),
-                            pw.Padding(
-                              padding: pw.EdgeInsets.all(4),
-                              child: pw.Center(
-                                child: pw.Text('Actual Quantity'),
-                              ),
-                            ),
-                            pw.Padding(
-                              padding: pw.EdgeInsets.all(4),
-                              child: pw.Center(child: pw.Text('Display Price')),
-                            ),
-                            pw.Padding(
-                              padding: pw.EdgeInsets.all(4),
-                              child: pw.Center(child: pw.Text('Price')),
-                            ),
-                            pw.Padding(
-                              padding: pw.EdgeInsets.all(4),
-                              child: pw.Center(child: pw.Text('Remark')),
-                            ),
-                            pw.Padding(
-                              padding: pw.EdgeInsets.all(4),
-                              child: pw.Center(child: pw.Text('Return Date')),
-                            ),
-                            pw.Padding(
-                              padding: pw.EdgeInsets.all(4),
-                              child: pw.Center(child: pw.Text('Return Qty')),
-                            ),
-                            pw.Padding(
-                              padding: pw.EdgeInsets.all(4),
-                              child: pw.Center(child: pw.Text('Return Reason')),
-                            ),
-                          ],
-                        ),
-                        ...List<pw.TableRow>.generate(
-                          data.first.orderProduct!.length,
-                          (index) {
-                            final product = data.first.orderProduct![index];
-                            final unitPrice =
-                                double.tryParse(
-                                  product.unitPrice?.toString() ?? '',
-                                ) ??
-                                0;
-                            final displayQty =
-                                double.tryParse(
-                                  product.displayQty?.toString() ?? '',
-                                ) ??
-                                0;
-                            final actualQty =
-                                double.tryParse(
-                                  product.quantity?.toString() ?? '',
-                                ) ??
-                                0;
-                            final displayPrice =
-                                product.displayPrice?.toString() ??
-                                (unitPrice * displayQty).toString();
-                            final totalPrice = (unitPrice * actualQty)
-                                .toString();
-                            return pw.TableRow(
+                            ],
+                          ),
+                        ],
+                      ),
+                      pw.SizedBox(height: 8),
+                      // Divider
+                      pw.Divider(thickness: 2, color: PdfColor(1, 0.34, 0.13)),
+                      pw.SizedBox(height: 8),
+                      // Row with details
+                      pw.Row(
+                        children: [
+                          pw.Expanded(
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
                               children: [
-                                pw.Padding(
-                                  padding: pw.EdgeInsets.all(10),
-                                  child: pw.Text('${index + 1}'),
+                                pw.Text(
+                                  'M/s. ${data.first.clientInformation!.cConsigneeName ?? ''}',
+                                  style: pw.TextStyle(fontSize: 9),
                                 ),
-                                pw.Padding(
-                                  padding: pw.EdgeInsets.all(10),
-                                  child: pw.Text(
-                                    product.displayInformation ?? '',
-                                  ),
+
+                                pw.SizedBox(height: 3),
+                                pw.Text(
+                                  'Contact No.: ${data.first.clientInformation!.cMobileNumber ?? ''}',
+                                  style: pw.TextStyle(fontSize: 8),
                                 ),
-                                pw.Padding(
-                                  padding: pw.EdgeInsets.all(10),
-                                  child: pw.Text(
-                                    product.productInformation ?? '',
-                                  ),
-                                ),
-                                pw.Padding(
-                                  padding: pw.EdgeInsets.all(10),
-                                  child: pw.Text(
-                                    product.hsnCode?.toString() ?? '',
-                                  ),
-                                ),
-                                pw.Padding(
-                                  padding: pw.EdgeInsets.all(10),
-                                  child: pw.Text(
-                                    product.unitPrice?.toString() ?? '',
-                                  ),
-                                ),
-                                pw.Padding(
-                                  padding: pw.EdgeInsets.all(10),
-                                  child: pw.Text(
-                                    product.displayQty?.toString() ?? '',
-                                  ),
-                                ),
-                                pw.Padding(
-                                  padding: pw.EdgeInsets.all(10),
-                                  child: pw.Text(
-                                    product.quantity?.toString() ?? '',
-                                  ),
-                                ),
-                                pw.Padding(
-                                  padding: pw.EdgeInsets.all(10),
-                                  child: pw.Text(
-                                    product.displayPrice?.toString() ?? '',
-                                  ),
-                                ),
-                                pw.Padding(
-                                  padding: pw.EdgeInsets.all(10),
-                                  child: pw.Text(
-                                    product.productPrice?.toString() ?? '',
-                                  ),
-                                ),
-                                pw.Padding(
-                                  padding: pw.EdgeInsets.all(10),
-                                  child: pw.Text(product.prRemarks ?? ''),
-                                ),
-                                pw.Padding(
-                                  padding: pw.EdgeInsets.all(10),
-                                  child: pw.Text(product.returnDate ?? ''),
-                                ),
-                                pw.Padding(
-                                  padding: pw.EdgeInsets.all(10),
-                                  child: pw.Text(
-                                    product.returnQty?.toString() ?? '',
-                                  ),
-                                ),
-                                pw.Padding(
-                                  padding: pw.EdgeInsets.all(10),
-                                  child: pw.Text(product.returnReason ?? ''),
+                                pw.SizedBox(height: 3),
+                                pw.Text(
+                                  'Party\'s GSTIN: ${data.first.clientInformation!.cGSTIN ?? ''}',
+                                  style: pw.TextStyle(fontSize: 8),
                                 ),
                               ],
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                    pw.SizedBox(height: 15),
-                    // bottomDetailsWidget
-                    pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        pw.Row(
-                          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                          children: [
-                            pw.Text(
-                              'All Orders & P.O. to Below Whatsapp on :  9799645000',
-                              style: _pwTestTextStyle,
                             ),
-                            pw.Text(
-                              'For : The Tape Factory',
-                              style: _pwTestTextStyle,
+                          ),
+                          pw.Container(
+                            width: 2,
+                            height: 50,
+                            color: PdfColor(1, 0.34, 0.13),
+                          ),
+                          pw.SizedBox(width: 5),
+                          pw.Expanded(
+                            child: pw.Column(
+                              mainAxisAlignment: pw.MainAxisAlignment.start,
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              // border: pw.TableBorder.all(),
+                              children: [
+                                pw.Text(
+                                  'ChallanNo.: ${data.first.orderInformation!.manualChallanNumber ?? ''}',
+                                  style: pw.TextStyle(fontSize: 8),
+                                ),
+                                pw.SizedBox(height: 3),
+                                pw.Text(
+                                  'DT.: ${data.first.orderInformation!.manualChallanDate ?? ''}',
+                                  style: pw.TextStyle(fontSize: 8),
+                                ),
+                                pw.SizedBox(height: 3),
+                              ],
                             ),
-                          ],
-                        ),
-                        pw.SizedBox(height: 15),
+                          ),
+                        ],
+                      ),
+                      pw.SizedBox(height: 8),
+                      // dataTableWidget - Professional Table
+                      pw.Table(
+                        border: pw.TableBorder.all(),
+                        defaultColumnWidth: const pw.FlexColumnWidth(),
+                        columnWidths: {
+                          1: const pw.FlexColumnWidth(2.3),
+                          if (!isDisplay) 2: const pw.FlexColumnWidth(2.3),
+                        },
+                        children: [
+                          pw.TableRow(
+                            children: [
+                              pw.Padding(
+                                padding: pw.EdgeInsets.all(4),
+                                child: pw.Center(
+                                  child: pw.Text(
+                                    'S.NO.',
+                                    style: _billTextStyle,
+                                  ),
+                                ),
+                              ),
+                              pw.Padding(
+                                padding: pw.EdgeInsets.all(4),
+                                child: pw.Center(
+                                  child: pw.Text(
+                                    'Material',
+                                    style: _billTextStyle,
+                                  ),
+                                ),
+                              ),
+                              if (!isDisplay)
+                                pw.Padding(
+                                  padding: pw.EdgeInsets.all(4),
+                                  child: pw.Center(
+                                    child: pw.Text(
+                                      'Actual Material',
+                                      style: _billTextStyle,
+                                    ),
+                                  ),
+                                ),
+                              pw.Padding(
+                                padding: pw.EdgeInsets.all(4),
+                                child: pw.Center(
+                                  child: pw.Text(
+                                    'HSN Code',
+                                    style: _billTextStyle,
+                                  ),
+                                ),
+                              ),
+                              pw.Padding(
+                                padding: pw.EdgeInsets.all(4),
+                                child: pw.Center(
+                                  child: pw.Text(
+                                    'Unit Price',
+                                    style: _billTextStyle,
+                                  ),
+                                ),
+                              ),
+                              pw.Padding(
+                                padding: pw.EdgeInsets.all(4),
+                                child: pw.Center(
+                                  child: pw.Text(
+                                    'Quantity',
+                                    style: _billTextStyle,
+                                  ),
+                                ),
+                              ),
+                              if (!isDisplay)
+                                pw.Padding(
+                                  padding: pw.EdgeInsets.all(4),
+                                  child: pw.Center(
+                                    child: pw.Text(
+                                      'Actual Quantity',
+                                      style: _billTextStyle,
+                                    ),
+                                  ),
+                                ),
+                              pw.Padding(
+                                padding: pw.EdgeInsets.all(4),
+                                child: pw.Center(
+                                  child: pw.Text(
+                                    'Display Price',
+                                    style: _billTextStyle,
+                                  ),
+                                ),
+                              ),
+                              if (!isDisplay)
+                                pw.Padding(
+                                  padding: pw.EdgeInsets.all(4),
+                                  child: pw.Center(
+                                    child: pw.Text(
+                                      'Price',
+                                      style: _billTextStyle,
+                                    ),
+                                  ),
+                                ),
+                              pw.Padding(
+                                padding: pw.EdgeInsets.all(4),
+                                child: pw.Center(
+                                  child: pw.Text(
+                                    'Remark',
+                                    style: _billTextStyle,
+                                  ),
+                                ),
+                              ),
+                              pw.Padding(
+                                padding: pw.EdgeInsets.all(4),
+                                child: pw.Center(
+                                  child: pw.Text(
+                                    'Return Date',
+                                    style: _billTextStyle,
+                                  ),
+                                ),
+                              ),
+                              pw.Padding(
+                                padding: pw.EdgeInsets.all(4),
+                                child: pw.Center(
+                                  child: pw.Text(
+                                    'Return Qty',
+                                    style: _billTextStyle,
+                                  ),
+                                ),
+                              ),
+                              pw.Padding(
+                                padding: pw.EdgeInsets.all(4),
+                                child: pw.Center(
+                                  child: pw.Text(
+                                    'Return Reason',
+                                    style: _billTextStyle,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          ...List<pw.TableRow>.generate(
+                            data.first.orderProduct!.length,
+                            (index) {
+                              final product = data.first.orderProduct![index];
+                              return pw.TableRow(
+                                children: [
+                                  pw.Padding(
+                                    padding: pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      '${index + 1}',
+                                      style: _billTextStyle,
+                                    ),
+                                  ),
+                                  pw.Padding(
+                                    padding: pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      product.displayInformation ?? '',
+                                      style: _billTextStyle,
+                                    ),
+                                  ),
+                                  if (!isDisplay)
+                                    pw.Padding(
+                                      padding: pw.EdgeInsets.all(4),
+                                      child: pw.Text(
+                                        product.productInformation ?? '',
+                                        style: _billTextStyle,
+                                      ),
+                                    ),
+                                  pw.Padding(
+                                    padding: pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      product.hsnCode?.toString() ?? '',
+                                      style: _billTextStyle,
+                                    ),
+                                  ),
+                                  pw.Padding(
+                                    padding: pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      product.unitPrice?.toString() ?? '',
+                                      style: _billTextStyle,
+                                    ),
+                                  ),
+                                  pw.Padding(
+                                    padding: pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      product.displayQty?.toString() ?? '',
+                                      style: _billTextStyle,
+                                    ),
+                                  ),
+                                  if (!isDisplay)
+                                    pw.Padding(
+                                      padding: pw.EdgeInsets.all(4),
+                                      child: pw.Text(
+                                        product.quantity?.toString() ?? '',
+                                        style: _billTextStyle,
+                                      ),
+                                    ),
+                                  pw.Padding(
+                                    padding: pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      product.displayPrice?.toString() ?? '',
+                                      style: _billTextStyle,
+                                    ),
+                                  ),
+                                  if (!isDisplay)
+                                    pw.Padding(
+                                      padding: pw.EdgeInsets.all(4),
+                                      child: pw.Text(
+                                        product.productPrice?.toString() ?? '',
+                                        style: _billTextStyle,
+                                      ),
+                                    ),
+                                  pw.Padding(
+                                    padding: pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      product.prRemarks ?? '',
+                                      style: _billTextStyle,
+                                    ),
+                                  ),
+                                  pw.Padding(
+                                    padding: pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      product.returnDate ?? '',
+                                      style: _billTextStyle,
+                                    ),
+                                  ),
+                                  pw.Padding(
+                                    padding: pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      product.returnQty?.toString() ?? '',
+                                      style: _billTextStyle,
+                                    ),
+                                  ),
+                                  pw.Padding(
+                                    padding: pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      product.returnReason ?? '',
+                                      style: _billTextStyle,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                      pw.SizedBox(height: 8),
+                      // bottomDetailsWidget
+                      pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Row(
+                            mainAxisAlignment:
+                                pw.MainAxisAlignment.spaceBetween,
+                            children: [
+                              pw.Text(
+                                data.first.additionalInfo?.termHeading ?? '',
+                                style: pw.TextStyle(
+                                  fontSize: 8,
+                                  fontWeight: pw.FontWeight.bold,
+                                ),
+                              ),
+                              pw.Text(
+                                data.first.additionalInfo?.companyName ?? '',
+                                style: pw.TextStyle(
+                                  fontSize: 8,
+                                  fontWeight: pw.FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          pw.SizedBox(height: 8),
 
-                        pw.Text(
-                          '1. This clarify that we have valid registration under GST & information is true & correct.',
-                        ),
-                        pw.Text('2. Good once sold will not be taken back.'),
-                        pw.Text('3. Subject to Jodhpur Jurisdiction 5 E & Q E'),
-                        pw.Text(
-                          '4. Payment to be made on demand otherwise interest of 24% will be charged from the date of sales.',
-                        ),
-                        pw.SizedBox(height: 40),
-                        pw.Row(
-                          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                          children: [
-                            pw.Text(
-                              'Receiver\'s Signature',
-                              style: _pwTestTextStyle,
-                            ),
-                            pw.Text(
-                              'Authorised Signature',
-                              style: _pwTestTextStyle,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
+                          ...termList.map(
+                            (term) =>
+                                pw.Text(term, style: pw.TextStyle(fontSize: 7)),
+                          ),
+
+                          pw.SizedBox(height: 20),
+                          pw.Row(
+                            mainAxisAlignment:
+                                pw.MainAxisAlignment.spaceBetween,
+                            children: [
+                              pw.Text(
+                                'Receiver\'s Signature',
+                                style: pw.TextStyle(
+                                  fontSize: 8,
+                                  fontWeight: pw.FontWeight.bold,
+                                ),
+                              ),
+                              pw.Text(
+                                'Authorised Signature',
+                                style: pw.TextStyle(
+                                  fontSize: 8,
+                                  fontWeight: pw.FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              );
+              ];
             },
           ),
         );
@@ -431,8 +550,38 @@ class _BillFormateState extends BillFormatBuilder {
           drawer: !Responsive.isDesktop(context)
               ? const SideMenuWidget()
               : null,
-          body: BlocBuilder(
+          body: BlocConsumer(
             bloc: challanBloc,
+            listener: (context, state) {
+              if (state is ChallanDetailsLoadedSuccessState) {
+                if (state.model.status == 1) {
+                  remarkController.text =
+                      state
+                          .model
+                          .record
+                          ?.first
+                          .orderInformation
+                          ?.challanRemark ??
+                      '';
+                  challanNoController.text =
+                      state
+                          .model
+                          .record
+                          ?.first
+                          .orderInformation
+                          ?.manualChallanNumber ??
+                      '';
+                  chalanDateController.text =
+                      state
+                          .model
+                          .record
+                          ?.first
+                          .orderInformation
+                          ?.manualChallanDate ??
+                      '';
+                }
+              }
+            },
 
             builder: (context, state) {
               switch (state.runtimeType) {
@@ -448,37 +597,52 @@ class _BillFormateState extends BillFormatBuilder {
                   //     .unitPrice
                   //     .toString();
                   return state.model.status != 1
-                      ? Center(child: Text(state.model.message.toString()))
+                      ? Center(
+                          child: Text(
+                            state.model.message ?? 'try again please',
+                          ),
+                        )
                       : SingleChildScrollView(
                           padding: const EdgeInsets.all(16.0),
                           child: Column(
                             children: [
-                              // SizedBox(height: 25),
-                              // Padding(
-                              //   padding: const EdgeInsets.symmetric(
-                              //     horizontal: 30,
-                              //   ),
-                              //   child: Row(
-                              //     spacing: 16,
-                              //     children: [
-                              //       Expanded(child: SizedBox()),
-                              //       Expanded(child: SizedBox()),
-                              //       Expanded(child: verifyButton),
-                              //       Expanded(
-                              //         child: CustomButton(
-                              //           label: 'Print Challan ',
-                              //           onPressed: () => _printBill(data),
-                              //         ),
-                              //       ),
-                              //       Expanded(
-                              //         child: CustomButton(
-                              //           label: 'Print Challan',
-                              //           onPressed: () => _printBill(data),
-                              //         ),
-                              //       ),
-                              //     ],
-                              //   ),
-                              // ),
+                              SizedBox(height: 25),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 30,
+                                ),
+                                child: Row(
+                                  spacing: 16,
+                                  children: [
+                                    Expanded(child: SizedBox()),
+                                    // Expanded(child: SizedBox()),
+                                    // Expanded(child: verifyButton),
+                                    Expanded(
+                                      child: CustomButton(
+                                        label: 'Print Display',
+                                        onPressed: () =>
+                                            _printBill(data, false),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: CustomButton(
+                                        label: 'Print Display Challan',
+                                        onPressed: () => _printBill(data, true),
+                                      ),
+                                    ),
+
+                                    Expanded(
+                                      child: CustomButton(
+                                        label: 'View Scanned Cartons',
+                                        onPressed: () => context.pushNamed(
+                                          ScannedCarton.routeName,
+                                          extra: widget.orderKey.toString(),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                               SizedBox(height: 25),
 
                               Center(
@@ -509,9 +673,53 @@ class _BillFormateState extends BillFormatBuilder {
                                           spacing: 15,
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            topHeaderRow,
-                                            logoRowNo2,
-                                            businessInfoWidget,
+                                            topHeaderRow(
+                                              gstinNo: data!
+                                                  .first
+                                                  .additionalInfo!
+                                                  .gSTIN
+                                                  .toString(),
+                                              callNo: data
+                                                  .first
+                                                  .additionalInfo!
+                                                  .mobileNumber
+                                                  .toString(),
+                                              whatsAppNo: data
+                                                  .first
+                                                  .additionalInfo!
+                                                  .whatsApp
+                                                  .toString(),
+                                            ),
+                                            logoRowNo2(
+                                              data
+                                                  .first
+                                                  .additionalInfo!
+                                                  .mainLogo
+                                                  .toString(),
+                                              data
+                                                  .first
+                                                  .additionalInfo!
+                                                  .secondaryLogo
+                                                  .toString(),
+                                            ),
+                                            businessInfoWidget(
+                                              manufactureOf:
+                                                  state
+                                                      .model
+                                                      .record
+                                                      ?.first
+                                                      .additionalInfo
+                                                      ?.manufactureOf ??
+                                                  '',
+                                              wholesaler:
+                                                  state
+                                                      .model
+                                                      .record
+                                                      ?.first
+                                                      .additionalInfo
+                                                      ?.wholesaler ??
+                                                  '',
+                                            ),
 
                                             Padding(
                                               padding: EdgeInsets.symmetric(
@@ -531,16 +739,26 @@ class _BillFormateState extends BillFormatBuilder {
                                             Row(
                                               children: [
                                                 Expanded(
-                                                  child:
-                                                      leftSideDetailsFillContainer(
-                                                        clientName: data!
+                                                  child: leftSideDetailsFillContainer(
+                                                    clientName:
+                                                        data
                                                             .first
-                                                            .clientInformation!
-                                                            .cConsigneeName
-                                                            .toString(),
-                                                        clientPhone: '',
-                                                        gstin: '',
-                                                      ),
+                                                            .clientInformation
+                                                            ?.cConsigneeName ??
+                                                        '',
+                                                    clientPhone:
+                                                        data
+                                                            .first
+                                                            .clientInformation
+                                                            ?.cMobileNumber ??
+                                                        '',
+                                                    gstin:
+                                                        data
+                                                            .first
+                                                            .clientInformation
+                                                            ?.cGSTIN ??
+                                                        '',
+                                                  ),
                                                 ),
                                                 Container(
                                                   width: 3,
@@ -552,11 +770,210 @@ class _BillFormateState extends BillFormatBuilder {
                                                 Expanded(
                                                   child:
                                                       rightSideDetailsFillContainer(
-                                                        challanNo: '',
-                                                        challanDate: '',
-                                                        orderNo: '',
-                                                        orderDate: '',
+                                                        challanNo: data
+                                                            .first
+                                                            .orderInformation!
+                                                            .manualChallanNumber
+                                                            .toString(),
+                                                        challanDate: data
+                                                            .first
+                                                            .orderInformation!
+                                                            .manualChallanDate
+                                                            .toString(),
+                                                        // orderNo: '',
+                                                        // orderDate: '',
                                                       ),
+                                                ),
+                                              ],
+                                            ),
+                                            Row(
+                                              children: [
+                                                // Modern Input Field
+                                                Expanded(
+                                                  flex: 3,
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.white,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            12,
+                                                          ),
+                                                      border: Border.all(
+                                                        color:
+                                                            addScannedBarcodeController
+                                                                .text
+                                                                .isNotEmpty
+                                                            ? const Color(
+                                                                0xFF2D8FCF,
+                                                              )
+                                                            : const Color(
+                                                                0xFFE5E7EB,
+                                                              ),
+                                                        width: 1.5,
+                                                      ),
+                                                      boxShadow:
+                                                          addScannedBarcodeController
+                                                              .text
+                                                              .isNotEmpty
+                                                          ? [
+                                                              BoxShadow(
+                                                                color:
+                                                                    const Color(
+                                                                      0xFF2D8FCF,
+                                                                    ).withOpacity(
+                                                                      0.1,
+                                                                    ),
+                                                                blurRadius: 8,
+                                                                offset:
+                                                                    const Offset(
+                                                                      0,
+                                                                      2,
+                                                                    ),
+                                                              ),
+                                                            ]
+                                                          : [],
+                                                    ),
+                                                    child: TextFormField(
+                                                      controller:
+                                                          addScannedBarcodeController,
+                                                      focusNode:
+                                                          barcodeFocusNode,
+                                                      onChanged: (value) {
+                                                        // Auto-submit when hardware scanner sends newline character
+                                                        if (value.endsWith(
+                                                          '\n',
+                                                        )) {
+                                                          addScannedBarcodeController
+                                                              .text = value
+                                                              .replaceAll(
+                                                                '\n',
+                                                                '',
+                                                              )
+                                                              .trim();
+                                                          addScannedBarcodeController
+                                                                  .selection =
+                                                              TextSelection.fromPosition(
+                                                                TextPosition(
+                                                                  offset:
+                                                                      addScannedBarcodeController
+                                                                          .text
+                                                                          .length,
+                                                                ),
+                                                              );
+                                                          // _addBarcodeWithIsolate();
+                                                        } else {
+                                                          setState(
+                                                            () {},
+                                                          ); // Rebuild for border/icon animation
+                                                        }
+                                                      },
+                                                      onFieldSubmitted: (_) {
+                                                        // _addBarcodeWithIsolate();
+                                                        // Re-request focus immediately since onFieldSubmitted removes it
+                                                        barcodeFocusNode
+                                                            .requestFocus();
+                                                      },
+                                                      decoration: InputDecoration(
+                                                        hintText:
+                                                            'Scan or enter barcode...',
+                                                        hintStyle: TextStyle(
+                                                          color: const Color(
+                                                            0xFF9CA3AF,
+                                                          ),
+                                                          fontSize: 14,
+                                                        ),
+                                                        prefixIcon: Padding(
+                                                          padding:
+                                                              const EdgeInsets.all(
+                                                                12,
+                                                              ),
+                                                          child: Icon(
+                                                            Icons
+                                                                .barcode_reader,
+                                                            color:
+                                                                addScannedBarcodeController
+                                                                    .text
+                                                                    .isNotEmpty
+                                                                ? const Color(
+                                                                    0xFF2D8FCF,
+                                                                  )
+                                                                : const Color(
+                                                                    0xFFD1D5DB,
+                                                                  ),
+                                                            size: 20,
+                                                          ),
+                                                        ),
+                                                        suffixIcon:
+                                                            addScannedBarcodeController
+                                                                .text
+                                                                .isNotEmpty
+                                                            ? GestureDetector(
+                                                                onTap: () {
+                                                                  setState(() {
+                                                                    addScannedBarcodeController
+                                                                        .clear();
+                                                                  });
+                                                                  barcodeFocusNode
+                                                                      .requestFocus();
+                                                                },
+                                                                child: Padding(
+                                                                  padding:
+                                                                      const EdgeInsets.all(
+                                                                        12,
+                                                                      ),
+                                                                  child: Icon(
+                                                                    Icons
+                                                                        .close_outlined,
+                                                                    color: const Color(
+                                                                      0xFF2D8FCF,
+                                                                    ).withOpacity(0.5),
+                                                                    size: 20,
+                                                                  ),
+                                                                ),
+                                                              )
+                                                            : null,
+                                                        border: OutlineInputBorder(
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                12,
+                                                              ),
+                                                          borderSide:
+                                                              BorderSide.none,
+                                                        ),
+                                                        focusedBorder:
+                                                            OutlineInputBorder(
+                                                              borderRadius:
+                                                                  BorderRadius.circular(
+                                                                    12,
+                                                                  ),
+                                                              borderSide:
+                                                                  const BorderSide(
+                                                                    color: Color(
+                                                                      0xFF2D8FCF,
+                                                                    ),
+                                                                    width: 1.5,
+                                                                  ),
+                                                            ),
+                                                        contentPadding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 16,
+                                                              vertical: 14,
+                                                            ),
+                                                      ),
+                                                      style: const TextStyle(
+                                                        fontSize: 14,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color: Color(
+                                                          0xFF1F2937,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 16),
+                                                Expanded(
+                                                  child: buildModernAddButton(),
                                                 ),
                                               ],
                                             ),
@@ -585,7 +1002,7 @@ class _BillFormateState extends BillFormatBuilder {
                                                       Text('Challan Number'),
                                                       CustomTextField(
                                                         controller:
-                                                            remarkController,
+                                                            challanNoController,
                                                       ),
                                                     ],
                                                   ),
@@ -598,8 +1015,51 @@ class _BillFormateState extends BillFormatBuilder {
                                                 ),
                                               ],
                                             ),
+                                            Row(
+                                              spacing: 16,
+                                              children: [
+                                                Expanded(child: SizedBox()),
+                                                Expanded(child: SizedBox()),
+                                                Expanded(child: SizedBox()),
+                                                Expanded(
+                                                  child:
+                                                      buildAddChallanInfoWidget(
+                                                        state
+                                                            .model
+                                                            .record
+                                                            ?.first
+                                                            .rKey,
+                                                      ),
+                                                ),
+                                              ],
+                                            ),
 
-                                            bottomDetailsWidget,
+                                            bottomDetailsWidget(
+                                              termHeading:
+                                                  state
+                                                      .model
+                                                      .record
+                                                      ?.first
+                                                      .additionalInfo
+                                                      ?.termHeading ??
+                                                  '',
+                                              termHeading2:
+                                                  state
+                                                      .model
+                                                      .record
+                                                      ?.first
+                                                      .additionalInfo
+                                                      ?.companyName ??
+                                                  '',
+                                              termList:
+                                                  state
+                                                      .model
+                                                      .record
+                                                      ?.first
+                                                      .additionalInfo
+                                                      ?.termList ??
+                                                  [],
+                                            ),
                                           ],
                                         ),
                                       ),

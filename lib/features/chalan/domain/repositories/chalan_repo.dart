@@ -6,7 +6,10 @@ import 'package:indogrip/core/service/api%20service/dio_service.dart';
 import 'package:indogrip/features/chalan/data/model/chalanlist_model.dart';
 import 'package:indogrip/features/chalan/data/model/challan_details_model.dart';
 import 'package:indogrip/features/chalan/data/model/challan_product_verify_model.dart';
+import 'package:indogrip/features/chalan/data/model/challaninfo_param.dart';
 import 'package:indogrip/features/chalan/data/model/return_product.dart';
+import 'package:indogrip/features/chalan/data/model/round_details_model.dart';
+import 'package:indogrip/features/chalan/data/model/submit_batch_model.dart';
 import 'package:indogrip/features/chalan/data/model/verify_challan_product_param.dart';
 import 'package:indogrip/features/global/data/model/success_reponse.dart';
 import 'package:indogrip/features/staff/data/models/view_staff_api_param.dart';
@@ -99,6 +102,7 @@ abstract class ChallanRepository {
         'unitPrice': param.unitPrice,
         'displayQty': param.displayQty,
         'prRemarks': param.prRemarks,
+        'actualQty': param.actualQty,
       });
       final response = await DioService.dioPostApiCall(data: formData);
       if (response.statusCode == 200) {
@@ -229,5 +233,113 @@ abstract class ChallanRepository {
       );
       throw Exception('Error fetching Challan JSON data: $e');
     }
+  }
+
+  static Future<SuccessResponse> challanInfo({
+    required ChallaninfoParam data,
+  }) async {
+    SuccessResponse model = SuccessResponse();
+
+    try {
+      final formData = FormData.fromMap({
+        'activity': 'challan-info',
+        'userKey': HiveService.getUserId(),
+        'challanRemark': data.challanRemark,
+        'challanNumber': data.challanNumber,
+        'challanDate': data.challanDate,
+        'challanKey': data.challanKey,
+      });
+      final response = await DioService.dioPostApiCall(data: formData);
+
+      if (response.statusCode == 200) {
+        model = SuccessResponse.fromJson(response.data);
+        developer.log(model.message.toString(), name: 'Challan Info Response');
+
+        developer.log(
+          formData.fields.toString(),
+          name: 'Challan Info FormData',
+        );
+      } else {
+        developer.log(
+          'Failed to  update challan info',
+          name: 'Challan Info Response',
+        );
+        model.message = 'Failed to update challan info';
+      }
+    } catch (e) {
+      developer.log('Exception: $e', name: 'Challan Info Response');
+    } finally {
+      return model;
+    }
+  }
+
+  static Future<RoundDetails> fetchRoundDetails({
+    required String batchCode,
+  }) async {
+    Dio dio = Dio();
+    RoundDetails model = RoundDetails();
+    try {
+      final response = await dio.post(
+        'https://www.indogrip.com/mobile-APIs/index.php',
+        data: FormData.fromMap({
+          'activity': 'round-details',
+          'userKey': HiveService.getUserId(),
+          'batchCode': batchCode,
+        }),
+      );
+      if (response.statusCode == 200) {
+        model = RoundDetails.fromJson(response.data);
+        developer.log(
+          response.data.toString(),
+          name: ' Round Details Response',
+        );
+      } else {
+        developer.log(
+          'Failed to fetch round details',
+          name: ' Round Details Failed Response',
+        );
+      }
+    } catch (e) {
+      developer.log(e.toString(), name: ' Round Details  Error');
+    }
+    return model;
+  }
+
+  static Future<SubmitBatchModel> submitBatchInfo(
+    List<String> batchCodes,
+    List<String> batchQty,
+    String unitIndex,
+    String clientKey,
+  ) async {
+    SubmitBatchModel submitModel = SubmitBatchModel();
+    try {
+      final formData = FormData.fromMap({
+        'activity': 'batch-information',
+        'userKey': HiveService.getUserId(),
+        'batchCode': batchCodes.join(','),
+        'clientKey': clientKey,
+        'batchQty': batchQty.join(','),
+        'unitIndex': unitIndex,
+      });
+      final response = await DioService.dioPostApiCall(data: formData);
+      if (response.statusCode == 200) {
+        submitModel = SubmitBatchModel.fromJson(response.data);
+        developer.log(formData.fields.toString(), name: 'Form Data Submitted');
+
+        developer.log(
+          response.data.toString(),
+          name: ' Submit Batch Info API Response',
+        );
+      } else {
+        developer.log(
+          'Failed to submit batch info',
+          name: ' Submit Batch Info Failed Response',
+        );
+      }
+    } catch (e) {
+      developer.log(e.toString(), name: ' Submit Batch Info Error');
+      rethrow;
+    }
+    return submitModel;
   }
 }

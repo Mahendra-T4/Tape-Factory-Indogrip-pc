@@ -31,3 +31,10 @@ final class JumboFileUploadCsvFileEvent extends JumboRollEvent {
 
   JumboFileUploadCsvFileEvent({required this.param});
 }
+
+final class ChangeJumboStatusEvent extends JumboRollEvent {
+  final String rKey;
+  final String rStatus;
+
+  ChangeJumboStatusEvent({required this.rKey, required this.rStatus});
+}

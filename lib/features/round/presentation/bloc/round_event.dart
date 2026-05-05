@@ -36,3 +36,9 @@ final class FetchRoundDetailsEvent extends RoundEvent {
 
   FetchRoundDetailsEvent({required this.rKey});
 }
+
+final class FetchJumboInformationsEvent extends RoundEvent {
+  final String jumboID;
+
+  FetchJumboInformationsEvent({required this.jumboID});
+}

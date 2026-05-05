@@ -6,7 +6,6 @@ import 'package:indogrip/core/theme/color_conts.dart';
 import 'package:indogrip/core/utils/widgets/text_field.dart';
 import 'package:indogrip/features/jumbo%20roll/presentation/bloc/jumbo_roll_bloc.dart';
 
-
 class BaseFilterDropdownWidget extends StatefulWidget {
   final String? value;
   final InputDecoration? decoration;
@@ -46,7 +45,7 @@ class _BaseDropdownWidgetState extends State<BaseFilterDropdownWidget> {
           case MasterJumboBaseLoadedSuccessState:
             final data = (state as MasterJumboBaseLoadedSuccessState).model;
             return data.status != 1
-                ? Center(child: Text(data.message ?? 'No response from server'))
+                ? Center(child: Text(data.message ?? 'Refresh to load data'))
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

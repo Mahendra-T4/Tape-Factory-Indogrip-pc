@@ -348,6 +348,7 @@ class BatchInformation {
   String? batchKey;
   String? displayMFG;
   String? displayMFGLabel;
+  dynamic batchScanCode;
 
   BatchInformation({
     this.batchID,
@@ -364,6 +365,7 @@ class BatchInformation {
     this.displayMFG,
     this.batchKey,
     this.displayMFGLabel,
+    this.batchScanCode,
   });
 
   BatchInformation.fromJson(Map<String, dynamic> json) {
@@ -381,6 +383,7 @@ class BatchInformation {
     displayMFG = json['displayMFG'];
     batchKey = json['batchKey'];
     displayMFGLabel = json['displayMFGLabel'];
+    batchScanCode = json['batchScanCode'];
   }
 
   Map<String, dynamic> toJson() {
@@ -399,6 +402,7 @@ class BatchInformation {
     data['displayMFG'] = this.displayMFG;
     data['batchKey'] = this.batchKey;
     data['displayMFGLabel'] = this.displayMFGLabel;
+    data['batchScanCode'] = this.batchScanCode;
     return data;
   }
 }

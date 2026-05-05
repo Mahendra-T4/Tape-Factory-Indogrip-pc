@@ -9,6 +9,8 @@ final class ChallanLoadingState extends ChallanState {}
 
 final class ChallanLoadingState2 extends ChallanState {}
 
+final class ChallanLoadingState3 extends ChallanState {}
+
 final class ChallanRecordLoadedSuccessState extends ChallanState {
   final ChalanListModel model;
 

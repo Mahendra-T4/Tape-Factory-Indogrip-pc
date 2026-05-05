@@ -103,9 +103,14 @@ class _PrintStickerState extends State<PrintTapeSticker> {
         developer.log(name: 'Load Images Error', e.toString());
       }
 
+      final scanBarcodeText = data.record!.batchInformation!.batchScanCode
+          .toString();
+
       // Add pages for each selected sticker
-      for (var _ in selectedIndices) {
-        pw.TextStyle style = pw.TextStyle(
+      for (var selectedIndex in selectedIndices) {
+        final stickerNumber = selectedIndex + 1; // Start from 1
+        final barcodeTextWithIndex = '$scanBarcodeText$stickerNumber';
+        final pw.TextStyle style = pw.TextStyle(
           fontSize: 10,
           fontWeight: pw.FontWeight.bold,
           color: PdfColors.black,
@@ -163,7 +168,8 @@ class _PrintStickerState extends State<PrintTapeSticker> {
                     pw.Align(
                       alignment: pw.Alignment.center,
                       child: pw.BarcodeWidget(
-                        data: data.record!.batchInformation!.batchID.toString(),
+                        // data: '1234',
+                        data: barcodeTextWithIndex,
                         barcode: pw.Barcode.code128(),
                         textStyle: pw.TextStyle(
                           fontSize: 10,
@@ -809,15 +815,17 @@ class _PrintStickerState extends State<PrintTapeSticker> {
                   color: Colors.grey.shade600,
                 ),
               ),
-              Text(
-                value2,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade900,
+              Expanded(
+                child: Text(
+                  value2,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade900,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

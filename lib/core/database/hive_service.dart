@@ -27,7 +27,7 @@ class HiveService {
 
   // Update this version number whenever you release a new version
   // This helps clear stale login data when app is updated or reinstalled
-  static const String currentAppVersion = '1.2.0';
+  static const String currentAppVersion = '1.9.0';
 
   /// Initialize Hive and open box
   static Future<void> init() async {
@@ -63,7 +63,7 @@ class HiveService {
       // Check version change
       final storedVersion = get(kAppVersion);
       if (storedVersion == null || storedVersion != currentAppVersion) {
-        await clearLoginData();
+        await clearAllData();
         await save(key: kAppVersion, value: currentAppVersion);
         return;
       }
@@ -73,7 +73,7 @@ class HiveService {
       if (lastLogin != null) {
         final daysSinceLogin = DateTime.now().difference(lastLogin).inDays;
         if (daysSinceLogin > 30) {
-          await clearLoginData();
+          await clearAllData();
         }
       }
     } catch (e) {

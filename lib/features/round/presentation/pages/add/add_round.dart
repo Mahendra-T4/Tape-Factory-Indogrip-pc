@@ -3,16 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:indogrip/core/indents/enter_key_indent.dart';
 
 import 'package:indogrip/core/responsive/responsive.dart';
-import 'package:indogrip/core/service/api%20service/csv_urls.dart';
 import 'package:indogrip/core/service/connectivity/internate%20connectivity-checker.dart';
 import 'package:indogrip/core/service/connectivity/not_connected.dart';
 import 'package:indogrip/core/utils/appbar/desktop_appbar.dart';
 import 'package:indogrip/core/utils/appbar/mobile_appbar.dart';
 import 'package:indogrip/core/utils/sidebar.dart';
-import 'package:indogrip/features/client/presentation/widgets/download_csv_button_client.dart';
-import 'package:indogrip/features/global/presentation/widget/uploadFile_button.dart';
-import 'package:indogrip/features/global/presentation/widget/upload_round_file_button.dart';
-
 import 'package:indogrip/features/round/presentation/pages/add/add_round_builder.dart';
 
 class AddRoundPanel extends StatefulWidget {
@@ -91,22 +86,24 @@ class _AddRoundPanelState extends AddRoundBuilder {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     DesktopAppBar(context, stateKey, 'Add Round', false),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        SizedBox(
-                          width: MediaQuery.sizeOf(context).width * .18,
-                          child: DownloadClientFileButton(
-                            defaultFileName: 'import-round-sample.csv',
-                            csvURL: CSVUrls.roundCSVFilePath,
-                          ),
-                        ),
-                        SizedBox(
-                          width: MediaQuery.sizeOf(context).width * .18,
-                          child: UploadRoundFileButton(),
-                        ),
-                      ],
-                    ),
+                    // Row(
+                    //   mainAxisAlignment: MainAxisAlignment.end,
+                    //   children: [
+                    //     SizedBox(
+                    //       width: MediaQuery.sizeOf(context).width * .18,
+                    //       child: DownloadClientFileButton(
+                    //         defaultFileName: 'import-round-sample.csv',
+                    //         csvURL: CSVUrls.roundCSVFilePath,
+                    //       ),
+                    //     ),
+                    //     SizedBox(width: 20),
+                    //     // SizedBox(
+                    //     //   width: MediaQuery.sizeOf(context).width * .18,
+                    //     //   child: UploadRoundFileButton(),
+                    //     // ),
+                    //   ],
+                    // ),
+                    buildScannedBarcodeAddField,
                     roundInfoDesktop,
                     SizedBox(height: 20),
                   ],

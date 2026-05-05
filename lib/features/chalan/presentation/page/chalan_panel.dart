@@ -163,7 +163,7 @@ class _ChalanPanelState extends ChalanBuilder {
           SliverToBoxAdapter(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
-              children: [_buildPaginationWidget],
+              children: [_buildPaginationWidget, const SizedBox(width: 20)],
             ),
           ),
         SliverToBoxAdapter(child: buildContentTableWidget),

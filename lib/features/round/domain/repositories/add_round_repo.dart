@@ -9,8 +9,10 @@ import 'package:indogrip/features/round/data/models/add_batch_model.dart';
 import 'package:indogrip/features/round/data/models/add_batch_param.dart';
 import 'package:indogrip/features/round/data/models/add_round_param_model.dart';
 import 'package:indogrip/features/round/data/models/batch_details_model.dart';
+import 'package:indogrip/features/round/data/models/change_jumbo_status_model.dart';
 import 'package:indogrip/features/round/data/models/core_list_model.dart';
 import 'package:indogrip/features/round/data/models/edit_round_success_model.dart';
+import 'package:indogrip/features/round/data/models/jumbo_info_model.dart';
 import 'package:indogrip/features/round/data/models/master_roll_size_entity.dart';
 import 'package:indogrip/features/round/data/models/show_model.dart';
 import 'package:indogrip/features/round/data/models/view_round_modeld.dart';
@@ -447,6 +449,85 @@ class AddRoundRepository implements AddRoundMethodRepository {
     } catch (e) {
       developer.log(name: 'Load Round Json Data Error', e.toString());
       throw Exception('Error loading round JSON data: $e');
+    }
+  }
+
+  @override
+  Future<JumboInfoModel> loadJubmoInformations({
+    required String jumboID,
+  }) async {
+    JumboInfoModel jumboInfoModel = JumboInfoModel();
+
+    try {
+      final response = await DioService.dioPostApiCall(
+        data: FormData.fromMap({
+          'activity': 'jumbo-information',
+          'userKey': HiveService.getUserId(),
+          'jumboID': jumboID,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        jumboInfoModel = JumboInfoModel.fromJson(response.data);
+        developer.log(
+          name: 'Fetch Jumbo Information Response',
+          jumboInfoModel.message.toString(),
+        );
+        developer.log(
+          name: 'Fetch Jumbo Information Raw Data',
+          response.data.toString(),
+        );
+      } else {
+        developer.log(
+          name: 'Fetch Jumbo Information Failed',
+          'Failed to Load Data From Server',
+        );
+      }
+    } catch (e) {
+      developer.log(name: 'Fetch Jumbo Information Error', e.toString());
+    } finally {
+      return jumboInfoModel;
+    }
+  }
+
+  @override
+  Future<ChangeJumboStatusModel> changeJumboStatus({
+    required String rKey,
+    required String rStatus,
+  }) async {
+    ChangeJumboStatusModel model = ChangeJumboStatusModel();
+
+    try {
+      final response = await DioService.dioPostApiCall(
+        data: FormData.fromMap({
+          'activity': 'change-status',
+          'userKey': HiveService.getUserId(),
+          'rPanel': 'view-jumbo-roll',
+          'rKey': rKey,
+          'rStatus': rStatus,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        model = ChangeJumboStatusModel.fromJson(response.data);
+        developer.log(
+          name: 'Change Jumbo Status Response',
+          model.message.toString(),
+        );
+        developer.log(
+          name: 'Change Jumbo Status Raw Data',
+          response.data.toString(),
+        );
+      } else {
+        developer.log(
+          name: 'Change Jumbo Status Failed',
+          'Failed to Load Data From Server',
+        );
+      }
+    } catch (e) {
+      developer.log(name: 'Change Jumbo Status Error', e.toString());
+    } finally {
+      return model;
     }
   }
 }

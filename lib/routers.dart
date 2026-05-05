@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:indogrip/features/chalan/data/model/submit_batch_model.dart';
+import 'package:indogrip/features/chalan/presentation/page/scanned-carton/miss_record.dart';
+import 'package:indogrip/features/chalan/presentation/page/scanned-carton/scanned_carton.dart';
+import 'package:indogrip/features/chalan/presentation/page/scanned-carton/submittion_success_msg.dart';
 import 'package:indogrip/features/client/data/model/upload_client_model.dart';
 import 'package:indogrip/features/outsource/data/model/stretch_missrecord_model.dart';
 import 'package:indogrip/features/outsource/data/model/tap_miss_record_model.dart';
@@ -39,12 +43,15 @@ import 'package:indogrip/features/outsource/data/model/view_tap_in_model.dart';
 import 'package:indogrip/features/outsource/presentation/outside-in/edit%20-%20stretch/edit_stretch_in.dart';
 import 'package:indogrip/features/outsource/presentation/outside-in/edit/edit_in.dart';
 import 'package:indogrip/features/outsource/presentation/outside-in/pages/outsource_in.dart';
-import 'package:indogrip/features/outsource/presentation/outsource-out/panels/packing%20strip/page/packing_strip_panel.dart';
-import 'package:indogrip/features/outsource/presentation/outsource-out/panels/silica/page/silica_panel.dart';
 import 'package:indogrip/features/outsource/presentation/outsource-out/panels/strach%20film/pages/print_stretch_sticker.dart';
 import 'package:indogrip/features/outsource/presentation/outsource-out/panels/strach%20film/pages/stratch_film.dart';
 import 'package:indogrip/features/outsource/presentation/outsource-out/panels/tap/page/tap_panel.dart';
 import 'package:indogrip/features/outsource/presentation/outsource-out/panels/tap/page/tape_sticker.dart';
+import 'package:indogrip/features/outsource/presentation/packing-strip/presentation/page/add/add_packing_strip.dart';
+import 'package:indogrip/features/outsource/presentation/packing-strip/presentation/page/table/view_packing_strip_record_builder.dart';
+import 'package:indogrip/features/outsource/presentation/packing-strip/presentation/page/table/view_packing_strip_record_table.dart';
+import 'package:indogrip/features/outsource/presentation/additional-inventory/presenation/page/add/add_additional_inv.dart';
+import 'package:indogrip/features/outsource/presentation/additional-inventory/presenation/page/table/view_silica_records.dart';
 import 'package:indogrip/features/print/print_sticker.dart';
 import 'package:indogrip/features/profile/profile.dart';
 import 'package:indogrip/features/round/data/models/upload_round_record_model.dart';
@@ -281,45 +288,6 @@ GoRouter routers = GoRouter(
             return CustomTransitionPage(
               key: state.pageKey, // Required for unique page identification
               child: const StretchFilmPanel(), // The screen to display
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) {
-                    // Define a fade transition to avoid bouncing
-                    return FadeTransition(opacity: animation, child: child);
-                  },
-              transitionDuration: const Duration(
-                milliseconds: 300,
-              ), // Animation duration
-            );
-          },
-          // builder: (context, state) => Notifications(),
-        ),
-        GoRoute(
-          path: SilicaPanel.routeName,
-          name: SilicaPanel.routeName,
-          pageBuilder: (context, state) {
-            return CustomTransitionPage(
-              key: state.pageKey, // Required for unique page identification
-              child: const SilicaPanel(), // The screen to display
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) {
-                    // Define a fade transition to avoid bouncing
-                    return FadeTransition(opacity: animation, child: child);
-                  },
-              transitionDuration: const Duration(
-                milliseconds: 300,
-              ), // Animation duration
-            );
-          },
-          // builder: (context, state) => Notifications(),
-        ),
-
-        GoRoute(
-          path: PackingStripPanel.routeName,
-          name: PackingStripPanel.routeName,
-          pageBuilder: (context, state) {
-            return CustomTransitionPage(
-              key: state.pageKey, // Required for unique page identification
-              child: const PackingStripPanel(), // The screen to display
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) {
                     // Define a fade transition to avoid bouncing
@@ -1120,6 +1088,161 @@ GoRouter routers = GoRouter(
           // },
         ),
 
+        //* strip routes
+        // GoRoute(
+        //   path: AddPackingStripRecordPanel.routeName,
+        //   name: AddPackingStripRecordPanel.routeName,
+        //   pageBuilder: (context, state) {
+        //     return CustomTransitionPage(
+        //       key: state.pageKey, // Required for unique page identification
+        //       child:
+        //           const AddPackingStripRecordPanel(), // The screen to display
+        //       transitionsBuilder:
+        //           (context, animation, secondaryAnimation, child) {
+        //             // Define a fade transition to avoid bouncing
+        //             return FadeTransition(opacity: animation, child: child);
+        //           },
+        //       transitionDuration: const Duration(
+        //         milliseconds: 300,
+        //       ), // Animation duration
+        //     );
+        //   },
+        //   // builder: (context, state) => AddCorePanel(),
+        // ),
+        GoRoute(
+          path: ViewStripRecordTablePanel.routeName,
+          name: ViewStripRecordTablePanel.routeName,
+          pageBuilder: (context, state) {
+            return CustomTransitionPage(
+              key: state.pageKey, // Required for unique page identification
+              child: const ViewStripRecordTablePanel(), // The screen to display
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                    // Define a fade transition to avoid bouncing
+                    return FadeTransition(opacity: animation, child: child);
+                  },
+              transitionDuration: const Duration(
+                milliseconds: 300,
+              ), // Animation duration
+            );
+          },
+          // builder: (context, state) => const ViewCorePanel(),
+        ),
+
+        // GoRoute(
+        //   path: EditSilicaRecordPanel.routeName,
+        //   name: EditSilicaRecordPanel.routeName,
+        //   pageBuilder: (context, state) {
+        //     final editCore = state.extra as CartonApiParams;
+        //     return CustomTransitionPage(
+        //       key: state.pageKey, // Required for unique page identification
+        //       child: EditCorePanel(param: editCore), // The screen to display
+        //       transitionsBuilder:
+        //           (context, animation, secondaryAnimation, child) {
+        //             // Define a fade transition to avoid bouncing
+        //             return FadeTransition(opacity: animation, child: child);
+        //           },
+        //       transitionDuration: const Duration(
+        //         milliseconds: 300,
+        //       ), // Animation duration
+        //     );
+        //   },
+        //   // builder: (context, state) {
+        //   //   final editCore = state.extra as CartonApiParams;
+        //   //   return EditCorePanel(param: editCore);
+        //   // },
+        // ),
+        GoRoute(
+          path: ScannedCarton.routeName,
+          name: ScannedCarton.routeName,
+          pageBuilder: (context, state) {
+            final rKey = state.extra as String;
+            return CustomTransitionPage(
+              key: state.pageKey, // Required for unique page identification
+              child: ScannedCarton(rKey: rKey), // The screen to display
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                    // Define a fade transition to avoid bouncing
+                    return FadeTransition(opacity: animation, child: child);
+                  },
+              transitionDuration: const Duration(
+                milliseconds: 300,
+              ), // Animation duration
+            );
+          },
+          // builder: (context, state) {
+          //   final editCore = state.extra as CartonApiParams;
+          //   return EditCorePanel(param: editCore);
+          // },
+        ),
+
+        //* Silica routes
+        GoRoute(
+          path: AdditionalInventoryRecordPanel.routeName,
+          name: AdditionalInventoryRecordPanel.routeName,
+          pageBuilder: (context, state) {
+            return CustomTransitionPage(
+              key: state.pageKey, // Required for unique page identification
+              child:
+                  const AdditionalInventoryRecordPanel(), // The screen to display
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                    // Define a fade transition to avoid bouncing
+                    return FadeTransition(opacity: animation, child: child);
+                  },
+              transitionDuration: const Duration(
+                milliseconds: 300,
+              ), // Animation duration
+            );
+          },
+          // builder: (context, state) => AddCorePanel(),
+        ),
+
+        GoRoute(
+          path: ViewSilicaRecordTablePanel.routeName,
+          name: ViewSilicaRecordTablePanel.routeName,
+          pageBuilder: (context, state) {
+            return CustomTransitionPage(
+              key: state.pageKey, // Required for unique page identification
+              child:
+                  const ViewSilicaRecordTablePanel(), // The screen to display
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                    // Define a fade transition to avoid bouncing
+                    return FadeTransition(opacity: animation, child: child);
+                  },
+              transitionDuration: const Duration(
+                milliseconds: 300,
+              ), // Animation duration
+            );
+          },
+          // builder: (context, state) => const ViewCorePanel(),
+        ),
+
+        // GoRoute(
+        //   path: EditSilicaRecordPanel.routeName,
+        //   name: EditSilicaRecordPanel.routeName,
+        //   pageBuilder: (context, state) {
+        //     final editCore = state.extra as CartonApiParams;
+        //     return CustomTransitionPage(
+        //       key: state.pageKey, // Required for unique page identification
+        //       child: EditCorePanel(param: editCore), // The screen to display
+        //       transitionsBuilder:
+        //           (context, animation, secondaryAnimation, child) {
+        //             // Define a fade transition to avoid bouncing
+        //             return FadeTransition(opacity: animation, child: child);
+        //           },
+        //       transitionDuration: const Duration(
+        //         milliseconds: 300,
+        //       ), // Animation duration
+        //     );
+        //   },
+        //   // builder: (context, state) {
+        //   //   final editCore = state.extra as CartonApiParams;
+        //   //   return EditCorePanel(param: editCore);
+        //   // },
+        // ),
+
         //* Profile
         GoRoute(
           path: Profile.routeName,
@@ -1128,6 +1251,51 @@ GoRouter routers = GoRouter(
             return CustomTransitionPage(
               key: state.pageKey, // Required for unique page identification
               child: const Profile(), // The screen to display
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                    // Define a fade transition to avoid bouncing
+                    return FadeTransition(opacity: animation, child: child);
+                  },
+              transitionDuration: const Duration(
+                milliseconds: 300,
+              ), // Animation duration
+            );
+          },
+          // builder: (context, state) => Profile(),
+        ),
+        GoRoute(
+          path: MissRecordPanel.routeName,
+          name: MissRecordPanel.routeName,
+          pageBuilder: (context, state) {
+            final missedRecords = state.extra as SubmitBatchModel;
+            return CustomTransitionPage(
+              key: state.pageKey, // Required for unique page identification
+              child: MissRecordPanel(
+                missedRecords: missedRecords,
+              ), // The screen to display
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                    // Define a fade transition to avoid bouncing
+                    return FadeTransition(opacity: animation, child: child);
+                  },
+              transitionDuration: const Duration(
+                milliseconds: 300,
+              ), // Animation duration
+            );
+          },
+          // builder: (context, state) => Profile(),
+        ),
+
+        GoRoute(
+          path: SubmittingSuccessMsg.routeName,
+          name: SubmittingSuccessMsg.routeName,
+          pageBuilder: (context, state) {
+            final successMsg = state.extra as String;
+            return CustomTransitionPage(
+              key: state.pageKey, // Required for unique page identification
+              child: SubmittingSuccessMsg(
+                successMessage: successMsg,
+              ), // The screen to display
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) {
                     // Define a fade transition to avoid bouncing

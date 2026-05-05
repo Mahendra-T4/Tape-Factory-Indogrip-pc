@@ -44,7 +44,7 @@ class _BaseDropdownWidgetState extends State<BaseDropdownWidget> {
           case MasterJumboBaseLoadedSuccessState:
             final data = (state as MasterJumboBaseLoadedSuccessState).model;
             return data.status != 1
-                ? Center(child: Text(data.message ?? 'No response from server'))
+                ? Center(child: Text(data.message ?? 'Refresh to load data'))
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

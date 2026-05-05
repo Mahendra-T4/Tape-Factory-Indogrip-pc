@@ -70,7 +70,13 @@ abstract class StretchFilmBuilder extends State<StretchFilmPanel> {
 
   void handleSelectionChanged(List<StretchRecord> items) {
     setState(() {
-      selectedItems = items;
+      if (isMultipleSelection) {
+        // Replace with current selection to properly handle both added and removed items
+        selectedItems = items;
+      } else {
+        // Single selection mode - replace selection
+        selectedItems = items;
+      }
     });
   }
 
@@ -1065,8 +1071,17 @@ abstract class StretchFilmBuilder extends State<StretchFilmPanel> {
           }
         }
 
-        // Add pages based on quantity
-        for (int i = 0; i < quantity; i++) {
+        // Add pages based on quantity - reset counter for each item
+        for (int pieceNumber = 1; pieceNumber <= quantity; pieceNumber++) {
+          final stickerNumber = pieceNumber; // Reset to 1 for each item
+          final barcodeTextWithIndex =
+              '${record.batchInformation!.batchScanCode}$stickerNumber';
+
+          // Create local copies to avoid closure issues
+          final recordData = record;
+          final tapFactoryImageRef = tapFactoryImage;
+          final indogripImageRef = indogripStickerImage;
+
           pdf.addPage(
             pw.Page(
               pageFormat: PdfPageFormat(
@@ -1095,16 +1110,16 @@ abstract class StretchFilmBuilder extends State<StretchFilmPanel> {
                       pw.Row(
                         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                         children: [
-                          if (indogripStickerImage != null)
+                          if (indogripImageRef != null)
                             pw.Image(
-                              indogripStickerImage,
+                              indogripImageRef,
                               width: 100,
                               height: 30,
                               fit: pw.BoxFit.contain,
                             ),
-                          if (tapFactoryImage != null)
+                          if (tapFactoryImageRef != null)
                             pw.Image(
-                              tapFactoryImage,
+                              tapFactoryImageRef,
                               width: 80,
                               height: 30,
                               fit: pw.BoxFit.contain,
@@ -1113,13 +1128,13 @@ abstract class StretchFilmBuilder extends State<StretchFilmPanel> {
                       ),
 
                       // Top logo (tap factory)
-                      pw.SizedBox(height: 3),
+                      pw.SizedBox(height: 5),
 
                       //! Barcode - batchcode
                       pw.Align(
                         alignment: pw.Alignment.center,
                         child: pw.BarcodeWidget(
-                          data: record.batchInformation!.batchID.toString(),
+                          data: barcodeTextWithIndex,
                           barcode: pw.Barcode.code128(),
                           textStyle: pw.TextStyle(
                             fontSize: 10,
@@ -1135,11 +1150,11 @@ abstract class StretchFilmBuilder extends State<StretchFilmPanel> {
                         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                         children: [
                           pw.Text(
-                            'Batch Code: ${record.batchInformation!.batchCode.toString()}',
+                            'Batch Code: ${recordData.batchInformation!.batchCode.toString()}',
                             style: style,
                           ),
                           pw.Text(
-                            'Serial Number: ${record.inventoryInformation?.inventoryCode.toString()}',
+                            'Serial Number: ${recordData.inventoryInformation?.inventoryCode.toString()}',
                             style: style,
                           ),
                         ],
@@ -1149,26 +1164,11 @@ abstract class StretchFilmBuilder extends State<StretchFilmPanel> {
                         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                         children: [
                           pw.Text(
-                            'Mic: ${record.batchInformation!.displayMic.toString()}',
+                            'Mic: ${recordData.batchInformation!.displayMic.toString()}',
                             style: style,
                           ),
                           pw.Text(
-                            'Base: ${record.inventoryInformation!.additionalInfo!.baseLabel ?? "N/A"}',
-                            style: style,
-                          ),
-                        ],
-                      ),
-
-                      pw.SizedBox(height: 5),
-                      pw.Row(
-                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                        children: [
-                          pw.Text(
-                            'MFG: ${record.batchInformation!.displayMFGLabel ?? "N/A"}',
-                            style: style,
-                          ),
-                          pw.Text(
-                            'MRP: ${record.batchInformation!.batchMRP ?? "N/A"}',
+                            'Base: ${recordData.inventoryInformation!.additionalInfo!.baseLabel ?? "N/A"}',
                             style: style,
                           ),
                         ],
@@ -1179,12 +1179,27 @@ abstract class StretchFilmBuilder extends State<StretchFilmPanel> {
                         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                         children: [
                           pw.Text(
-                            'Size/Width: ${record.inventoryInformation!.additionalInfo!.stretchFilmSize ?? "N/A"}',
+                            'MFG: ${recordData.batchInformation!.displayMFGLabel ?? "N/A"}',
+                            style: style,
+                          ),
+                          pw.Text(
+                            'MRP: ${recordData.batchInformation!.batchMRP ?? "N/A"}',
+                            style: style,
+                          ),
+                        ],
+                      ),
+
+                      pw.SizedBox(height: 5),
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pw.Text(
+                            'Size/Width: ${recordData.inventoryInformation!.additionalInfo!.stretchFilmSize ?? "N/A"}',
                             style: style,
                           ),
 
                           pw.Text(
-                            'Weight: ${record.inventoryInformation!.additionalInfo!.grossWeight?.toString() ?? "N/A"}',
+                            'Weight: ${recordData.inventoryInformation!.additionalInfo!.grossWeight?.toString() ?? "N/A"}',
                             style: style,
                           ),
                         ],
@@ -1194,11 +1209,11 @@ abstract class StretchFilmBuilder extends State<StretchFilmPanel> {
                         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                         children: [
                           pw.Text(
-                            'Operation: ${record.inventoryInformation!.additionalInfo!.coreCode?.toString() ?? "N/A"}',
+                            'Operation: ${recordData.inventoryInformation!.additionalInfo!.coreCode?.toString() ?? "N/A"}',
                             style: style,
                           ),
                           pw.Text(
-                            'Remark: ${record.batchInformation!.batchRemark?.toString() ?? "N/A"}',
+                            'Remark: ${recordData.batchInformation!.batchRemark?.toString() ?? "N/A"}',
                             style: style,
                           ),
                         ],
@@ -1244,12 +1259,6 @@ abstract class StretchFilmBuilder extends State<StretchFilmPanel> {
           backgroundColor: Colors.green,
         ),
       );
-
-      // Clear selection after printing
-      setState(() {
-        selectedItems.clear();
-        selectedRows.clear();
-      });
     } catch (e) {
       // Show error message
       ScaffoldMessenger.of(context).showSnackBar(

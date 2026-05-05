@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:indogrip/core/constants/sizes.dart';
@@ -425,6 +426,9 @@ abstract class ViewRoundBuilder extends State<ViewRoundPanel> {
                 ),
                 child: TextField(
                   controller: tapeLengthController,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                  ],
 
                   decoration: InputDecoration(
                     filled: true,

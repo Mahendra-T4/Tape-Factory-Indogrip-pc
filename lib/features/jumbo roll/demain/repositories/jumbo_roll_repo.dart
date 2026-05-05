@@ -95,6 +95,7 @@ class JumboRollRepository {
                 'baseID': param.baseID,
                 'micID': param.micID,
                 'widthID': param.widthID,
+                'lowStock': param.lowStock,
                 'fromDate': param.fromDate ?? '',
                 'toDate': param.toDate ?? '',
               }),

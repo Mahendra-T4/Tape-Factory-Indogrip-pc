@@ -27,10 +27,12 @@ import 'package:indogrip/features/jumbo%20roll/presentation/pages/view/view_jumb
 import 'package:indogrip/features/notifications/model/notification_model.dart';
 import 'package:indogrip/features/notifications/view/provider/read_notification_provider.dart';
 import 'package:indogrip/features/outsource/presentation/outside-in/pages/outsource_in.dart';
-import 'package:indogrip/features/outsource/presentation/outsource-out/panels/packing%20strip/page/packing_strip_panel.dart';
-import 'package:indogrip/features/outsource/presentation/outsource-out/panels/silica/page/silica_panel.dart';
 import 'package:indogrip/features/outsource/presentation/outsource-out/panels/strach%20film/pages/stratch_film.dart';
 import 'package:indogrip/features/outsource/presentation/outsource-out/panels/tap/page/tap_panel.dart';
+import 'package:indogrip/features/outsource/presentation/packing-strip/presentation/page/add/add_packing_strip.dart';
+import 'package:indogrip/features/outsource/presentation/packing-strip/presentation/page/table/view_packing_strip_record_table.dart';
+import 'package:indogrip/features/outsource/presentation/additional-inventory/presenation/page/add/add_additional_inv.dart';
+import 'package:indogrip/features/outsource/presentation/additional-inventory/presenation/page/table/view_silica_records.dart';
 import 'package:indogrip/features/round/presentation/pages/add/add_round.dart';
 import 'package:indogrip/features/round/presentation/pages/view/view_round.dart';
 import 'package:indogrip/features/staff/presentation/pages/add/add_statff.dart';
@@ -237,7 +239,8 @@ class _ShellScaffoldState extends ConsumerState<ShellScaffold>
   bool isCore = false;
   bool isOutsourceOut = false;
   bool isOutsourceOut2 = false;
-
+  bool isSilica = false;
+  bool isPackingStrip = false;
   @override
   void initState() {
     super.initState();
@@ -367,7 +370,7 @@ class _ShellScaffoldState extends ConsumerState<ShellScaffold>
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Icon(
-                                      Icons.dashboard, // Transfer/Exchange icon
+                                      Icons.note, // Transfer/Exchange icon
                                       size: 20,
                                       color: Colors.white.withOpacity(0.9),
                                     ),
@@ -518,11 +521,10 @@ class _ShellScaffoldState extends ConsumerState<ShellScaffold>
                                       color: Colors.white.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
-                                    child: Icon(
-                                      Icons
-                                          .swap_horiz_outlined, // Transfer/Exchange icon
-                                      size: 20,
-                                      color: Colors.white.withOpacity(0.9),
+                                    child: Image.asset(
+                                      Assets.assetsImagesInventory,
+                                      height: 20,
+                                      width: 20,
                                     ),
                                   ),
                                   title: Text(
@@ -534,7 +536,34 @@ class _ShellScaffoldState extends ConsumerState<ShellScaffold>
                                     ),
                                   ),
                                 ),
-                              // _buildSectionHeader('Outsource-OUT'),
+                              ListTile(
+                                onTap: () {
+                                  context.goNamed(
+                                    AdditionalInventoryRecordPanel.routeName,
+                                  );
+                                },
+                                leading: Container(
+                                  padding: EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Image.asset(
+                                    Assets.assetsImagesInventory,
+                                    height: 20,
+                                    width: 20,
+                                  ),
+                                ),
+                                title: Text(
+                                  'Additional Inventory',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white.withOpacity(0.9),
+                                  ),
+                                ),
+                              ),
+
                               if (HiveService.getPanels()!.contains('5') ||
                                   HiveService.getRole() == '1')
                                 OutSourceSidePanelBuilder(
@@ -547,16 +576,57 @@ class _ShellScaffoldState extends ConsumerState<ShellScaffold>
                                   },
                                   panel1: 'Tape',
                                   panel2: 'Stretch Film',
-                                  // panel3: 'Silica',
-                                  // panel4: 'Packing Strip',
-                                  icon: Icons.circle_outlined,
+                                  panel3: 'Silica',
+                                  panel4: 'Packing Strip',
+                                  // icon: Icons.circle_outlined,
                                   routeName: [
                                     TapPanel.routeName,
                                     StretchFilmPanel.routeName,
-                                    // SilicaPanel.routeName,
-                                    // PackingStripPanel.routeName,
+                                    ViewSilicaRecordTablePanel.routeName,
+                                    ViewStripRecordTablePanel.routeName,
                                   ],
                                 ),
+
+                              // SidebarPanelBuilder(
+                              //   // isRolePanel: HiveService.getRole() == '2'
+                              //   //     ? false
+                              //   //     : true,
+                              //   currentTap: isSilica,
+                              //   onTap: () {
+                              //     setState(() {
+                              //       isSilica = !isSilica;
+                              //     });
+                              //   },
+                              //   panel1: 'Add',
+                              //   panel2: 'View',
+                              //   icon: Icons.circle_rounded,
+                              //   title: 'Silica',
+                              //   routeName: [
+                              //     AdditionalInventoryRecordPanel.routeName,
+                              //     ViewSilicaRecordTablePanel.routeName,
+                              //   ],
+                              // ),
+                              // SidebarPanelBuilder(
+                              //   // isRolePanel: HiveService.getRole() == '2'
+                              //   //     ? false
+                              //   //     : true,
+                              //   currentTap: isPackingStrip,
+                              //   onTap: () {
+                              //     setState(() {
+                              //       isPackingStrip = !isPackingStrip;
+                              //     });
+                              //   },
+                              //   panel1: 'Add',
+                              //   panel2: 'View',
+                              //   icon: Icons.circle_rounded,
+                              //   title: 'Packing Strip',
+                              //   routeName: [
+                              //     AddPackingStripRecordPanel.routeName,
+                              //     ViewStripRecordTablePanel.routeName,
+                              //   ],
+                              // ),
+
+                              // _buildSectionHeader('Outsource-OUT'),
                               if (HiveService.getPanels()!.contains('6') ||
                                   HiveService.getRole() == '1') ...[
                                 _buildSectionHeader('General'),

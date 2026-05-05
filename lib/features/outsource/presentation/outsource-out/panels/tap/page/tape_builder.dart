@@ -75,7 +75,13 @@ abstract class TapeBuilder extends State<TapPanel> {
 
   void handleSelectionChanged(List<TapRecord> items) {
     setState(() {
-      selectedItems = items;
+      if (isMultipleSelection) {
+        // Replace with current selection to properly handle both added and removed items
+        selectedItems = items;
+      } else {
+        // Single selection mode - replace selection
+        selectedItems = items;
+      }
     });
   }
 
@@ -346,7 +352,7 @@ abstract class TapeBuilder extends State<TapPanel> {
   );
 
   Widget customAlertBoxWidget(TapRecord data, ViewTapInventoryModel model) {
-    showValue = stickerModel.record!.batchInformation!.showFor.toString();
+    showValue = stickerModel.record?.batchInformation?.showFor.toString();
     // if (!mounted) return;
     batchMRPController.text = stickerModel.record!.batchInformation!.batchMRP
         .toString();
@@ -1015,7 +1021,9 @@ abstract class TapeBuilder extends State<TapPanel> {
           ),
           child: TextField(
             controller: controller,
-
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+            ],
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.white,
@@ -1095,7 +1103,13 @@ abstract class TapeBuilder extends State<TapPanel> {
       }
 
       // Add pages for each selected item
-      for (var selectedItem in selectedItems) {
+      for (
+        var selectedIndex = 0;
+        selectedIndex < selectedItems.length;
+        selectedIndex++
+      ) {
+        var selectedItem = selectedItems[selectedIndex];
+
         // Load sticker data for this item
         TapeStickerInfoModel? stickerData;
         try {
@@ -1130,8 +1144,17 @@ abstract class TapeBuilder extends State<TapPanel> {
           }
         }
 
-        // Add pages based on quantity
-        for (int i = 0; i < quantity; i++) {
+        // Add pages based on quantity - reset counter for each item
+        for (int pieceNumber = 1; pieceNumber <= quantity; pieceNumber++) {
+          final stickerNumber = pieceNumber; // Reset to 1 for each item
+          final barcodeTextWithIndex =
+              '${record.batchInformation!.batchScanCode}$stickerNumber';
+
+          // Create local copies to avoid closure issues
+          final recordData = record;
+          final tapFactoryImageRef = tapFactoryImage;
+          final indogripImageRef = indogripStickerImage;
+
           pdf.addPage(
             pw.Page(
               pageFormat: PdfPageFormat(
@@ -1160,16 +1183,16 @@ abstract class TapeBuilder extends State<TapPanel> {
                       pw.Row(
                         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                         children: [
-                          if (indogripStickerImage != null)
+                          if (indogripImageRef != null)
                             pw.Image(
-                              indogripStickerImage,
+                              indogripImageRef,
                               width: 100,
                               height: 30,
                               fit: pw.BoxFit.contain,
                             ),
-                          if (tapFactoryImage != null)
+                          if (tapFactoryImageRef != null)
                             pw.Image(
-                              tapFactoryImage,
+                              tapFactoryImageRef,
                               width: 80,
                               height: 30,
                               fit: pw.BoxFit.contain,
@@ -1184,7 +1207,7 @@ abstract class TapeBuilder extends State<TapPanel> {
                       pw.Align(
                         alignment: pw.Alignment.center,
                         child: pw.BarcodeWidget(
-                          data: record.batchInformation!.batchID.toString(),
+                          data: barcodeTextWithIndex,
                           barcode: pw.Barcode.code128(),
                           textStyle: pw.TextStyle(
                             fontSize: 10,
@@ -1194,28 +1217,17 @@ abstract class TapeBuilder extends State<TapPanel> {
                           height: PdfPageFormat.inch * 0.6,
                         ),
                       ),
-                      // Serial Number
-                      // pw.Row(
-                      //   mainAxisAlignment: pw.MainAxisAlignment.start,
-                      //   children: [
-                      //     pw.Text(
-                      //       'Serial Number: ${record.inventoryInformation!.inventoryCode.toString()}',
-                      //       style: style,
-                      //     ),
-                      //   ],
-                      // ),
-                      // pw.SizedBox(height: 5),
 
                       // Vendor Name and Pieces/Carton
                       pw.Row(
                         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                         children: [
                           pw.Text(
-                            'Serial Number: ${record.inventoryInformation!.inventoryCode.toString()}',
+                            'Serial Number: ${recordData.inventoryInformation!.inventoryCode.toString()}',
                             style: style,
                           ),
                           pw.Text(
-                            'Pieces/Carton: ${record.inventoryInformation!.additionalInfo!.piecesPerCarton}',
+                            'Pieces/Carton: ${recordData.inventoryInformation!.additionalInfo!.piecesPerCarton}',
                             style: style,
                           ),
                         ],
@@ -1227,11 +1239,11 @@ abstract class TapeBuilder extends State<TapPanel> {
                         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                         children: [
                           pw.Text(
-                            'Width: ${record.inventoryInformation!.additionalInfo!.cutMMMeter}',
+                            'Width: ${recordData.inventoryInformation!.additionalInfo!.cutMMMeter}',
                             style: style,
                           ),
                           pw.Text(
-                            'Mic: ${record.batchInformation!.displayMic}',
+                            'Mic: ${recordData.batchInformation!.displayMic}',
                             style: style,
                           ),
                         ],
@@ -1242,17 +1254,17 @@ abstract class TapeBuilder extends State<TapPanel> {
                       pw.Row(
                         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                         children: [
-                          record.batchInformation?.showFor == 1
+                          recordData.batchInformation?.showFor == 1
                               ? pw.Text(
-                                  'Length: ${record.batchInformation!.displayValue}',
+                                  'Length: ${recordData.batchInformation!.displayValue}',
                                   style: style,
                                 )
                               : pw.Text(
-                                  'Weight: ${record.batchInformation!.displayValue}',
+                                  'Weight: ${recordData.batchInformation!.displayValue}',
                                   style: style,
                                 ),
                           pw.Text(
-                            'Base: ${record.inventoryInformation!.additionalInfo!.baseLabel}',
+                            'Base: ${recordData.inventoryInformation!.additionalInfo!.baseLabel}',
                             style: style,
                           ),
                         ],
@@ -1264,11 +1276,11 @@ abstract class TapeBuilder extends State<TapPanel> {
                         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                         children: [
                           pw.Text(
-                            'MFG: ${record.batchInformation!.displayMFGLabel}',
+                            'MFG: ${recordData.batchInformation!.displayMFGLabel}',
                             style: style,
                           ),
                           pw.Text(
-                            'MRP: ${record.batchInformation!.batchMRP}',
+                            'MRP: ${recordData.batchInformation!.batchMRP}',
                             style: style,
                           ),
                         ],
@@ -1280,11 +1292,11 @@ abstract class TapeBuilder extends State<TapPanel> {
                         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                         children: [
                           pw.Text(
-                            'Remark: ${record.inventoryInformation!.remark}',
+                            'Remark: ${recordData.inventoryInformation!.remark}',
                             style: style,
                           ),
                           pw.Text(
-                            'Batch Code: ${record.batchInformation!.batchCode}',
+                            'Batch Code: ${recordData.batchInformation!.batchCode}',
                             style: style,
                           ),
                         ],
@@ -1331,11 +1343,8 @@ abstract class TapeBuilder extends State<TapPanel> {
         ),
       );
 
-      // Clear selection after printing
-      setState(() {
-        selectedItems.clear();
-        selectedRows.clear();
-      });
+      // Keep selection - don't clear it so user can add more selections
+      // User can manually clear by clicking the toggle button if needed
     } catch (e) {
       // Show error message
       ScaffoldMessenger.of(context).showSnackBar(

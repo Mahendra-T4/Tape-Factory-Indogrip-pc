@@ -21,6 +21,8 @@ import 'package:indogrip/features/global/presentation/widget/refresh_button.dart
 import 'package:indogrip/features/jumbo%20roll/presentation/bloc/jumbo_roll_bloc.dart';
 import 'package:indogrip/features/jumbo%20roll/presentation/pages/edit/edit_jump_roll.dart';
 import 'package:indogrip/features/jumbo%20roll/presentation/pages/widgets/jumbo_detail_box.dart';
+import 'package:indogrip/features/round/domain/repositories/add_round_repo.dart';
+import 'package:indogrip/features/round/presentation/bloc/round_bloc.dart';
 import 'package:indogrip/features/staff/data/models/view_staff_api_param.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:indogrip/features/jumbo%20roll/data/jumboroll_data_source.dart';
@@ -37,6 +39,7 @@ class ViewJumboRollPanel extends StatefulWidget {
 class _ViewJumboRollPanelState extends ViewJumboRollBuilder {
   // late JumboRollBloc jumboRollBloc;
   late final GlobalBloc globalBloc;
+  late final RoundBloc roundBloc;
   final GlobalKey<ScaffoldState> _stateKey = GlobalKey<ScaffoldState>();
   final GlobalKey _key = GlobalKey();
   late Map<String, double> columnWidths = {};
@@ -56,6 +59,7 @@ class _ViewJumboRollPanelState extends ViewJumboRollBuilder {
   void initState() {
     super.initState();
     globalBloc = GlobalBloc(globalRepository: GlobalManagerRepository());
+    roundBloc = RoundBloc(addRoundRepository: AddRoundRepository());
     pageNo = 1; // Initialize current page
     pageQty = 1; // Initialize total pages
     jumboRollBloc = JumboRollBloc();
@@ -158,9 +162,34 @@ class _ViewJumboRollPanelState extends ViewJumboRollBuilder {
                     highlightedRowIndex = null;
                     // Reset data source when new data is fetched
                   }
+
+                  if (state is ChangeJumboStatusLoadedSuccessStatus) {
+                    if (state.model.status == 1) {
+                      ToastService.instance.showSuccess(
+                        context,
+                        state.model.message ?? 'Status updated successfully',
+                      );
+                      eventHandler(); // Refresh the list
+                    } else {
+                      ToastService.instance.showError(
+                        context,
+                        state.model.message ?? 'Failed to update status',
+                      );
+                    }
+                  }
+                  if (state is ChangeJumboStatusErrorFailedStatus) {
+                    ToastService.instance.showError(
+                      context,
+                      state.error.toString(),
+                    );
+                  }
                 },
                 buildWhen: (previous, current) {
-                  // Always rebuild to handle state changes
+                  // Don't rebuild the grid for change-status states
+                  if (current is ChangeJumboStatusLoadedSuccessStatus ||
+                      current is ChangeJumboStatusErrorFailedStatus) {
+                    return false;
+                  }
                   return true;
                 },
                 builder: (context, state) {
@@ -234,6 +263,14 @@ class _ViewJumboRollPanelState extends ViewJumboRollBuilder {
                             ),
                           );
                           eventHandler();
+                        },
+                        onChanged: (status, data) {
+                          jumboRollBloc.add(
+                            ChangeJumboStatusEvent(
+                              rKey: data.rKey.toString(),
+                              rStatus: status.toString(),
+                            ),
+                          );
                         },
                         // onProfile: (p0) {},
                         stickerPopup: (value) {

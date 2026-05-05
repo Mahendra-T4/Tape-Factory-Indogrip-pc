@@ -6,7 +6,10 @@ import 'package:indogrip/core/service/api%20service/dio_service.dart';
 import 'package:indogrip/features/dashboard/data/model/predict_cal_param.dart';
 import 'package:indogrip/features/dashboard/data/model/predict_calculation_model.dart';
 import 'package:indogrip/features/dashboard/data/model/show_static_model.dart';
+import 'package:indogrip/features/dashboard/data/model/stretch_stock_model.dart';
+import 'package:indogrip/features/dashboard/data/model/tape_stock_model.dart';
 import 'package:indogrip/features/dashboard/domain/home_manager_repo.dart';
+import 'package:indogrip/features/dashboard/domain/tape_stock_entity.dart';
 import 'package:retry/retry.dart';
 
 class HomeRepository implements HomeManagerRepository {
@@ -142,6 +145,99 @@ class HomeRepository implements HomeManagerRepository {
       }
     } catch (e) {
       developer.log(e.toString(), name: 'Predict Calculation Error');
+    }
+    return model;
+  }
+
+  @override
+  Future<TapeStockModel> fetchTapeStock({
+    required TapeStockEntity param,
+  }) async {
+    TapeStockModel model = TapeStockModel();
+    try {
+      final response = await retry(
+        () =>
+            DioService.dioPostApiCall(
+              data: FormData.fromMap({
+                'activity': 'tape-stock',
+                'userKey': HiveService.getUserId(),
+                "baseID": param.baseID,
+                "micID": param.micID,
+                "cutMMMeterID": param.cutMMMeterID,
+                "tapeLength": param.tapeLength,
+                "tapeWeight": param.weight,
+              }),
+            ).timeout(
+              const Duration(seconds: 5),
+              onTimeout: () => throw TimeoutException('Request timed out'),
+            ),
+        retryIf: (e) => e is TimeoutException || e is DioException,
+        maxAttempts: 3,
+        delayFactor: const Duration(seconds: 1),
+      );
+
+      if (response.statusCode == 200) {
+        model = TapeStockModel.fromJson(response.data);
+        developer.log('Tape Stock Data: ${response.data}', name: 'Tape Stock');
+      } else {
+        developer.log(
+          'Failed to load tape stock data',
+          name: 'Tape Stock Failed',
+        );
+        return model..message = 'Failed to load tape stock data';
+      }
+    } catch (e) {
+      developer.log(e.toString(), name: 'Tape Stock Error');
+    } finally {
+      developer.log(
+        'Fetch Tape Stock completed for param: ${param.toString()}',
+        name: 'Fetch Tape Stock Completed',
+      );
+      return model;
+    }
+  }
+
+  @override
+  Future<StretchStockModel> fetchStretchStock({
+    required String baseID,
+    required String filmSizeID,
+    required String coreID,
+  }) async {
+    StretchStockModel model = StretchStockModel();
+    try {
+      final response = await retry(
+        () =>
+            DioService.dioPostApiCall(
+              data: FormData.fromMap({
+                'activity': 'stretchfilm-stock',
+                'userKey': HiveService.getUserId(),
+                // 'baseID': baseID,
+                // 'filmSizeID': filmSizeID,
+                // 'coreID': coreID,
+              }),
+            ).timeout(
+              const Duration(seconds: 5),
+              onTimeout: () => throw TimeoutException('Request timed out'),
+            ),
+        retryIf: (e) => e is TimeoutException || e is DioException,
+        maxAttempts: 3,
+        delayFactor: const Duration(seconds: 1),
+      );
+
+      if (response.statusCode == 200) {
+        model = StretchStockModel.fromJson(response.data);
+        developer.log(
+          'Stretch Stock Data: ${response.data}',
+          name: 'Stretch Stock',
+        );
+      } else {
+        developer.log(
+          'Failed to load stretch stock data',
+          name: 'Stretch Stock Failed',
+        );
+      }
+    } catch (e) {
+      developer.log(e.toString(), name: 'Stretch Stock Error');
     }
     return model;
   }

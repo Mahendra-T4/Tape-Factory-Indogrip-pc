@@ -88,8 +88,13 @@ class _PrintStickerState extends State<PrintSticker> {
         developer.log(name: 'Load Images Error', e.toString());
       }
 
+      final scanBarcodeText =
+          batchDetailsModel.record?.batchInformation?.batchScanCode;
+
       // Add pages for each selected sticker from batchDetailsModel
-      for (var _ in selectedIndices) {
+      for (var selectedIndex in selectedIndices) {
+        final stickerNumber = selectedIndex + 1; // Start from 1
+        final barcodeTextWithIndex = '$scanBarcodeText$stickerNumber';
         pdf.addPage(
           pw.Page(
             pageFormat: PdfPageFormat(
@@ -137,8 +142,7 @@ class _PrintStickerState extends State<PrintSticker> {
                     pw.Align(
                       alignment: pw.Alignment.center,
                       child: pw.BarcodeWidget(
-                        data:
-                            '${batchDetailsModel.record!.batchInformation!.batchID}',
+                        data: barcodeTextWithIndex,
                         barcode: pw.Barcode.code128(),
                         textStyle: pw.TextStyle(
                           fontSize: 9,

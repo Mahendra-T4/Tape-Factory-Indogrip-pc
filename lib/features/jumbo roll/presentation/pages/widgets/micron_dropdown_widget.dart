@@ -50,7 +50,7 @@ class _MicronDropdownWidgetState extends State<MicronDropdownWidget> {
           case MasterJumboMicronLoadedSuccessState:
             final data = (state as MasterJumboMicronLoadedSuccessState).model;
             return data.status != 1
-                ? Center(child: Text(data.message ?? 'No response from server'))
+                ? Center(child: Text(data.message ?? 'Refresh to load data'))
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

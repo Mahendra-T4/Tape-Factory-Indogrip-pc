@@ -41,7 +41,7 @@ class StretchDetailBox extends StatelessWidget {
                 ),
                 Container(
                   height: 35,
-                  width: MediaQuery.sizeOf(context).width / 015,
+                  width: MediaQuery.sizeOf(context).width / 10,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(8.0),
@@ -118,7 +118,7 @@ class StretchDetailBox extends StatelessWidget {
                 ),
                 Container(
                   height: 35,
-                  width: MediaQuery.sizeOf(context).width / 015,
+                  width: MediaQuery.sizeOf(context).width / 10,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(8.0),
@@ -157,7 +157,7 @@ class StretchDetailBox extends StatelessWidget {
                 ),
                 Container(
                   height: 35,
-                  width: MediaQuery.sizeOf(context).width / 015,
+                  width: MediaQuery.sizeOf(context).width / 10,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(8.0),

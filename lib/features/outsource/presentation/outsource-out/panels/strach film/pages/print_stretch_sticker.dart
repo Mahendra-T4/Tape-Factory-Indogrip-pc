@@ -119,8 +119,14 @@ class _PrintStickerState extends State<PrintStretchFilmSticker> {
         developer.log(name: 'Load Images Error', e.toString());
       }
 
+      final barcodeText = data.record!.batchInformation!.batchScanCode
+          .toString();
+
       // Add pages for each selected sticker
-      for (var _ in selectedIndices) {
+      for (var selectedIndex in selectedIndices) {
+        final stickerIndex =
+            selectedIndex + 1; // Convert to 1-based index for display
+        final stickerScanText = '$barcodeText-$stickerIndex';
         pw.TextStyle style = pw.TextStyle(
           fontSize: 10,
           fontWeight: pw.FontWeight.bold,
@@ -179,7 +185,7 @@ class _PrintStickerState extends State<PrintStretchFilmSticker> {
                     pw.Align(
                       alignment: pw.Alignment.center,
                       child: pw.BarcodeWidget(
-                        data: data.record!.batchInformation!.batchID.toString(),
+                        data: stickerScanText,
                         barcode: pw.Barcode.code128(),
                         textStyle: pw.TextStyle(
                           fontSize: 10,

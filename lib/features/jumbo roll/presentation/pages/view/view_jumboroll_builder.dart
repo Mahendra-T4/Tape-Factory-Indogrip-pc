@@ -31,6 +31,7 @@ abstract class ViewJumboRollBuilder extends State<ViewJumboRollPanel> {
   bool isMultipleSelection = false;
   List<Map<String, dynamic>> selectedItems = [];
   late JumboRollDataSource? dataSource;
+  bool isLowStock = false;
   Set<int> selectedIndices = {};
   int? highlightedRowIndex;
   TextEditingController searchController = TextEditingController();
@@ -62,6 +63,7 @@ abstract class ViewJumboRollBuilder extends State<ViewJumboRollPanel> {
           widthID: widthID,
           fromDate: fromDateController.text,
           toDate: toDateController.text,
+          lowStock: isLowStock ? '1' : '2',
         ),
       ),
     );
@@ -713,6 +715,25 @@ abstract class ViewJumboRollBuilder extends State<ViewJumboRollPanel> {
       Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
+          Row(
+            spacing: 8,
+            children: [
+              Text(
+                'Show Low Stock Only',
+                style: TextStyle(fontSize: 14.2, fontWeight: FontWeight.w500),
+              ),
+              Switch(
+                value: isLowStock,
+                onChanged: (value) {
+                  setState(() {
+                    isLowStock = value;
+                  });
+                  eventHandler();
+                },
+              ),
+            ],
+          ),
+          SizedBox(width: 10),
           refreshButton,
 
           if (isMultipleSelection) buildSelectionActions(),

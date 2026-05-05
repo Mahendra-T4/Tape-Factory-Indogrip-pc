@@ -73,7 +73,7 @@ class _MasterRoleSizeSelectorState extends State<MasterRoleSizeSelector> {
                             : null,
                         child: Center(
                           child: Text(
-                            data.message ?? 'No response from server',
+                            data.message ?? 'Refresh to load data',
                             style: const TextStyle(
                               color: Color(0xFF3D475C),
                               fontSize: 14,

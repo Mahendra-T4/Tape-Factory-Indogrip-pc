@@ -32,6 +32,8 @@ class ChallanRecord {
   ClientInformation? clientInformation;
   StaffInformation? staffInformation;
   List<OrderProduct>? orderProduct;
+  OrderInformation? orderInformation;
+  AdditionalInfo? additionalInfo;
   String? rKey;
   int? rStatus;
 
@@ -40,6 +42,8 @@ class ChallanRecord {
     this.clientInformation,
     this.staffInformation,
     this.orderProduct,
+    this.orderInformation,
+    this.additionalInfo,
     this.rKey,
     this.rStatus,
   });
@@ -58,6 +62,12 @@ class ChallanRecord {
         orderProduct!.add(new OrderProduct.fromJson(v));
       });
     }
+    orderInformation = json['orderInformation'] != null
+        ? new OrderInformation.fromJson(json['orderInformation'])
+        : null;
+    additionalInfo = json['additionalInfo'] != null
+        ? new AdditionalInfo.fromJson(json['additionalInfo'])
+        : null;
     rKey = json['rKey'];
     rStatus = json['rStatus'];
   }
@@ -73,6 +83,12 @@ class ChallanRecord {
     }
     if (this.orderProduct != null) {
       data['orderProduct'] = this.orderProduct!.map((v) => v.toJson()).toList();
+    }
+    if (this.orderInformation != null) {
+      data['orderInformation'] = this.orderInformation!.toJson();
+    }
+    if (this.additionalInfo != null) {
+      data['additionalInfo'] = this.additionalInfo!.toJson();
     }
     data['rKey'] = this.rKey;
     data['rStatus'] = this.rStatus;
@@ -142,20 +158,20 @@ class OrderProduct {
   VendortInformation? vendortInformation;
   String? displayInformation;
   String? productInformation;
-  dynamic hsnCode;
+  int? hsnCode;
   dynamic unitPrice;
-  dynamic quantity;
-  dynamic displayQty;
+  int? quantity;
+  int? displayQty;
   dynamic productPrice;
   dynamic displayPrice;
   String? prRemarks;
-  dynamic returnQty;
+  String? returnQty;
   String? returnReason;
   String? returnDate;
   String? manageName;
   String? prManager;
   String? productKey;
-  dynamic productStatus;
+  int? productStatus;
   String? productStatusText;
 
   OrderProduct({
@@ -246,6 +262,94 @@ class VendortInformation {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['vCode'] = this.vCode;
     data['vCompanyName'] = this.vCompanyName;
+    return data;
+  }
+}
+
+class OrderInformation {
+  String? oDate;
+  String? oTime;
+  String? challanRemark;
+  String? manualChallanNumber;
+  String? manualChallanDate;
+
+  OrderInformation({
+    this.oDate,
+    this.oTime,
+    this.challanRemark,
+    this.manualChallanNumber,
+    this.manualChallanDate,
+  });
+
+  OrderInformation.fromJson(Map<String, dynamic> json) {
+    oDate = json['oDate'];
+    oTime = json['oTime'];
+    challanRemark = json['challanRemark'];
+    manualChallanNumber = json['manualChallanNumber'];
+    manualChallanDate = json['manualChallanDate'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['oDate'] = this.oDate;
+    data['oTime'] = this.oTime;
+    data['challanRemark'] = this.challanRemark;
+    data['manualChallanNumber'] = this.manualChallanNumber;
+    data['manualChallanDate'] = this.manualChallanDate;
+    return data;
+  }
+}
+
+class AdditionalInfo {
+  String? gSTIN;
+  String? mobileNumber;
+  String? whatsApp;
+  String? manufactureOf;
+  String? wholesaler;
+  String? mainLogo;
+  String? secondaryLogo;
+  String? termHeading;
+  String? companyName;
+  List<String>? termList;
+
+  AdditionalInfo({
+    this.gSTIN,
+    this.mobileNumber,
+    this.whatsApp,
+    this.manufactureOf,
+    this.wholesaler,
+    this.mainLogo,
+    this.secondaryLogo,
+    this.termHeading,
+    this.companyName,
+    this.termList,
+  });
+
+  AdditionalInfo.fromJson(Map<String, dynamic> json) {
+    gSTIN = json['GSTIN'];
+    mobileNumber = json['mobileNumber'];
+    whatsApp = json['WhatsApp'];
+    manufactureOf = json['manufactureOf'];
+    wholesaler = json['Wholesaler'];
+    mainLogo = json['mainLogo'];
+    secondaryLogo = json['secondaryLogo'];
+    termHeading = json['termHeading'];
+    companyName = json['CompanyName'];
+    termList = json['termList'].cast<String>();
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['GSTIN'] = this.gSTIN;
+    data['mobileNumber'] = this.mobileNumber;
+    data['WhatsApp'] = this.whatsApp;
+    data['manufactureOf'] = this.manufactureOf;
+    data['Wholesaler'] = this.wholesaler;
+    data['mainLogo'] = this.mainLogo;
+    data['secondaryLogo'] = this.secondaryLogo;
+    data['termHeading'] = this.termHeading;
+    data['CompanyName'] = this.companyName;
+    data['termList'] = this.termList;
     return data;
   }
 }

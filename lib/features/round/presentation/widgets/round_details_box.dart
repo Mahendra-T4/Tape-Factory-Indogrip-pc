@@ -4,22 +4,24 @@ import 'package:indogrip/core/theme/color_conts.dart';
 class RoundDetailBox extends StatelessWidget {
   const RoundDetailBox({
     super.key,
-    required this.availableCarton,
-    required this.totalPieces,
+    required this.totalAvailableCarton,
+    required this.fromInventory,
+    required this.fromJumbo,
   });
-  final String availableCarton;
-  final String totalPieces;
+  final String totalAvailableCarton;
+  final String fromInventory;
+  final String fromJumbo;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.center,
         spacing: 16,
         children: [
           Container(
-            padding: const EdgeInsets.all(10.0),
+            padding: const EdgeInsets.all(5),
             // width: MediaQuery.sizeOf(context).width * 0.2,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(14.0),
@@ -32,19 +34,19 @@ class RoundDetailBox extends StatelessWidget {
               spacing: 10,
               children: [
                 Text(
-                  'Available Carton',
+                  'From Inventory',
                   style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                 ),
                 Container(
                   height: 35,
-                  width: MediaQuery.sizeOf(context).width / 7,
+                  width: MediaQuery.sizeOf(context).width / 10,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                   child: Center(
                     child: Text(
-                      availableCarton,
+                      fromInventory,
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 18,
@@ -56,9 +58,8 @@ class RoundDetailBox extends StatelessWidget {
               ],
             ),
           ),
-
           Container(
-            padding: const EdgeInsets.all(10.0),
+            padding: const EdgeInsets.all(5),
             // width: MediaQuery.sizeOf(context).width * 0.2,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(14.0),
@@ -71,19 +72,57 @@ class RoundDetailBox extends StatelessWidget {
               spacing: 10,
               children: [
                 Text(
-                  'Total Pieces',
+                  'From Jumbo',
                   style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                 ),
                 Container(
                   height: 35,
-                  width: MediaQuery.sizeOf(context).width / 7,
+                  width: MediaQuery.sizeOf(context).width / 10,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                   child: Center(
                     child: Text(
-                      totalPieces,
+                      fromJumbo,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 18,
+                        color: kButtonColor,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(5),
+            // width: MediaQuery.sizeOf(context).width * 0.2,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14.0),
+              color: Colors.grey.withOpacity(.3),
+            ),
+
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
+              spacing: 10,
+              children: [
+                Text(
+                  'Total Available Carton',
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                ),
+                Container(
+                  height: 35,
+                  width: MediaQuery.sizeOf(context).width / 10,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: Center(
+                    child: Text(
+                      totalAvailableCarton,
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 18,

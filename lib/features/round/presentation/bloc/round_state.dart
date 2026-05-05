@@ -67,7 +67,6 @@ final class ShowForGetterErrorFailedStatus extends RoundState {
   ShowForGetterErrorFailedStatus({required this.error});
 }
 
-
 class MasterRollSizeLoadedSuccessStatus extends RoundState {
   final MasterRollSizeEntity model;
 
@@ -80,16 +79,26 @@ class MasterRollSizeErrorFailedStatus extends RoundState {
   MasterRollSizeErrorFailedStatus({required this.error});
 }
 
-
 class RoundDetailsLoadedSuccessStatus extends RoundState {
   final BatchDetailsModel model;
 
   RoundDetailsLoadedSuccessStatus({required this.model});
 }
 
-
 class RoundDetailsErrorFailedStatus extends RoundState {
   final String error;
 
   RoundDetailsErrorFailedStatus({required this.error});
+}
+
+class FetchJumboInformationsLoadedSuccessStatus extends RoundState {
+  final JumboInfoModel model;
+
+  FetchJumboInformationsLoadedSuccessStatus({required this.model});
+}
+
+class FetchJumboInformationsErrorFailedStatus extends RoundState {
+  final String error;
+
+  FetchJumboInformationsErrorFailedStatus({required this.error});
 }

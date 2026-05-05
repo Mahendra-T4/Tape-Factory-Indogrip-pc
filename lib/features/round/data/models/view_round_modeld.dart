@@ -6,6 +6,8 @@ class ViewRoundModel {
   String? pageText;
   int? totalPieces;
   int? availableCarton;
+  dynamic roundCarton;
+  dynamic inventoryCarton;
 
   ViewRoundModel({
     this.status,
@@ -14,6 +16,8 @@ class ViewRoundModel {
     this.pageQty,
     this.totalPieces,
     this.availableCarton,
+    this.roundCarton,
+    this.inventoryCarton,
   });
 
   ViewRoundModel.fromJson(Map<String, dynamic> json) {
@@ -29,6 +33,8 @@ class ViewRoundModel {
     pageText = json['pageText'] ?? '';
     totalPieces = json['totalPieces'];
     availableCarton = json['availableCarton'];
+    roundCarton = json['roundCarton'];
+    inventoryCarton = json['inventoryCarton'];
   }
 
   Map<String, dynamic> toJson() {
@@ -42,6 +48,8 @@ class ViewRoundModel {
     data['pageText'] = this.pageText;
     data['totalPieces'] = this.totalPieces;
     data['availableCarton'] = this.availableCarton;
+    data['roundCarton'] = this.roundCarton;
+    data['inventoryCarton'] = this.inventoryCarton;
     return data;
   }
 }

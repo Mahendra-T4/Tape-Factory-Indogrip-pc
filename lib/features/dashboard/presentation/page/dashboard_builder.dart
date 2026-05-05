@@ -3,12 +3,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:indogrip/core/responsive/responsive.dart';
+import 'package:indogrip/core/theme/color_conts.dart';
 import 'package:indogrip/core/utils/widgets/button.dart';
 import 'package:indogrip/core/utils/widgets/custom_textfield.dart';
 import 'package:indogrip/core/utils/widgets/cutom_tf_extra.dart';
 import 'package:indogrip/core/utils/widgets/toast_service.dart';
+import 'package:indogrip/core/widgets/labal_text.dart';
 import 'package:indogrip/features/dashboard/data/model/predict_cal_param.dart';
 import 'package:indogrip/features/dashboard/data/model/show_static_model.dart';
+import 'package:indogrip/features/dashboard/domain/tape_stock_entity.dart';
 import 'package:indogrip/features/dashboard/presentation/bloc/home_bloc.dart';
 import 'package:indogrip/features/dashboard/presentation/page/deshboard.dart';
 import 'package:indogrip/features/dashboard/presentation/widget/base_dasboard_widget.dart';
@@ -22,6 +25,7 @@ import 'package:indogrip/features/dashboard/presentation/widget/micron_dashboard
 import 'package:indogrip/features/dashboard/presentation/widget/width_db_widget.dart';
 import 'package:indogrip/features/global/data/repositories/global_manager_repo.dart';
 import 'package:indogrip/features/global/presentation/bloc/global_bloc.dart';
+import 'package:indogrip/features/global/presentation/widget/base_filter_field.dart';
 import 'package:indogrip/features/global/presentation/widget/refresh_button.dart';
 import 'package:indogrip/features/jumbo%20roll/presentation/bloc/jumbo_roll_bloc.dart';
 import 'package:indogrip/features/jumbo%20roll/presentation/pages/widgets/micron_dropdown_widget.dart';
@@ -29,12 +33,14 @@ import 'package:indogrip/features/outsource/presentation/widget/master_product_t
 import 'package:indogrip/features/round/domain/repositories/add_round_repo.dart';
 import 'package:indogrip/features/round/presentation/bloc/round_bloc.dart';
 import 'package:indogrip/features/round/presentation/widgets/master_roll_size_widget.dart';
+import 'package:indogrip/features/round/presentation/widgets/round_details_box.dart';
 
 enum whatToShow { micron, ratePerSqrtMeter }
 
 abstract class DashboardBuilder extends State<IndoGripDashboard> {
   late final HomeBloc homeBloc;
   late final GlobalBloc _globalBloc;
+  Key refreshKey = UniqueKey();
   whatToShow showWhat = whatToShow.ratePerSqrtMeter;
   String? selectedProduct;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -47,8 +53,8 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
   final TextEditingController conversionRate2 = TextEditingController();
   TextEditingController tapeLengthController = TextEditingController();
   TextEditingController ratePerSquareMeterController = TextEditingController();
-  // TextEditingController  wastagePercentage = TextEditingController();
-  // TextEditingController  conversionRate = TextEditingController();
+  final tapLengthController = TextEditingController();
+  final tapWidthController = TextEditingController();
   TextEditingController marginController = TextEditingController();
   String? selectedRoundSize;
   ShowStaticModel? dashboardData;
@@ -62,6 +68,8 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
   dynamic wastagePrt;
   dynamic conversionRt;
 
+  String? micID, baseID, widthID;
+
   bool isMic = false;
 
   @override
@@ -69,6 +77,7 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
     homeBloc = HomeBloc();
     _globalBloc = GlobalBloc(globalRepository: GlobalManagerRepository());
     homeBloc.add(FetchDashboardStaticsEvent());
+
     _roundBloc = RoundBloc(addRoundRepository: AddRoundRepository());
     _jumboRollBloc = JumboRollBloc();
 
@@ -123,6 +132,8 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
   );
 
   double? widgetHeight;
+
+  // Widget get dashboardFilterWidget =>
 
   Widget buildJumboRollStatics({
     required int? totalRolls,
@@ -385,7 +396,7 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
           spacing: 16,
           children: [
             Text(
-              'Predict Calculation using Rate Per Square Meter',
+              'Cost Calculation using Rate Per Square Meter',
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -463,6 +474,56 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
                       ],
                     ),
                   ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: CustomTextFieldExtra(
+                        controller: wastagePercentage2,
+                        labelText: 'Wastage Percentage',
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                        ],
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter wastage percentage';
+                          }
+                          if (double.tryParse(value) == null) {
+                            return 'Please enter a valid number';
+                          }
+                          if (double.parse(value) < 0 ||
+                              double.parse(value) > 100) {
+                            return 'Wastage percentage must be between 0 and 100';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: CustomTextFieldExtra(
+                        controller: conversionRate2,
+                        labelText: 'Conversion Rate',
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                        ],
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter conversion rate';
+                          }
+                          if (double.tryParse(value) == null) {
+                            return 'Please enter a valid number';
+                          }
+                          // if (double.parse(value) < 0 ||
+                          //     double.parse(value) > 100) {
+                          //   return 'Conversion rate must be between 0 and 100';
+                          // }
+                          return null;
+                        },
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -473,50 +534,6 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
               child: Row(
                 spacing: 16,
                 children: [
-                  Expanded(
-                    child: CustomTextFieldExtra(
-                      controller: wastagePercentage2,
-                      labelText: 'Wastage Percentage',
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                      ],
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter wastage percentage';
-                        }
-                        if (double.tryParse(value) == null) {
-                          return 'Please enter a valid number';
-                        }
-                        if (double.parse(value) < 0 ||
-                            double.parse(value) > 100) {
-                          return 'Wastage percentage must be between 0 and 100';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                  Expanded(
-                    child: CustomTextFieldExtra(
-                      controller: conversionRate2,
-                      labelText: 'Conversion Rate',
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                      ],
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter conversion rate';
-                        }
-                        if (double.tryParse(value) == null) {
-                          return 'Please enter a valid number';
-                        }
-                        // if (double.parse(value) < 0 ||
-                        //     double.parse(value) > 100) {
-                        //   return 'Conversion rate must be between 0 and 100';
-                        // }
-                        return null;
-                      },
-                    ),
-                  ),
                   Expanded(
                     child: CustomTextFieldExtra(
                       controller: marginController,
@@ -539,6 +556,10 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
                       },
                     ),
                   ),
+                  Expanded(child: SizedBox()),
+                  Expanded(child: SizedBox()),
+                  Expanded(child: SizedBox()),
+                  Expanded(child: SizedBox()),
                 ],
               ),
             ),
@@ -603,7 +624,7 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
           spacing: 16,
           children: [
             Text(
-              'Predict Calculation using Micron',
+              'Cost Calculation using Micron',
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -665,16 +686,6 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
                       ],
                     ),
                   ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: Responsive.kHZRowPadding,
-              ),
-              child: Row(
-                spacing: 16,
-                children: [
                   Expanded(
                     child: Column(
                       children: [
@@ -722,6 +733,16 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
                       },
                     ),
                   ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: Responsive.kHZRowPadding,
+              ),
+              child: Row(
+                spacing: 16,
+                children: [
                   Expanded(
                     child: CustomTextFieldExtra(
                       controller: conversionRate2,
@@ -744,16 +765,6 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
                       },
                     ),
                   ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: Responsive.kHZRowPadding,
-              ),
-              child: Row(
-                spacing: 16,
-                children: [
                   Expanded(
                     child: CustomTextFieldExtra(
                       controller: marginController,
@@ -778,9 +789,11 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
                   ),
                   Expanded(child: SizedBox()),
                   Expanded(child: SizedBox()),
+                  Expanded(child: SizedBox()),
                 ],
               ),
             ),
+
             Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: Responsive.kHZRowPadding,
@@ -1676,7 +1689,7 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
         Expanded(
           child: _buildMasterDataCard(
             480,
-            title: 'Carton Stock',
+            title: 'Empty Carton Stock',
             icon: Icons.category,
             color: const Color(0xFF27AE60),
             child: MasterCartonTypeDropDownDB(),
