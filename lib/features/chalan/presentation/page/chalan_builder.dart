@@ -196,6 +196,9 @@ abstract class ChalanBuilder extends State<ChalanPanel> {
                   ),
                 );
               },
+              onDeleteSuccess: () {
+                dataLoadingEventCall();
+              },
             );
           }
           return state.model.status != 1
@@ -336,6 +339,19 @@ abstract class ChalanBuilder extends State<ChalanPanel> {
         ),
       ),
       GridColumn(
+        columnName: Chalan.manualChallanNumber,
+        width: double.nan,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Text(
+            'Manual Challan No.',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+      ),
+      GridColumn(
         columnName: Chalan.dateTime,
         width: double.nan,
         label: Container(
@@ -344,6 +360,19 @@ abstract class ChalanBuilder extends State<ChalanPanel> {
           alignment: Alignment.center,
           child: const Text(
             'Date',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+      ),
+      GridColumn(
+        columnName: Chalan.manualChallanDate,
+        width: double.nan,
+        label: Container(
+          color: Colors.grey[100],
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          alignment: Alignment.center,
+          child: const Text(
+            'Manual Challan Date',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
         ),

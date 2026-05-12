@@ -14,6 +14,7 @@ import 'package:indogrip/features/global/data/model/change_status_param.dart';
 import 'package:indogrip/features/global/data/model/delete_record_model.dart';
 import 'package:indogrip/features/global/data/model/delete_record_param.dart';
 import 'package:indogrip/features/global/data/model/master_status_model.dart';
+import 'package:indogrip/features/global/data/model/profit_loss_modeld.dart';
 import 'package:indogrip/features/global/data/model/setting_model.dart';
 import 'package:indogrip/features/global/data/model/stock_status_model.dart';
 import 'package:indogrip/features/global/data/model/success_reponse.dart';
@@ -485,5 +486,52 @@ class GlobalManagerRepository implements GlobalRepository {
       );
     }
     return successResponse;
+  }
+
+  @override
+  Future<ProfitAndLossModel> profitAndLossGetter({
+    required String toDate,
+    required String fromDate,
+    required String productType,
+  }) async {
+    ProfitAndLossModel model = ProfitAndLossModel();
+    try {
+      final formData = FormData.fromMap({
+        'activity': 'profit-and-loss',
+        'userKey': HiveService.getUserId(),
+        'toDate': toDate,
+        'fromDate': fromDate,
+        'productType': productType,
+      });
+      final response = await DioService.dioPostApiCall(data: formData).timeout(
+        const Duration(seconds: 5),
+        onTimeout: () => throw TimeoutException('Request timed out'),
+      );
+
+      if (response.statusCode == 200) {
+        model = ProfitAndLossModel.fromJson(response.data);
+        developer.log(
+          formData.fields.toString(),
+          name: 'Profit and Loss Param',
+        );
+        developer.log(
+          response.data.toString(),
+          name: 'Profit and Loss Getter Response',
+        );
+      } else {
+        developer.log(
+          'Failed to fetch profit and loss data: ${response.statusCode}',
+          name: 'Profit and Loss Getter Error',
+        );
+      }
+    } catch (e) {
+      print(e);
+    } finally {
+      developer.log(
+        'Profit and Loss Getter Response: ${model.toJson().toString()}',
+        name: 'Profit and Loss Getter',
+      );
+      return model;
+    }
   }
 }

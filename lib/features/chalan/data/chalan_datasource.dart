@@ -17,8 +17,8 @@ class Chalan {
   static final String unitName = 'Unit Name';
   static final String name = 'Staff Name';
 
-  // static final String billNo = 'Bill No';
-  // static final String companyName = 'Company Name';
+  static final String manualChallanNumber = 'Manual Chalan No';
+  static final String manualChallanDate = 'Manual Chalan Date';
 }
 
 class ChalanDataSource extends DataGridSource {
@@ -33,6 +33,7 @@ class ChalanDataSource extends DataGridSource {
   final Function(ChalanRecord) onDelete;
   final Function(ChalanRecord) onProfile;
   final void Function(String?, ChalanRecord) onChanged;
+  final Function? onDeleteSuccess;
 
   ChalanDataSource({
     required this.context,
@@ -45,6 +46,7 @@ class ChalanDataSource extends DataGridSource {
     required this.onDelete,
     required this.onProfile,
     required this.onChanged,
+    this.onDeleteSuccess,
   }) {
     buildDataGridRows();
   }
@@ -64,9 +66,18 @@ class ChalanDataSource extends DataGridSource {
             value: data.challanNumber.toString(),
           ),
           DataGridCell<String>(
+            columnName: Chalan.manualChallanNumber,
+            value: data.manualChallanNumber.toString(),
+          ),
+          DataGridCell<String>(
             columnName: Chalan.dateTime,
             value: data.dateTime.toString(),
           ),
+          DataGridCell<String>(
+            columnName: Chalan.manualChallanDate,
+            value: data.manualChallanDate.toString(),
+          ),
+
           DataGridCell<String>(
             columnName: Chalan.cCode,
             value: data.clientInformation?.cCode.toString(),
@@ -163,28 +174,28 @@ class ChalanDataSource extends DataGridSource {
           //     constraints: const BoxConstraints(),
           //   ),
           // ),
-          // IconButton(
-          //   icon: const Icon(Icons.delete, size: 20),
-          //   visualDensity: VisualDensity.compact,
-          //   padding: EdgeInsets.zero,
-          //   constraints: const BoxConstraints(minWidth: 35, minHeight: 35),
-          //   onPressed: () {
-          //     DeleteConfirmationAlert.show(
-          //       context,
-          //       title: 'Delete Record',
-          //       message: 'Are Your to Delete This client Record',
-          //       itemName: '${chalan.challanNumber}',
-
-          //       onConfirm: () {
-          //         onDelete(chalan);
-          //       },
-          //       rPanel: 'view-client',
-          //       item: chalanData,
-          //       index: chalanData.indexOf(chalan),
-          //       rKey: chalan.rKey.toString(),
-          //     );
-          //   },
-          // ),
+          IconButton(
+            icon: const Icon(Icons.delete, size: 20),
+            visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 35, minHeight: 35),
+            onPressed: () {
+              DeleteConfirmationAlert.show(
+                context,
+                title: 'Delete Record',
+                message: 'Are Your to Delete This client Record',
+                itemName: '${chalan.challanNumber}',
+                onDeleteSuccess: onDeleteSuccess,
+                onConfirm: () {
+                  onDelete(chalan);
+                },
+                rPanel: 'challan-list',
+                item: chalanData,
+                index: chalanData.indexOf(chalan),
+                rKey: chalan.rKey.toString(),
+              );
+            },
+          ),
           SizedBox(
             width: 35,
             child: IconButton(

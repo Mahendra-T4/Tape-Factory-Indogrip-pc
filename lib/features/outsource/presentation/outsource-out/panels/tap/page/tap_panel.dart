@@ -24,6 +24,7 @@ import 'package:indogrip/features/outsource/presentation/outside-in/edit/edit_in
 import 'package:indogrip/features/outsource/presentation/outsource-out/panels/tap/page/tape_builder.dart';
 import 'package:indogrip/features/outsource/presentation/state/bloc.out/inventory_out_bloc.dart';
 import 'package:indogrip/features/outsource/presentation/widget/tap_details_box.dart';
+import 'package:indogrip/features/round/presentation/widgets/round_details_box.dart';
 import 'package:indogrip/features/staff/data/models/view_staff_api_param.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:indogrip/features/outsource/data/data%20source/tap_data_source.dart';
@@ -447,6 +448,12 @@ class _TapPanelState extends TapeBuilder {
                   )
                 : Column(
                     children: [
+                      RoundDetailBox(
+                        totalAvailableCarton: state.model.availableCarton
+                            .toString(),
+                        fromInventory: state.model.inventoryCarton.toString(),
+                        fromJumbo: state.model.roundCarton.toString(),
+                      ),
                       TapeDetailBox(
                         availableCarton: tapData.availableCarton.toString(),
                         totalPieces: tapData.totalPieces.toString(),

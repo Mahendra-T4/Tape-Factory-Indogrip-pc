@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:developer' as developer;
 import 'dart:io';
-
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:indogrip/core/database/hive_service.dart';
@@ -78,7 +77,7 @@ class AddClientRepository {
       final formData = FormData.fromMap({
         'activity': 'view-client',
         'userKey': HiveService.getUserId(),
-        'keyword': param.keyword ?? '',
+        'keyword': param.keyword,
         'filterBy': param.filterBy ?? '',
         'sortBy': param.sortBy ?? '',
         'orderBy': param.orderBy ?? '',

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:indogrip/features/global/data/model/change_status_model.dart';
 import 'package:indogrip/features/global/data/model/change_status_param.dart';
 import 'package:indogrip/features/global/data/model/delete_record_model.dart';
+import 'package:indogrip/features/global/data/model/profit_loss_modeld.dart';
 import 'package:indogrip/features/global/data/model/setting_model.dart';
 import 'package:indogrip/features/global/data/model/stock_status_model.dart';
 import 'package:indogrip/features/global/data/model/success_reponse.dart';
@@ -54,5 +55,11 @@ abstract class GlobalRepository {
     required String conversionRate,
     required String wastagePercentage,
     required String amountPerKG,
+  });
+
+  Future<ProfitAndLossModel> profitAndLossGetter({
+    required String toDate,
+    required String fromDate,
+    required String productType,
   });
 }

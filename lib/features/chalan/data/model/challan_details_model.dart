@@ -103,6 +103,7 @@ class ClientInformation {
   String? cMobileNumber;
   String? cAlternateNumber;
   String? cGSTIN;
+  String? clientKey;
 
   ClientInformation({
     this.cCode,
@@ -111,6 +112,7 @@ class ClientInformation {
     this.cMobileNumber,
     this.cAlternateNumber,
     this.cGSTIN,
+    this.clientKey,
   });
 
   ClientInformation.fromJson(Map<String, dynamic> json) {
@@ -120,6 +122,7 @@ class ClientInformation {
     cMobileNumber = json['cMobileNumber'];
     cAlternateNumber = json['cAlternateNumber'];
     cGSTIN = json['cGSTIN'];
+    clientKey = json['clientKey'];
   }
 
   Map<String, dynamic> toJson() {
@@ -130,6 +133,7 @@ class ClientInformation {
     data['cMobileNumber'] = this.cMobileNumber;
     data['cAlternateNumber'] = this.cAlternateNumber;
     data['cGSTIN'] = this.cGSTIN;
+    data['clientKey'] = this.clientKey;
     return data;
   }
 }
@@ -267,23 +271,23 @@ class VendortInformation {
 }
 
 class OrderInformation {
-  String? oDate;
-  String? oTime;
+  String? dateTime;
+  String? challanNumber;
   String? challanRemark;
   String? manualChallanNumber;
   String? manualChallanDate;
 
   OrderInformation({
-    this.oDate,
-    this.oTime,
+    this.dateTime,
+    this.challanNumber,
     this.challanRemark,
     this.manualChallanNumber,
     this.manualChallanDate,
   });
 
   OrderInformation.fromJson(Map<String, dynamic> json) {
-    oDate = json['oDate'];
-    oTime = json['oTime'];
+    dateTime = json['dateTime'];
+    challanNumber = json['challanNumber'];
     challanRemark = json['challanRemark'];
     manualChallanNumber = json['manualChallanNumber'];
     manualChallanDate = json['manualChallanDate'];
@@ -291,8 +295,8 @@ class OrderInformation {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['oDate'] = this.oDate;
-    data['oTime'] = this.oTime;
+    data['dateTime'] = this.dateTime;
+    data['challanNumber'] = this.challanNumber;
     data['challanRemark'] = this.challanRemark;
     data['manualChallanNumber'] = this.manualChallanNumber;
     data['manualChallanDate'] = this.manualChallanDate;

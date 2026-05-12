@@ -219,3 +219,15 @@ final class SubmitRoundScannedDataFailureStatus extends GlobalState {
 
   SubmitRoundScannedDataFailureStatus({required this.errorMessage});
 }
+
+final class ProfitAndLossGetterSuccessStatus extends GlobalState {
+  final ProfitAndLossModel model;
+
+  ProfitAndLossGetterSuccessStatus({required this.model});
+}
+
+final class ProfitAndLossGetterFailureStatus extends GlobalState {
+  final String errorMessage;
+
+  ProfitAndLossGetterFailureStatus({required this.errorMessage});
+}

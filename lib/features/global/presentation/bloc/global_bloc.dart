@@ -10,6 +10,7 @@ import 'package:indogrip/features/chalan/domain/repositories/chalan_repo.dart';
 import 'package:indogrip/features/global/data/model/change_status_model.dart';
 import 'package:indogrip/features/global/data/model/change_status_param.dart';
 import 'package:indogrip/features/global/data/model/delete_record_model.dart';
+import 'package:indogrip/features/global/data/model/profit_loss_modeld.dart';
 import 'package:indogrip/features/global/data/model/setting_model.dart';
 import 'package:indogrip/features/global/data/model/stock_status_model.dart';
 import 'package:indogrip/features/global/data/model/success_reponse.dart';
@@ -49,6 +50,7 @@ class GlobalBloc extends Bloc<GlobalEvent, GlobalState> {
     on<AddChallanInfoEvent>(addChallanInfoEvent);
     on<FetchRoundDetailsEvent>(_fetchRoundDetailsEvent);
     on<SubmitRoundScannedDataEvent>(_submitRoundScannedDataEvent);
+    on<ProfitAndLossGetterEvent>(_profitAndLossGetterEvent);
   }
 
   FutureOr<void> _globalChangeUserStatusEvent(
@@ -300,6 +302,23 @@ class GlobalBloc extends Bloc<GlobalEvent, GlobalState> {
       emit(SubmitRoundScannedDataSuccessStatus(model: batchCodes));
     } catch (e) {
       emit(SubmitRoundScannedDataFailureStatus(errorMessage: e.toString()));
+    }
+  }
+
+  FutureOr<void> _profitAndLossGetterEvent(
+    ProfitAndLossGetterEvent event,
+    Emitter<GlobalState> emit,
+  ) async {
+    emit(GlobalLoadingStatus());
+    try {
+      final model = await globalRepository.profitAndLossGetter(
+        toDate: event.toDate,
+        fromDate: event.fromDate,
+        productType: event.productType,
+      );
+      emit(ProfitAndLossGetterSuccessStatus(model: model));
+    } catch (e) {
+      emit(ProfitAndLossGetterFailureStatus(errorMessage: e.toString()));
     }
   }
 }

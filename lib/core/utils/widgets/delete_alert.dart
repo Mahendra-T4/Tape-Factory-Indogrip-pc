@@ -14,6 +14,7 @@ class DeleteConfirmationAlert extends StatefulWidget {
   final List<dynamic>? item;
   final int? index;
   final String rKey;
+  final Function? onDeleteSuccess;
 
   const DeleteConfirmationAlert({
     super.key,
@@ -25,6 +26,7 @@ class DeleteConfirmationAlert extends StatefulWidget {
     this.item,
     this.index,
     required this.rKey,
+    this.onDeleteSuccess,
   });
 
   static Future<bool?> show(
@@ -37,6 +39,7 @@ class DeleteConfirmationAlert extends StatefulWidget {
     required List<dynamic>? item,
     required int? index,
     required String rKey,
+    Function? onDeleteSuccess,
   }) {
     return showDialog<bool>(
       context: context,
@@ -51,6 +54,7 @@ class DeleteConfirmationAlert extends StatefulWidget {
         item: item,
         index: index,
         rKey: rKey,
+        onDeleteSuccess: onDeleteSuccess,
       ),
     );
   }
@@ -265,12 +269,11 @@ class _DeleteConfirmationAlertState extends State<DeleteConfirmationAlert>
     listener: (context, state) {
       if (state is GlobalDeleteRecordSuccessStatus) {
         if (state.deleteRecordEntity.status == 1) {
-          widget.item?.removeAt(widget.index ?? 0);
-          widget.onConfirm.call();
           ToastService.instance.showSuccess(
             context,
             state.deleteRecordEntity.message ?? "Record deleted successfully",
           );
+          widget.onDeleteSuccess?.call();
           // Close dialog after deletion succeeds
           Future.delayed(const Duration(milliseconds: 300), () {
             if (mounted && Navigator.canPop(context)) {

@@ -6,7 +6,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
-import 'package:indogrip/Assets/assets.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:indogrip/core/database/init_box.dart';
 import 'package:indogrip/core/database/round_db_hive.dart';
 import 'package:indogrip/core/theme/color_conts.dart';
 import 'package:indogrip/core/utils/widgets/button.dart';
@@ -24,6 +25,7 @@ import 'package:indogrip/features/chalan/presentation/page/bill/bill_formate.dar
 import 'package:indogrip/features/global/data/repositories/global_manager_repo.dart';
 import 'package:indogrip/features/global/presentation/bloc/global_bloc.dart';
 import 'package:indogrip/features/round/data/models/view_round_modeld.dart';
+import 'package:indogrip/features/wastage/presentation/widgets/client_list_dropdown.dart';
 
 abstract class BillFormatBuilder extends State<BillFormate> {
   late final ChallanBloc challanBloc;
@@ -46,6 +48,17 @@ abstract class BillFormatBuilder extends State<BillFormate> {
       TextEditingController();
   final FocusNode barcodeFocusNode = FocusNode();
 
+  String? selectedClientKey;
+  String? clientUnitName;
+  String? clientName;
+  int? _scannedItemCount;
+
+  updateScannedItemCount(int count) {
+    setState(() {
+      _scannedItemCount = count;
+    });
+  }
+
   final TextEditingController challanRemarkController = TextEditingController();
   final TextEditingController challanNoController = TextEditingController();
   // final TextEditingController challanDateController = TextEditingController();
@@ -62,6 +75,47 @@ abstract class BillFormatBuilder extends State<BillFormate> {
     return value.toString();
   }
 
+  void _clearControllers() {
+    // Dispose focus nodes
+    for (final focusNode in rowUnitPriceFocusNodes) {
+      focusNode.dispose();
+    }
+    for (final focusNode in rowDisplayQuantityFocusNodes) {
+      focusNode.dispose();
+    }
+    for (final focusNode in rowRemarkFocusNodes) {
+      focusNode.dispose();
+    }
+    for (final focusNode in actualQtyFocusNodes) {
+      focusNode.dispose();
+    }
+
+    // Dispose controllers
+    for (final controller in rowUnitPriceControllers) {
+      controller.dispose();
+    }
+    for (final controller in rowDisplayQuantityControllers) {
+      controller.dispose();
+    }
+    for (final controller in rowRemarkControllers) {
+      controller.dispose();
+    }
+    for (final controller in actualQtyControllers) {
+      controller.dispose();
+    }
+
+    // Clear lists
+    rowUnitPriceFocusNodes.clear();
+    rowDisplayQuantityFocusNodes.clear();
+    rowRemarkFocusNodes.clear();
+    actualQtyFocusNodes.clear();
+    rowUnitPriceControllers.clear();
+    rowDisplayQuantityControllers.clear();
+    rowRemarkControllers.clear();
+    actualQtyControllers.clear();
+    rowDisplayPrices.clear();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -75,30 +129,7 @@ abstract class BillFormatBuilder extends State<BillFormate> {
 
   @override
   void dispose() {
-    for (final focusNode in rowUnitPriceFocusNodes) {
-      focusNode.dispose();
-    }
-    for (final focusNode in rowDisplayQuantityFocusNodes) {
-      focusNode.dispose();
-    }
-    for (final focusNode in rowRemarkFocusNodes) {
-      focusNode.dispose();
-    }
-    for (final focusNode in actualQtyFocusNodes) {
-      focusNode.dispose();
-    }
-    for (final controller in rowUnitPriceControllers) {
-      controller.dispose();
-    }
-    for (final controller in rowDisplayQuantityControllers) {
-      controller.dispose();
-    }
-    for (final controller in rowRemarkControllers) {
-      controller.dispose();
-    }
-    for (final controller in actualQtyControllers) {
-      controller.dispose();
-    }
+    _clearControllers();
     unitPriceController.dispose();
     remarkController.dispose();
     chalanDateController.dispose();
@@ -109,6 +140,53 @@ abstract class BillFormatBuilder extends State<BillFormate> {
     challanBloc.close();
     globalBloc.close();
     super.dispose();
+  }
+
+  Widget itemCount() {
+    final box = Boxes.roundData();
+
+    final scannedData = box.values.toList().cast<RoundDataModel>();
+
+    final clientData = scannedData.where(
+      (item) => item.rKey == widget.orderKey,
+    );
+
+    _scannedItemCount = clientData.length;
+
+    return Column(
+      // spacing: 5,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Scanned Cartons',
+          style: GoogleFonts.poppins(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: Colors.black87,
+          ),
+        ),
+        Container(
+          width: 140,
+          height: 40,
+          alignment: Alignment.center,
+          margin: EdgeInsets.only(top: 6),
+          decoration: BoxDecoration(
+            color: Colors.blueGrey[50],
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.blueGrey, width: 1.5),
+          ),
+          child: Text(
+            _scannedItemCount.toString(),
+            style: GoogleFonts.poppins(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+        SizedBox(height: 15),
+      ],
+    );
   }
 
   Widget buildModernAddButton() {
@@ -138,7 +216,6 @@ abstract class BillFormatBuilder extends State<BillFormate> {
         }
       },
       builder: (BuildContext context, GlobalState state) {
-        print('DEBUG: GlobalBloc state = ${state.runtimeType}'); // Debug print
         final isLoading = state is GlobalLoadingStatus;
 
         return SizedBox(
@@ -218,7 +295,7 @@ abstract class BillFormatBuilder extends State<BillFormate> {
     ],
   );
 
-  Widget buildAddChallanInfoWidget(challanKey) => BlocConsumer(
+  Widget buildAddChallanInfoWidget(challanKey, cKey, cUnitName) => BlocConsumer(
     bloc: globalBloc,
     listener: (context, state) {
       if (state is AddChallanInfoSuccessState) {
@@ -254,6 +331,8 @@ abstract class BillFormatBuilder extends State<BillFormate> {
                 challanNumber: challanNoController.text,
                 challanDate: chalanDateController.text,
                 challanKey: challanKey,
+                clientUnitName: cUnitName ?? clientUnitName,
+                clientKey: cKey ?? selectedClientKey,
               ),
             ),
           );
@@ -309,14 +388,31 @@ abstract class BillFormatBuilder extends State<BillFormate> {
   );
 
   Widget leftSideDetailsFillContainer({
-    required String clientName,
+    required String clientKey,
     required String clientPhone,
     required String gstin,
+    required dynamic Function(String?) onChanged,
+    // required String orderKey,
   }) => Container(
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('M/s. $clientName'),
+        Row(
+          spacing: 10,
+          children: [
+            Expanded(
+              flex: 2,
+              child: ClientsListDropdown(
+                isFilter: true,
+                label: 'Client Name',
+                value: selectedClientKey ?? clientKey,
+                onChanged: onChanged,
+              ),
+            ),
+            Expanded(child: itemCount()),
+          ],
+        ),
+        // Text('M/s. $clientName'),
         Text('________________________________'),
         Text('Contact No.: $clientPhone'),
         Text('Party\'s GSTIN: ${gstin}'),
@@ -343,8 +439,14 @@ abstract class BillFormatBuilder extends State<BillFormate> {
 
   Widget dataTableWidget(List<ChallanRecord>? record) {
     final products = record?.expand((r) => r.orderProduct ?? []).toList() ?? [];
-    if (rowUnitPriceControllers.length < products.length) {
-      for (var i = rowUnitPriceControllers.length; i < products.length; i++) {
+
+    // Only initialize controllers if product count changed or first time
+    // Check both controller and focus node counts to ensure consistency
+    if (rowUnitPriceControllers.length != products.length ||
+        rowUnitPriceFocusNodes.length != products.length) {
+      _clearControllers();
+
+      for (var i = 0; i < products.length; i++) {
         rowUnitPriceControllers.add(
           TextEditingController(text: products[i].unitPrice?.toString() ?? '0'),
         );
@@ -371,8 +473,25 @@ abstract class BillFormatBuilder extends State<BillFormate> {
             double.tryParse(products[i].displayQty?.toString() ?? '0') ?? 0.0;
         rowDisplayPrices.add(unitPrice * displayQty);
       }
+    } else {
+      // Product count hasn't changed - preserve user input
+      // Only update rowDisplayPrices based on current controller values
+      for (var i = 0; i < products.length; i++) {
+        final currentUnitPrice =
+            double.tryParse(rowUnitPriceControllers[i].text) ??
+            double.tryParse(products[i].unitPrice?.toString() ?? '0') ??
+            0.0;
+        final currentDisplayQty =
+            double.tryParse(rowDisplayQuantityControllers[i].text) ??
+            double.tryParse(products[i].displayQty?.toString() ?? '0') ??
+            0.0;
+        if (rowDisplayPrices.length <= i) {
+          rowDisplayPrices.add(currentUnitPrice * currentDisplayQty);
+        } else {
+          rowDisplayPrices[i] = currentUnitPrice * currentDisplayQty;
+        }
+      }
     }
-
     return SizedBox(
       width: MediaQuery.sizeOf(context).width * 0.98,
       child: Table(
@@ -831,72 +950,51 @@ abstract class BillFormatBuilder extends State<BillFormate> {
                         ),
 
                         SizedBox(height: 4),
-                        BlocListener(
-                          bloc: globalBloc,
-                          listener: (context, state) {
-                            if (state is GlobalDeleteRecordSuccessStatus) {
-                              if (state.deleteRecordEntity.status == 1) {
-                                ToastService.instance.showSuccess(
-                                  context,
-                                  state.deleteRecordEntity.message.toString(),
-                                );
-                                challanBloc.add(
-                                  FetchChallanDetailsInBillEvent(
-                                    orderKey: widget.orderKey,
-                                  ),
-                                );
-                              } else {
-                                ToastService.instance.showError(
-                                  context,
-                                  state.deleteRecordEntity.message.toString(),
-                                );
-                              }
-                            } else if (state is GlobalDeleteRecordErrorStatus) {
-                              ToastService.instance.showError(
+                        SizedBox(
+                          width: double.infinity,
+                          height: 25,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              DeleteConfirmationAlert.show(
                                 context,
-                                state.message.toString(),
-                              );
-                            }
-                          },
-                          child: SizedBox(
-                            width: double.infinity,
-                            height: 25,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                DeleteConfirmationAlert.show(
-                                  context,
-                                  title: 'Delete Record',
-                                  message:
-                                      'Are Your to Delete This client Record',
-                                  itemName: products[index].hsnCode.toString(),
+                                onDeleteSuccess: () {
+                                  challanBloc.add(
+                                    FetchChallanDetailsInBillEvent(
+                                      orderKey: widget.orderKey,
+                                    ),
+                                  );
+                                },
+                                title: 'Delete Record',
+                                message:
+                                    'Are Your to Delete This client Record',
+                                itemName: product.displayInformation.toString(),
 
-                                  onConfirm: () {
-                                    globalBloc.add(
-                                      GlobalDeleteRecordEvent(
-                                        rKey: products[index].productKey
-                                            .toString(),
-                                        rPanel: 'challan-details',
-                                      ),
-                                    );
-                                  },
-                                  rPanel: 'challan-details',
-                                  item: products,
-                                  index: index,
-                                  rKey: products[index].productKey.toString(),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red.shade600,
-                                foregroundColor: Colors.white,
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 6,
-                                ),
+                                onConfirm: () {
+                                  globalBloc.add(
+                                    GlobalDeleteRecordEvent(
+                                      rKey: products[index].productKey
+                                          .toString(),
+                                      rPanel: 'challan-details',
+                                    ),
+                                  );
+                                },
+                                rPanel: 'challan-details',
+                                item: products,
+                                index: index,
+                                rKey: products[index].productKey.toString(),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red.shade600,
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 6,
                               ),
-                              child: Text(
-                                'Delete',
-                                style: TextStyle(fontSize: 10),
-                              ),
+                            ),
+                            child: Text(
+                              'Delete',
+                              style: TextStyle(fontSize: 10),
                             ),
                           ),
                         ),
@@ -1504,12 +1602,18 @@ abstract class BillFormatBuilder extends State<BillFormate> {
                                 );
                                 await box.add(data);
 
+                                updateScannedItemCount(_scannedItemCount! + 1);
+
                                 if (mounted) {
                                   ToastService.instance.showSuccess(
                                     context,
                                     'Round details saved successfully!',
                                   );
                                   GoRouter.of(context).pop();
+                                  // setState(() {
+                                  //   _scannedItemCount =
+                                  //       (_scannedItemCount ?? 0) + 1;
+                                  // });
                                 }
                               },
                               icon: Icon(Icons.check_circle_rounded, size: 20),

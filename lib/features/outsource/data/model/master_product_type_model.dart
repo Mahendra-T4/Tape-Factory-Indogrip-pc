@@ -1,6 +1,6 @@
 class MasterProductTypeModel {
   int? status;
-  List<Record>? record;
+  List<ProductRecord>? record;
   String? message;
 
   MasterProductTypeModel({this.status, this.record, this.message});
@@ -8,9 +8,9 @@ class MasterProductTypeModel {
   MasterProductTypeModel.fromJson(Map<String, dynamic> json) {
     status = json['status'];
     if (json['record'] != null) {
-      record = <Record>[];
+      record = <ProductRecord>[];
       json['record'].forEach((v) {
-        record!.add(new Record.fromJson(v));
+        record!.add(new ProductRecord.fromJson(v));
       });
     }
     message = json['message'];
@@ -27,13 +27,13 @@ class MasterProductTypeModel {
   }
 }
 
-class Record {
+class ProductRecord {
   int? productID;
   String? productTypeName;
 
-  Record({this.productID, this.productTypeName});
+  ProductRecord({this.productID, this.productTypeName});
 
-  Record.fromJson(Map<String, dynamic> json) {
+  ProductRecord.fromJson(Map<String, dynamic> json) {
     productID = json['productID'];
     productTypeName = json['productTypeName'];
   }

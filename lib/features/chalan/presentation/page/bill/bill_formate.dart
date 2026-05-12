@@ -12,10 +12,12 @@ import 'package:indogrip/core/utils/sidebar.dart';
 import 'package:indogrip/core/utils/widgets/button.dart';
 import 'package:indogrip/core/utils/widgets/custom_textfield.dart';
 import 'package:indogrip/core/utils/widgets/text_field.dart';
+import 'package:indogrip/core/utils/widgets/toast_service.dart';
 import 'package:indogrip/features/chalan/data/model/challan_details_model.dart';
 import 'package:indogrip/features/chalan/presentation/bloc/challan_bloc.dart';
 import 'package:indogrip/features/chalan/presentation/page/bill/bill_format_buiilder.dart';
 import 'package:indogrip/features/chalan/presentation/page/scanned-carton/scanned_carton.dart';
+import 'package:indogrip/features/global/presentation/bloc/global_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
@@ -170,7 +172,7 @@ class _BillFormateState extends BillFormatBuilder {
                               crossAxisAlignment: pw.CrossAxisAlignment.start,
                               children: [
                                 pw.Text(
-                                  'M/s. ${data.first.clientInformation!.cConsigneeName ?? ''}',
+                                  'M/s. ${clientName ?? data.first.clientInformation!.cConsigneeName}',
                                   style: pw.TextStyle(fontSize: 9),
                                 ),
 
@@ -200,12 +202,12 @@ class _BillFormateState extends BillFormatBuilder {
                               // border: pw.TableBorder.all(),
                               children: [
                                 pw.Text(
-                                  'ChallanNo.: ${data.first.orderInformation!.manualChallanNumber ?? ''}',
+                                  'ChallanNo.: ${data.first.orderInformation!.challanNumber ?? ''}',
                                   style: pw.TextStyle(fontSize: 8),
                                 ),
                                 pw.SizedBox(height: 3),
                                 pw.Text(
-                                  'DT.: ${data.first.orderInformation!.manualChallanDate ?? ''}',
+                                  'DT.: ${data.first.orderInformation!.dateTime ?? ''}',
                                   style: pw.TextStyle(fontSize: 8),
                                 ),
                                 pw.SizedBox(height: 3),
@@ -249,7 +251,7 @@ class _BillFormateState extends BillFormatBuilder {
                                   padding: pw.EdgeInsets.all(4),
                                   child: pw.Center(
                                     child: pw.Text(
-                                      'Actual Material',
+                                      'Material',
                                       style: _billTextStyle,
                                     ),
                                   ),
@@ -286,7 +288,7 @@ class _BillFormateState extends BillFormatBuilder {
                                   padding: pw.EdgeInsets.all(4),
                                   child: pw.Center(
                                     child: pw.Text(
-                                      'Actual Quantity',
+                                      'Quantity',
                                       style: _billTextStyle,
                                     ),
                                   ),
@@ -295,7 +297,7 @@ class _BillFormateState extends BillFormatBuilder {
                                 padding: pw.EdgeInsets.all(4),
                                 child: pw.Center(
                                   child: pw.Text(
-                                    'Display Price',
+                                    'Price',
                                     style: _billTextStyle,
                                   ),
                                 ),
@@ -479,6 +481,7 @@ class _BillFormateState extends BillFormatBuilder {
                               ),
                             ],
                           ),
+
                           pw.SizedBox(height: 8),
 
                           ...termList.map(
@@ -550,538 +553,626 @@ class _BillFormateState extends BillFormatBuilder {
           drawer: !Responsive.isDesktop(context)
               ? const SideMenuWidget()
               : null,
-          body: BlocConsumer(
-            bloc: challanBloc,
+          body: BlocListener<GlobalBloc, GlobalState>(
+            bloc: globalBloc,
             listener: (context, state) {
-              if (state is ChallanDetailsLoadedSuccessState) {
-                if (state.model.status == 1) {
-                  remarkController.text =
-                      state
-                          .model
-                          .record
-                          ?.first
-                          .orderInformation
-                          ?.challanRemark ??
-                      '';
-                  challanNoController.text =
-                      state
-                          .model
-                          .record
-                          ?.first
-                          .orderInformation
-                          ?.manualChallanNumber ??
-                      '';
-                  chalanDateController.text =
-                      state
-                          .model
-                          .record
-                          ?.first
-                          .orderInformation
-                          ?.manualChallanDate ??
-                      '';
+              print(
+                'DEBUG: BlocListener received state = ${state.runtimeType}',
+              );
+              if (state is GlobalDeleteRecordSuccessStatus) {
+                print(
+                  'DEBUG: Delete success status received: ${state.deleteRecordEntity.status}',
+                );
+                if (state.deleteRecordEntity.status == 1) {
+                  ToastService.instance.showSuccess(
+                    context,
+                    state.deleteRecordEntity.message.toString(),
+                  );
+                  print('DEBUG: Adding FetchChallanDetailsInBillEvent');
+                  challanBloc.add(
+                    FetchChallanDetailsInBillEvent(orderKey: widget.orderKey),
+                  );
+                } else {
+                  ToastService.instance.showError(
+                    context,
+                    state.deleteRecordEntity.message.toString(),
+                  );
                 }
               }
             },
+            child: BlocConsumer(
+              bloc: challanBloc,
+              listener: (context, state) {
+                if (state is ChallanDetailsLoadedSuccessState) {
+                  if (state.model.status == 1) {
+                    ToastService.instance.showSuccess(
+                      context,
+                      state.model.message.toString(),
+                    );
+                    final newRemark =
+                        state
+                            .model
+                            .record
+                            ?.first
+                            .orderInformation
+                            ?.challanRemark ??
+                        '';
+                    final newChallanNo =
+                        state
+                            .model
+                            .record
+                            ?.first
+                            .orderInformation
+                            ?.manualChallanNumber ??
+                        '';
+                    final newChallanDate =
+                        state
+                            .model
+                            .record
+                            ?.first
+                            .orderInformation
+                            ?.manualChallanDate ??
+                        '';
 
-            builder: (context, state) {
-              switch (state.runtimeType) {
-                case ChallanLoadingState:
-                  return const Center(child: CircularProgressIndicator());
-                case ChallanDetailsLoadedSuccessState:
-                  final data =
-                      (state as ChallanDetailsLoadedSuccessState).model.record;
-                  // unitPriceController.text = data!
-                  //     .first
-                  //     .orderProduct!
-                  //     .first
-                  //     .unitPrice
-                  //     .toString();
-                  return state.model.status != 1
-                      ? Center(
-                          child: Text(
-                            state.model.message ?? 'try again please',
-                          ),
-                        )
-                      : SingleChildScrollView(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            children: [
-                              SizedBox(height: 25),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 30,
-                                ),
-                                child: Row(
-                                  spacing: 16,
-                                  children: [
-                                    Expanded(child: SizedBox()),
-                                    // Expanded(child: SizedBox()),
-                                    // Expanded(child: verifyButton),
-                                    Expanded(
-                                      child: CustomButton(
-                                        label: 'Print Display',
-                                        onPressed: () =>
-                                            _printBill(data, false),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: CustomButton(
-                                        label: 'Print Display Challan',
-                                        onPressed: () => _printBill(data, true),
-                                      ),
-                                    ),
+                    // Only update if values actually changed to prevent rebuild loops
+                    if (remarkController.text != newRemark) {
+                      remarkController.text = newRemark;
+                    }
+                    if (challanNoController.text != newChallanNo) {
+                      challanNoController.text = newChallanNo;
+                    }
+                    if (chalanDateController.text != newChallanDate) {
+                      chalanDateController.text = newChallanDate;
+                    }
+                  } else {
+                    ToastService.instance.showError(
+                      context,
+                      state.model.message.toString(),
+                    );
+                  }
+                }
+              },
 
-                                    Expanded(
-                                      child: CustomButton(
-                                        label: 'View Scanned Cartons',
-                                        onPressed: () => context.pushNamed(
-                                          ScannedCarton.routeName,
-                                          extra: widget.orderKey.toString(),
+              builder: (context, state) {
+                switch (state.runtimeType) {
+                  case ChallanLoadingState:
+                    return const Center(child: CircularProgressIndicator());
+                  case ChallanDetailsLoadedSuccessState:
+                    final data = (state as ChallanDetailsLoadedSuccessState)
+                        .model
+                        .record;
+                    selectedClientKey = state
+                        .model
+                        .record
+                        ?.first
+                        .clientInformation
+                        ?.clientKey
+                        .toString();
+                    clientUnitName =
+                        state.model.record?.first.clientInformation?.unitName;
+                    return state.model.status != 1
+                        ? Center(
+                            child: Text(
+                              state.model.message ?? 'try again please',
+                            ),
+                          )
+                        : SingleChildScrollView(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              children: [
+                                SizedBox(height: 25),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 30,
+                                  ),
+                                  child: Row(
+                                    spacing: 16,
+                                    children: [
+                                      Expanded(child: SizedBox()),
+                                      // Expanded(child: SizedBox()),
+                                      // Expanded(child: verifyButton),
+                                      Expanded(
+                                        child: CustomButton(
+                                          label: 'Print Display',
+                                          onPressed: () =>
+                                              _printBill(data, false),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              SizedBox(height: 25),
+                                      Expanded(
+                                        child: CustomButton(
+                                          label: 'Print Display Challan',
+                                          onPressed: () =>
+                                              _printBill(data, true),
+                                        ),
+                                      ),
 
-                              Center(
-                                child: Container(
-                                  width: size.width / .9,
+                                      Expanded(
+                                        child: CustomButton(
+                                          label: 'View Scanned Cartons',
+                                          onPressed: () => context.pushNamed(
+                                            ScannedCarton.routeName,
+                                            extra: widget.orderKey.toString(),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: 25),
+
+                                Center(
                                   child: Container(
-                                    margin: const EdgeInsets.only(top: 10),
-                                    // height: size.height,  // Removed to prevent layout issues
-                                    padding: const EdgeInsets.all(12),
-                                    color: Color(0xfff7ede2).withAlpha(128),
-
+                                    width: size.width / .9,
                                     child: Container(
-                                      // margin: const EdgeInsets.symmetric(vertical: 12),
+                                      margin: const EdgeInsets.only(top: 10),
+                                      // height: size.height,  // Removed to prevent layout issues
                                       padding: const EdgeInsets.all(12),
-                                      // height: size.height * 3,
-                                      width: size.width / 3,
+                                      color: Color(0xfff7ede2).withAlpha(128),
 
-                                      decoration: BoxDecoration(
-                                        color: Color(0xfff7ede2).withAlpha(128),
-                                        border: Border.all(
-                                          color: Colors.deepOrangeAccent,
+                                      child: Container(
+                                        // margin: const EdgeInsets.symmetric(vertical: 12),
+                                        padding: const EdgeInsets.all(12),
+                                        // height: size.height * 3,
+                                        width: size.width / 3,
+
+                                        decoration: BoxDecoration(
+                                          color: Color(
+                                            0xfff7ede2,
+                                          ).withAlpha(128),
+                                          border: Border.all(
+                                            color: Colors.deepOrangeAccent,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          // color: Colors.white,
                                         ),
-                                        borderRadius: BorderRadius.circular(12),
-                                        // color: Colors.white,
-                                      ),
-                                      child: SingleChildScrollView(
-                                        child: Column(
-                                          spacing: 15,
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            topHeaderRow(
-                                              gstinNo: data!
-                                                  .first
-                                                  .additionalInfo!
-                                                  .gSTIN
-                                                  .toString(),
-                                              callNo: data
-                                                  .first
-                                                  .additionalInfo!
-                                                  .mobileNumber
-                                                  .toString(),
-                                              whatsAppNo: data
-                                                  .first
-                                                  .additionalInfo!
-                                                  .whatsApp
-                                                  .toString(),
-                                            ),
-                                            logoRowNo2(
-                                              data
-                                                  .first
-                                                  .additionalInfo!
-                                                  .mainLogo
-                                                  .toString(),
-                                              data
-                                                  .first
-                                                  .additionalInfo!
-                                                  .secondaryLogo
-                                                  .toString(),
-                                            ),
-                                            businessInfoWidget(
-                                              manufactureOf:
-                                                  state
-                                                      .model
-                                                      .record
-                                                      ?.first
-                                                      .additionalInfo
-                                                      ?.manufactureOf ??
-                                                  '',
-                                              wholesaler:
-                                                  state
-                                                      .model
-                                                      .record
-                                                      ?.first
-                                                      .additionalInfo
-                                                      ?.wholesaler ??
-                                                  '',
-                                            ),
-
-                                            Padding(
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal:
-                                                    MediaQuery.sizeOf(
-                                                      context,
-                                                    ).width *
-                                                    0.025,
+                                        child: SingleChildScrollView(
+                                          child: Column(
+                                            spacing: 15,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              topHeaderRow(
+                                                gstinNo: data!
+                                                    .first
+                                                    .additionalInfo!
+                                                    .gSTIN
+                                                    .toString(),
+                                                callNo: data
+                                                    .first
+                                                    .additionalInfo!
+                                                    .mobileNumber
+                                                    .toString(),
+                                                whatsAppNo: data
+                                                    .first
+                                                    .additionalInfo!
+                                                    .whatsApp
+                                                    .toString(),
                                               ),
-                                              child: Divider(
-                                                height: 2,
-
-                                                thickness: 3,
-                                                color: Colors.deepOrangeAccent,
+                                              logoRowNo2(
+                                                data
+                                                    .first
+                                                    .additionalInfo!
+                                                    .mainLogo
+                                                    .toString(),
+                                                data
+                                                    .first
+                                                    .additionalInfo!
+                                                    .secondaryLogo
+                                                    .toString(),
                                               ),
-                                            ),
-                                            Row(
-                                              children: [
-                                                Expanded(
-                                                  child: leftSideDetailsFillContainer(
-                                                    clientName:
-                                                        data
-                                                            .first
-                                                            .clientInformation
-                                                            ?.cConsigneeName ??
-                                                        '',
-                                                    clientPhone:
-                                                        data
-                                                            .first
-                                                            .clientInformation
-                                                            ?.cMobileNumber ??
-                                                        '',
-                                                    gstin:
-                                                        data
-                                                            .first
-                                                            .clientInformation
-                                                            ?.cGSTIN ??
-                                                        '',
-                                                  ),
+                                              businessInfoWidget(
+                                                manufactureOf:
+                                                    state
+                                                        .model
+                                                        .record
+                                                        ?.first
+                                                        .additionalInfo
+                                                        ?.manufactureOf ??
+                                                    '',
+                                                wholesaler:
+                                                    state
+                                                        .model
+                                                        .record
+                                                        ?.first
+                                                        .additionalInfo
+                                                        ?.wholesaler ??
+                                                    '',
+                                              ),
+
+                                              Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal:
+                                                      MediaQuery.sizeOf(
+                                                        context,
+                                                      ).width *
+                                                      0.025,
                                                 ),
-                                                Container(
-                                                  width: 3,
-                                                  height: 90,
+                                                child: Divider(
+                                                  height: 2,
+
+                                                  thickness: 3,
                                                   color:
                                                       Colors.deepOrangeAccent,
                                                 ),
-                                                SizedBox(width: 8),
-                                                Expanded(
-                                                  child:
-                                                      rightSideDetailsFillContainer(
-                                                        challanNo: data
-                                                            .first
-                                                            .orderInformation!
-                                                            .manualChallanNumber
-                                                            .toString(),
-                                                        challanDate: data
-                                                            .first
-                                                            .orderInformation!
-                                                            .manualChallanDate
-                                                            .toString(),
-                                                        // orderNo: '',
-                                                        // orderDate: '',
-                                                      ),
-                                                ),
-                                              ],
-                                            ),
-                                            Row(
-                                              children: [
-                                                // Modern Input Field
-                                                Expanded(
-                                                  flex: 3,
-                                                  child: Container(
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.white,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            12,
-                                                          ),
-                                                      border: Border.all(
-                                                        color:
-                                                            addScannedBarcodeController
-                                                                .text
-                                                                .isNotEmpty
-                                                            ? const Color(
-                                                                0xFF2D8FCF,
-                                                              )
-                                                            : const Color(
-                                                                0xFFE5E7EB,
-                                                              ),
-                                                        width: 1.5,
-                                                      ),
-                                                      boxShadow:
-                                                          addScannedBarcodeController
-                                                              .text
-                                                              .isNotEmpty
-                                                          ? [
-                                                              BoxShadow(
-                                                                color:
-                                                                    const Color(
-                                                                      0xFF2D8FCF,
-                                                                    ).withOpacity(
-                                                                      0.1,
-                                                                    ),
-                                                                blurRadius: 8,
-                                                                offset:
-                                                                    const Offset(
-                                                                      0,
-                                                                      2,
-                                                                    ),
-                                                              ),
-                                                            ]
-                                                          : [],
-                                                    ),
-                                                    child: TextFormField(
-                                                      controller:
-                                                          addScannedBarcodeController,
-                                                      focusNode:
-                                                          barcodeFocusNode,
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: leftSideDetailsFillContainer(
                                                       onChanged: (value) {
-                                                        // Auto-submit when hardware scanner sends newline character
-                                                        if (value.endsWith(
-                                                          '\n',
-                                                        )) {
-                                                          addScannedBarcodeController
-                                                              .text = value
-                                                              .replaceAll(
-                                                                '\n',
-                                                                '',
-                                                              )
-                                                              .trim();
-                                                          addScannedBarcodeController
-                                                                  .selection =
-                                                              TextSelection.fromPosition(
-                                                                TextPosition(
-                                                                  offset:
-                                                                      addScannedBarcodeController
-                                                                          .text
-                                                                          .length,
+                                                        setState(() {
+                                                          selectedClientKey =
+                                                              value;
+                                                          clientUnitName = state
+                                                              .model
+                                                              .record
+                                                              ?.first
+                                                              .clientInformation
+                                                              ?.unitName;
+                                                        });
+                                                      },
+                                                      clientKey:
+                                                          data
+                                                              .first
+                                                              .clientInformation
+                                                              ?.clientKey ??
+                                                          '',
+
+                                                      clientPhone:
+                                                          data
+                                                              .first
+                                                              .clientInformation
+                                                              ?.cMobileNumber ??
+                                                          '',
+                                                      gstin:
+                                                          data
+                                                              .first
+                                                              .clientInformation
+                                                              ?.cGSTIN ??
+                                                          '',
+                                                      // orderKey: widget.orderKey
+                                                      //     .toString(),
+                                                    ),
+                                                  ),
+                                                  Container(
+                                                    width: 3,
+                                                    height: 90,
+                                                    color:
+                                                        Colors.deepOrangeAccent,
+                                                  ),
+                                                  SizedBox(width: 8),
+                                                  Expanded(
+                                                    child:
+                                                        rightSideDetailsFillContainer(
+                                                          challanNo: data
+                                                              .first
+                                                              .orderInformation!
+                                                              .challanNumber
+                                                              .toString(),
+                                                          challanDate: data
+                                                              .first
+                                                              .orderInformation!
+                                                              .dateTime
+                                                              .toString(),
+
+                                                          // orderNo: '',
+                                                          // orderDate: '',
+                                                        ),
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  // Modern Input Field
+                                                  Expanded(
+                                                    flex: 3,
+                                                    child: Container(
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.white,
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              12,
+                                                            ),
+                                                        border: Border.all(
+                                                          color:
+                                                              addScannedBarcodeController
+                                                                  .text
+                                                                  .isNotEmpty
+                                                              ? const Color(
+                                                                  0xFF2D8FCF,
+                                                                )
+                                                              : const Color(
+                                                                  0xFFE5E7EB,
                                                                 ),
-                                                              );
-                                                          // _addBarcodeWithIsolate();
-                                                        } else {
-                                                          setState(
-                                                            () {},
-                                                          ); // Rebuild for border/icon animation
-                                                        }
-                                                      },
-                                                      onFieldSubmitted: (_) {
-                                                        // _addBarcodeWithIsolate();
-                                                        // Re-request focus immediately since onFieldSubmitted removes it
-                                                        barcodeFocusNode
-                                                            .requestFocus();
-                                                      },
-                                                      decoration: InputDecoration(
-                                                        hintText:
-                                                            'Scan or enter barcode...',
-                                                        hintStyle: TextStyle(
-                                                          color: const Color(
-                                                            0xFF9CA3AF,
-                                                          ),
-                                                          fontSize: 14,
+                                                          width: 1.5,
                                                         ),
-                                                        prefixIcon: Padding(
-                                                          padding:
-                                                              const EdgeInsets.all(
-                                                                12,
-                                                              ),
-                                                          child: Icon(
-                                                            Icons
-                                                                .barcode_reader,
-                                                            color:
-                                                                addScannedBarcodeController
-                                                                    .text
-                                                                    .isNotEmpty
-                                                                ? const Color(
-                                                                    0xFF2D8FCF,
-                                                                  )
-                                                                : const Color(
-                                                                    0xFFD1D5DB,
-                                                                  ),
-                                                            size: 20,
-                                                          ),
-                                                        ),
-                                                        suffixIcon:
+                                                        boxShadow:
                                                             addScannedBarcodeController
                                                                 .text
                                                                 .isNotEmpty
-                                                            ? GestureDetector(
-                                                                onTap: () {
-                                                                  setState(() {
-                                                                    addScannedBarcodeController
-                                                                        .clear();
-                                                                  });
-                                                                  barcodeFocusNode
-                                                                      .requestFocus();
-                                                                },
-                                                                child: Padding(
-                                                                  padding:
-                                                                      const EdgeInsets.all(
-                                                                        12,
+                                                            ? [
+                                                                BoxShadow(
+                                                                  color:
+                                                                      const Color(
+                                                                        0xFF2D8FCF,
+                                                                      ).withOpacity(
+                                                                        0.1,
                                                                       ),
-                                                                  child: Icon(
-                                                                    Icons
-                                                                        .close_outlined,
-                                                                    color: const Color(
-                                                                      0xFF2D8FCF,
-                                                                    ).withOpacity(0.5),
-                                                                    size: 20,
-                                                                  ),
+                                                                  blurRadius: 8,
+                                                                  offset:
+                                                                      const Offset(
+                                                                        0,
+                                                                        2,
+                                                                      ),
                                                                 ),
-                                                              )
-                                                            : null,
-                                                        border: OutlineInputBorder(
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                12,
-                                                              ),
-                                                          borderSide:
-                                                              BorderSide.none,
-                                                        ),
-                                                        focusedBorder:
-                                                            OutlineInputBorder(
-                                                              borderRadius:
-                                                                  BorderRadius.circular(
-                                                                    12,
-                                                                  ),
-                                                              borderSide:
-                                                                  const BorderSide(
-                                                                    color: Color(
-                                                                      0xFF2D8FCF,
-                                                                    ),
-                                                                    width: 1.5,
-                                                                  ),
-                                                            ),
-                                                        contentPadding:
-                                                            const EdgeInsets.symmetric(
-                                                              horizontal: 16,
-                                                              vertical: 14,
-                                                            ),
+                                                              ]
+                                                            : [],
                                                       ),
-                                                      style: const TextStyle(
-                                                        fontSize: 14,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        color: Color(
-                                                          0xFF1F2937,
+                                                      child: TextFormField(
+                                                        controller:
+                                                            addScannedBarcodeController,
+                                                        focusNode:
+                                                            barcodeFocusNode,
+                                                        onChanged: (value) {
+                                                          // Auto-submit when hardware scanner sends newline character
+                                                          if (value.endsWith(
+                                                            '\n',
+                                                          )) {
+                                                            addScannedBarcodeController
+                                                                .text = value
+                                                                .replaceAll(
+                                                                  '\n',
+                                                                  '',
+                                                                )
+                                                                .trim();
+                                                            addScannedBarcodeController
+                                                                    .selection =
+                                                                TextSelection.fromPosition(
+                                                                  TextPosition(
+                                                                    offset: addScannedBarcodeController
+                                                                        .text
+                                                                        .length,
+                                                                  ),
+                                                                );
+                                                            // _addBarcodeWithIsolate();
+                                                          }
+                                                          // Don't rebuild on every character to preserve focus on table fields
+                                                        },
+                                                        onFieldSubmitted: (_) {
+                                                          // _addBarcodeWithIsolate();
+                                                          // Re-request focus immediately since onFieldSubmitted removes it
+                                                          barcodeFocusNode
+                                                              .requestFocus();
+                                                        },
+                                                        decoration: InputDecoration(
+                                                          hintText:
+                                                              'Scan or enter barcode...',
+                                                          hintStyle: TextStyle(
+                                                            color: const Color(
+                                                              0xFF9CA3AF,
+                                                            ),
+                                                            fontSize: 14,
+                                                          ),
+                                                          prefixIcon: Padding(
+                                                            padding:
+                                                                const EdgeInsets.all(
+                                                                  12,
+                                                                ),
+                                                            child: Icon(
+                                                              Icons
+                                                                  .barcode_reader,
+                                                              color:
+                                                                  addScannedBarcodeController
+                                                                      .text
+                                                                      .isNotEmpty
+                                                                  ? const Color(
+                                                                      0xFF2D8FCF,
+                                                                    )
+                                                                  : const Color(
+                                                                      0xFFD1D5DB,
+                                                                    ),
+                                                              size: 20,
+                                                            ),
+                                                          ),
+                                                          suffixIcon:
+                                                              addScannedBarcodeController
+                                                                  .text
+                                                                  .isNotEmpty
+                                                              ? GestureDetector(
+                                                                  onTap: () {
+                                                                    setState(() {
+                                                                      addScannedBarcodeController
+                                                                          .clear();
+                                                                    });
+                                                                    barcodeFocusNode
+                                                                        .requestFocus();
+                                                                  },
+                                                                  child: Padding(
+                                                                    padding:
+                                                                        const EdgeInsets.all(
+                                                                          12,
+                                                                        ),
+                                                                    child: Icon(
+                                                                      Icons
+                                                                          .close_outlined,
+                                                                      color: const Color(
+                                                                        0xFF2D8FCF,
+                                                                      ).withOpacity(0.5),
+                                                                      size: 20,
+                                                                    ),
+                                                                  ),
+                                                                )
+                                                              : null,
+                                                          border: OutlineInputBorder(
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  12,
+                                                                ),
+                                                            borderSide:
+                                                                BorderSide.none,
+                                                          ),
+                                                          focusedBorder: OutlineInputBorder(
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  12,
+                                                                ),
+                                                            borderSide:
+                                                                const BorderSide(
+                                                                  color: Color(
+                                                                    0xFF2D8FCF,
+                                                                  ),
+                                                                  width: 1.5,
+                                                                ),
+                                                          ),
+                                                          contentPadding:
+                                                              const EdgeInsets.symmetric(
+                                                                horizontal: 16,
+                                                                vertical: 14,
+                                                              ),
+                                                        ),
+                                                        style: const TextStyle(
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          color: Color(
+                                                            0xFF1F2937,
+                                                          ),
                                                         ),
                                                       ),
                                                     ),
                                                   ),
-                                                ),
-                                                const SizedBox(width: 16),
-                                                Expanded(
-                                                  child: buildModernAddButton(),
-                                                ),
-                                              ],
-                                            ),
-                                            dataTableWidget(state.model.record),
-                                            Column(
-                                              spacing: 10,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text('Remark'),
-                                                CustomTextField(
-                                                  controller: remarkController,
-                                                ),
-                                              ],
-                                            ),
-                                            Row(
-                                              spacing: 16,
-                                              children: [
-                                                Expanded(
-                                                  child: Column(
-                                                    spacing: 10,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text('Challan Number'),
-                                                      CustomTextField(
-                                                        controller:
-                                                            challanNoController,
-                                                      ),
-                                                    ],
+                                                  const SizedBox(width: 16),
+                                                  Expanded(
+                                                    child:
+                                                        buildModernAddButton(),
                                                   ),
-                                                ),
-                                                Expanded(
-                                                  child: buildDateField(
-                                                    'Challan Date',
-                                                    chalanDateController,
+                                                ],
+                                              ),
+                                              dataTableWidget(
+                                                state.model.record,
+                                              ),
+                                              Column(
+                                                spacing: 10,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text('Remark'),
+                                                  CustomTextField(
+                                                    controller:
+                                                        remarkController,
                                                   ),
-                                                ),
-                                              ],
-                                            ),
-                                            Row(
-                                              spacing: 16,
-                                              children: [
-                                                Expanded(child: SizedBox()),
-                                                Expanded(child: SizedBox()),
-                                                Expanded(child: SizedBox()),
-                                                Expanded(
-                                                  child:
-                                                      buildAddChallanInfoWidget(
-                                                        state
-                                                            .model
-                                                            .record
-                                                            ?.first
-                                                            .rKey,
-                                                      ),
-                                                ),
-                                              ],
-                                            ),
+                                                ],
+                                              ),
+                                              Row(
+                                                spacing: 16,
+                                                children: [
+                                                  Expanded(
+                                                    child: Column(
+                                                      spacing: 10,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text('Challan Number'),
+                                                        CustomTextField(
+                                                          controller:
+                                                              challanNoController,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  Expanded(
+                                                    child: buildDateField(
+                                                      'Challan Date',
+                                                      chalanDateController,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                spacing: 16,
+                                                children: [
+                                                  Expanded(child: SizedBox()),
+                                                  Expanded(child: SizedBox()),
+                                                  Expanded(child: SizedBox()),
+                                                  Expanded(
+                                                    child:
+                                                        buildAddChallanInfoWidget(
+                                                          state
+                                                              .model
+                                                              .record
+                                                              ?.first
+                                                              .rKey,
+                                                          state
+                                                              .model
+                                                              .record
+                                                              ?.first
+                                                              .clientInformation
+                                                              ?.clientKey
+                                                              .toString(),
+                                                          state
+                                                              .model
+                                                              .record
+                                                              ?.first
+                                                              .clientInformation
+                                                              ?.unitName
+                                                              .toString(),
+                                                        ),
+                                                  ),
+                                                ],
+                                              ),
 
-                                            bottomDetailsWidget(
-                                              termHeading:
-                                                  state
-                                                      .model
-                                                      .record
-                                                      ?.first
-                                                      .additionalInfo
-                                                      ?.termHeading ??
-                                                  '',
-                                              termHeading2:
-                                                  state
-                                                      .model
-                                                      .record
-                                                      ?.first
-                                                      .additionalInfo
-                                                      ?.companyName ??
-                                                  '',
-                                              termList:
-                                                  state
-                                                      .model
-                                                      .record
-                                                      ?.first
-                                                      .additionalInfo
-                                                      ?.termList ??
-                                                  [],
-                                            ),
-                                          ],
+                                              bottomDetailsWidget(
+                                                termHeading:
+                                                    state
+                                                        .model
+                                                        .record
+                                                        ?.first
+                                                        .additionalInfo
+                                                        ?.termHeading ??
+                                                    '',
+                                                termHeading2:
+                                                    state
+                                                        .model
+                                                        .record
+                                                        ?.first
+                                                        .additionalInfo
+                                                        ?.companyName ??
+                                                    '',
+                                                termList:
+                                                    state
+                                                        .model
+                                                        .record
+                                                        ?.first
+                                                        .additionalInfo
+                                                        ?.termList ??
+                                                    [],
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ),
 
-                              // SizedBox(height: 30),
-                              SizedBox(height: 50),
-                            ],
-                          ),
-                        );
-                case ChallanDetailsLoadedFailureState:
-                  final errorState = state as ChallanDetailsLoadedFailureState;
-                  return Center(
-                    child: Text('Error: ${errorState.errorMessage}'),
-                  );
-                default:
-                  return const Center(child: Text('Unexpected state'));
-              }
-            },
+                                // SizedBox(height: 30),
+                                SizedBox(height: 50),
+                              ],
+                            ),
+                          );
+                  case ChallanDetailsLoadedFailureState:
+                    final errorState =
+                        state as ChallanDetailsLoadedFailureState;
+                    return Center(
+                      child: Text('Error: ${errorState.errorMessage}'),
+                    );
+                  default:
+                    return const Center(child: Text('Unexpected state'));
+                }
+              },
+            ),
           ),
         );
       },

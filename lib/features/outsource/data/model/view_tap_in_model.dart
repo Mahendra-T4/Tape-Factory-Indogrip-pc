@@ -6,6 +6,11 @@ class ViewTapInventoryModel {
   String? pageText;
   int? totalPieces;
   int? availableCarton;
+  dynamic inventoryCarton;
+  dynamic roundCarton;
+
+  dynamic totalNetWeight;
+  dynamic totalGrossWeight;
 
   ViewTapInventoryModel({
     this.status,
@@ -14,6 +19,10 @@ class ViewTapInventoryModel {
     this.pageQty,
     this.availableCarton,
     this.totalPieces,
+    this.inventoryCarton,
+    this.roundCarton,
+    this.totalNetWeight,
+    this.totalGrossWeight,
   });
 
   ViewTapInventoryModel.fromJson(Map<String, dynamic> json) {
@@ -27,8 +36,12 @@ class ViewTapInventoryModel {
     }
     pageQty = json['pageQty'];
     pageText = json['pageText'];
-    totalPieces = json['totalPieces'];
-    availableCarton = json['availableCarton'];
+    totalPieces = json['totalPieces'] ?? 0;
+    availableCarton = json['availableCarton'] ?? 0;
+    inventoryCarton = json['inventoryCarton'] ?? 0;
+    roundCarton = json['roundCarton'] ?? 0;
+    totalNetWeight = json['totalNetWeight'];
+    totalGrossWeight = json['totalGrossWeight'];
   }
 
   Map<String, dynamic> toJson() {
@@ -40,6 +53,10 @@ class ViewTapInventoryModel {
     }
     data['pageQty'] = this.pageQty;
     data['pageText'] = this.pageText;
+    data['inventoryCarton'] = this.inventoryCarton;
+    data['roundCarton'] = this.roundCarton;
+    data['totalNetWeight'] = this.totalNetWeight;
+    data['totalGrossWeight'] = this.totalGrossWeight;
     return data;
   }
 }

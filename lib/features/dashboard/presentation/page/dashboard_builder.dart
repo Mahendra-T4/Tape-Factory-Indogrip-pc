@@ -56,6 +56,8 @@ abstract class DashboardBuilder extends State<IndoGripDashboard> {
   final tapLengthController = TextEditingController();
   final tapWidthController = TextEditingController();
   TextEditingController marginController = TextEditingController();
+  TextEditingController toDateController = TextEditingController();
+  TextEditingController fromDateController = TextEditingController();
   String? selectedRoundSize;
   ShowStaticModel? dashboardData;
   String? selectedMic;

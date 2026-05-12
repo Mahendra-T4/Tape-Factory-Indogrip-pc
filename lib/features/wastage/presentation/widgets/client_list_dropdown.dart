@@ -53,22 +53,10 @@ class _ClientsListDropdownState extends State<ClientsListDropdown> {
               dialogFilteredRecords = clients.where((record) {
                 final searchText = query.toLowerCase();
                 return (record.cConsigneeName
-                            ?.toString()
-                            .toLowerCase()
-                            .contains(searchText) ??
-                        false) ||
-                    (record.cCode?.toString().toLowerCase().contains(
-                          searchText,
-                        ) ??
-                        false) ||
-                    (record.cOwnerName?.toString().toLowerCase().contains(
-                          searchText,
-                        ) ??
-                        false) ||
-                    (record.cMobileNumber?.toString().toLowerCase().contains(
-                          searchText,
-                        ) ??
-                        false);
+                        ?.toString()
+                        .toLowerCase()
+                        .contains(searchText) ??
+                    false);
               }).toList();
 
               setDialogState(() {

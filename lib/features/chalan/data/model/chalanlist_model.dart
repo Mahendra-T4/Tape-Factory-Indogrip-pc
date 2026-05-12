@@ -5,7 +5,13 @@ class ChalanListModel {
   int? pageQty;
   String? pageText;
 
-  ChalanListModel({this.status, this.message, this.record, this.pageQty});
+  ChalanListModel({
+    this.status,
+    this.message,
+    this.record,
+    this.pageQty,
+    this.pageText,
+  });
 
   ChalanListModel.fromJson(Map<String, dynamic> json) {
     status = json['status'];
@@ -37,6 +43,9 @@ class ChalanRecord {
   int? sNo;
   String? challanNumber;
   String? dateTime;
+  String? challanRemark;
+  String? manualChallanNumber;
+  String? manualChallanDate;
   ClientInformation? clientInformation;
   StaffInformation? staffInformation;
   String? rKey;
@@ -46,6 +55,9 @@ class ChalanRecord {
     this.sNo,
     this.challanNumber,
     this.dateTime,
+    this.challanRemark,
+    this.manualChallanNumber,
+    this.manualChallanDate,
     this.clientInformation,
     this.staffInformation,
     this.rKey,
@@ -56,6 +68,9 @@ class ChalanRecord {
     sNo = json['SNo'];
     challanNumber = json['challanNumber'];
     dateTime = json['dateTime'];
+    challanRemark = json['challanRemark'] ?? 'N/A';
+    manualChallanNumber = json['manualChallanNumber'] ?? 'N/A';
+    manualChallanDate = json['manualChallanDate'] ?? 'N/A';
     clientInformation = json['clientInformation'] != null
         ? new ClientInformation.fromJson(json['clientInformation'])
         : null;
@@ -71,6 +86,9 @@ class ChalanRecord {
     data['SNo'] = this.sNo;
     data['challanNumber'] = this.challanNumber;
     data['dateTime'] = this.dateTime;
+    data['challanRemark'] = this.challanRemark ?? '';
+    data['manualChallanNumber'] = this.manualChallanNumber ?? '';
+    data['manualChallanDate'] = this.manualChallanDate ?? '';
     if (this.clientInformation != null) {
       data['clientInformation'] = this.clientInformation!.toJson();
     }

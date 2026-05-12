@@ -108,3 +108,15 @@ final class SubmitRoundScannedDataEvent extends GlobalEvent {
     required this.clientKey,
   });
 }
+
+final class ProfitAndLossGetterEvent extends GlobalEvent {
+  final String toDate;
+  final String fromDate;
+  final String productType;
+
+  ProfitAndLossGetterEvent({
+    required this.toDate,
+    required this.fromDate,
+    required this.productType,
+  });
+}

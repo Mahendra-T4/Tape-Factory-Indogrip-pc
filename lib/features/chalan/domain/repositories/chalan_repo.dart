@@ -1,6 +1,8 @@
 import 'dart:developer' as developer;
+import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:indogrip/core/database/hive_service.dart';
 import 'package:indogrip/core/service/api%20service/dio_service.dart';
 import 'package:indogrip/features/chalan/data/model/chalanlist_model.dart';
@@ -248,6 +250,8 @@ abstract class ChallanRepository {
         'challanNumber': data.challanNumber,
         'challanDate': data.challanDate,
         'challanKey': data.challanKey,
+        'unitName': data.clientUnitName ?? '',
+        'clientKey': data.clientKey ?? '',
       });
       final response = await DioService.dioPostApiCall(data: formData);
 
@@ -277,6 +281,13 @@ abstract class ChallanRepository {
     required String batchCode,
   }) async {
     Dio dio = Dio();
+    dio.httpClientAdapter = IOHttpClientAdapter(
+      createHttpClient: () {
+        final client = HttpClient();
+        client.badCertificateCallback = (cert, host, port) => true;
+        return client;
+      },
+    );
     RoundDetails model = RoundDetails();
     try {
       final response = await dio.post(
@@ -312,16 +323,27 @@ abstract class ChallanRepository {
     String clientKey,
   ) async {
     SubmitBatchModel submitModel = SubmitBatchModel();
+    final Dio dio = Dio();
+    dio.httpClientAdapter = IOHttpClientAdapter(
+      createHttpClient: () {
+        final client = HttpClient();
+        client.badCertificateCallback = (cert, host, port) => true;
+        return client;
+      },
+    );
     try {
       final formData = FormData.fromMap({
         'activity': 'batch-information',
         'userKey': HiveService.getUserId(),
         'batchCode': batchCodes.join(','),
         'clientKey': clientKey,
-        'batchQty': batchQty.join(','),
-        'unitIndex': unitIndex,
+        // 'batchQty': batchQty.join(','),
+        // 'unitIndex': unitIndex,
       });
-      final response = await DioService.dioPostApiCall(data: formData);
+      final response = await dio.post(
+        'https://www.indogrip.com/mobile-APIs/index.php',
+        data: formData,
+      );
       if (response.statusCode == 200) {
         submitModel = SubmitBatchModel.fromJson(response.data);
         developer.log(formData.fields.toString(), name: 'Form Data Submitted');

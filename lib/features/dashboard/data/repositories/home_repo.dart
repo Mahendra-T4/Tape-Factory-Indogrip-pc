@@ -205,20 +205,18 @@ class HomeRepository implements HomeManagerRepository {
   }) async {
     StretchStockModel model = StretchStockModel();
     try {
+      final formData = FormData.fromMap({
+        'activity': 'stretchfilm-stock',
+        'userKey': HiveService.getUserId(),
+        'baseID': baseID,
+        'filmSizeID': filmSizeID,
+        'coreID': coreID,
+      });
       final response = await retry(
-        () =>
-            DioService.dioPostApiCall(
-              data: FormData.fromMap({
-                'activity': 'stretchfilm-stock',
-                'userKey': HiveService.getUserId(),
-                // 'baseID': baseID,
-                // 'filmSizeID': filmSizeID,
-                // 'coreID': coreID,
-              }),
-            ).timeout(
-              const Duration(seconds: 5),
-              onTimeout: () => throw TimeoutException('Request timed out'),
-            ),
+        () => DioService.dioPostApiCall(data: formData).timeout(
+          const Duration(seconds: 5),
+          onTimeout: () => throw TimeoutException('Request timed out'),
+        ),
         retryIf: (e) => e is TimeoutException || e is DioException,
         maxAttempts: 3,
         delayFactor: const Duration(seconds: 1),
@@ -229,6 +227,11 @@ class HomeRepository implements HomeManagerRepository {
         developer.log(
           'Stretch Stock Data: ${response.data}',
           name: 'Stretch Stock',
+        );
+
+        developer.log(
+          formData.fields.toString(),
+          name: 'Stretch Stock FormData',
         );
       } else {
         developer.log(

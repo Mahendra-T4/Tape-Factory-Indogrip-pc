@@ -453,6 +453,12 @@ class _ScannedCartonState extends State<ScannedCarton> {
                         );
                         if (shouldDelete == true) {
                           item.delete();
+                          setState(() {
+                            _scannedItemCount--;
+                            if (_scannedItemCount == 0) {
+                              isShowButton = false;
+                            }
+                          });
                         }
                       },
                       icon: Icon(
