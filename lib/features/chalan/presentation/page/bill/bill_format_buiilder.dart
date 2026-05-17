@@ -26,6 +26,7 @@ import 'package:indogrip/features/global/data/repositories/global_manager_repo.d
 import 'package:indogrip/features/global/presentation/bloc/global_bloc.dart';
 import 'package:indogrip/features/round/data/models/view_round_modeld.dart';
 import 'package:indogrip/features/wastage/presentation/widgets/client_list_dropdown.dart';
+import 'package:indogrip/features/wastage/presentation/widgets/client_searchable_dropdown.dart';
 
 abstract class BillFormatBuilder extends State<BillFormate> {
   late final ChallanBloc challanBloc;
@@ -42,11 +43,6 @@ abstract class BillFormatBuilder extends State<BillFormate> {
   final List<FocusNode> rowRemarkFocusNodes = [];
   final List<FocusNode> actualQtyFocusNodes = [];
   final List<double> rowDisplayPrices = [];
-  bool _isProcessingBarcode = false; // Track barcode processing state
-
-  final TextEditingController addScannedBarcodeController =
-      TextEditingController();
-  final FocusNode barcodeFocusNode = FocusNode();
 
   String? selectedClientKey;
   String? clientUnitName;
@@ -67,13 +63,6 @@ abstract class BillFormatBuilder extends State<BillFormate> {
     // fontSize: 14,
     fontWeight: FontWeight.w500,
   );
-
-  String _safeValue(dynamic value, {String defaultValue = 'N/A'}) {
-    if (value == null) return defaultValue;
-    if (value is String) return value.isEmpty ? defaultValue : value;
-    if (value is int || value is double) return value.toString();
-    return value.toString();
-  }
 
   void _clearControllers() {
     // Dispose focus nodes
@@ -122,9 +111,6 @@ abstract class BillFormatBuilder extends State<BillFormate> {
     challanBloc = ChallanBloc();
     globalBloc = GlobalBloc(globalRepository: GlobalManagerRepository());
     challanBloc.add(FetchChallanDetailsInBillEvent(orderKey: widget.orderKey));
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      barcodeFocusNode.requestFocus();
-    });
   }
 
   @override
@@ -133,8 +119,7 @@ abstract class BillFormatBuilder extends State<BillFormate> {
     unitPriceController.dispose();
     remarkController.dispose();
     chalanDateController.dispose();
-    addScannedBarcodeController.dispose();
-    barcodeFocusNode.dispose();
+
     challanRemarkController.dispose();
     challanNoController.dispose();
     challanBloc.close();
@@ -186,84 +171,6 @@ abstract class BillFormatBuilder extends State<BillFormate> {
         ),
         SizedBox(height: 15),
       ],
-    );
-  }
-
-  Widget buildModernAddButton() {
-    return BlocConsumer<GlobalBloc, GlobalState>(
-      bloc: globalBloc,
-      listenWhen: (previous, current) =>
-          current is ChallanRoundDetailsLoadedSuccessStatus ||
-          current is ChallanRoundDetailsLoadedFailureStatus,
-      listener: (context, state) {
-        if (state is ChallanRoundDetailsLoadedSuccessStatus) {
-          final roundDetails = state.dataModel;
-          if (roundDetails.status == 1) {
-            ToastService.instance.showSuccess(
-              context,
-              roundDetails.message.toString(),
-            );
-            showRoundDetailsPopDialogBox(roundDetails.record!);
-          } else {
-            ToastService.instance.showError(
-              context,
-              roundDetails.message?.toString() ??
-                  'Failed to fetch round details',
-            );
-          }
-        } else if (state is ChallanRoundDetailsLoadedFailureStatus) {
-          ToastService.instance.showError(context, state.errorMessage);
-        }
-      },
-      builder: (BuildContext context, GlobalState state) {
-        final isLoading = state is GlobalLoadingStatus;
-
-        return SizedBox(
-          width: double.infinity,
-          height: 48,
-          child: ElevatedButton(
-            onPressed: isLoading || addScannedBarcodeController.text.isEmpty
-                ? null
-                : () {
-                    if (addScannedBarcodeController.text.isNotEmpty) {
-                      globalBloc.add(
-                        FetchRoundDetailsEvent(
-                          batchCode: addScannedBarcodeController.text,
-                        ),
-                      );
-                    }
-                  },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: kButtonColor,
-              disabledBackgroundColor: const Color(0xFFBFDBFE),
-              foregroundColor: Colors.white,
-              disabledForegroundColor: Colors.white,
-              elevation: isLoading ? 2 : 4,
-              shadowColor: const Color(0xFF2D8FCF).withOpacity(0.4),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: isLoading
-                ? SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                : Text(
-                    'Submit Batch Code',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
-                  ),
-          ),
-        );
-      },
     );
   }
 
@@ -405,11 +312,11 @@ abstract class BillFormatBuilder extends State<BillFormate> {
               child: ClientsListDropdown(
                 isFilter: true,
                 label: 'Client Name',
-                value: selectedClientKey ?? clientKey,
+                value: selectedClientKey,
                 onChanged: onChanged,
               ),
             ),
-            Expanded(child: itemCount()),
+            Expanded(child: SizedBox()),
           ],
         ),
         // Text('M/s. $clientName'),
@@ -1405,366 +1312,4 @@ abstract class BillFormatBuilder extends State<BillFormate> {
       child: Text('Verify', style: TextStyle(fontSize: 17)),
     ),
   );
-
-  void showRoundDetailsPopDialogBox(RoundDetailsRecord record) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          title: Text(
-            'Round Details',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.blue.shade600,
-            ),
-          ),
-          content: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.6,
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // _buildQtyField,
-                    // Tape Information Card
-                    _buildInfoCard('Tape Information', [
-                      if (record.productType == 1) ...[
-                        _buildDetailItem(
-                          'Cut MM Meter',
-                          _safeValue(record.cutMMMeter),
-                        ),
-                        _buildDetailItem(
-                          'Pieces Per Carton',
-                          _safeValue(record.piecesPerCarton),
-                        ),
-                        _buildDetailItem(
-                          'Tape Length',
-                          _safeValue(record.tapeLength),
-                        ),
-                      ],
-                      if (record.productType == 2) ...[
-                        _buildDetailItem('Size', _safeValue(record.size)),
-                        _buildDetailItem(
-                          'Stretch Weight',
-                          _safeValue(record.stretchWeight),
-                        ),
-                        _buildDetailItem(
-                          'Operation',
-                          _safeValue(record.operation),
-                        ),
-                      ],
-                      _buildDetailItem('Base', _safeValue(record.baseLabel)),
-                      _buildDetailItem('Mic', _safeValue(record.micLabel)),
-                    ]),
-                    const SizedBox(height: 16),
-
-                    // Base Information Card
-                    // _buildInfoCard('Base Information', [
-                    //   _buildDetailItem('Unit', widget.submitData.unitName),
-
-                    // ]),
-                    const SizedBox(height: 16),
-
-                    // Mic Information Card
-                    // _buildInfoCard('Mic Information', [
-                    //   _buildDetailItem('Mic ID', _safeValue(record?.micID)),
-
-                    // ]),
-                    // const SizedBox(height: 16),
-
-                    // Display Information Card
-                    _buildInfoCard('Information', [
-                      // _buildDetailItem(
-                      //   'Show For',
-                      //   _safeValue(record?.showFor),
-                      // ),
-                      // _buildDetailItem(
-                      //   'Show Label',
-                      //   _safeValue(record?.showLabel),
-                      // ),
-                      _buildDetailItem(
-                        'Batch Code',
-                        _safeValue(record.batchCode),
-                      ),
-                      _buildDetailItem('MFG', _safeValue(record.displayMFG)),
-
-                      _buildDetailItem(
-                        'Batch Remark',
-                        _safeValue(record.batchRemark),
-                      ),
-                    ]),
-
-                    // const SizedBox(height: 16),
-
-                    // // Remarks Card
-                    // _buildInfoCard('Remarks', []),
-                    const SizedBox(height: 24),
-
-                    // Action Buttons
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(14),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.orange.withOpacity(0.3),
-                                  blurRadius: 15,
-                                  spreadRadius: 2,
-                                  offset: const Offset(0, 6),
-                                ),
-                              ],
-                            ),
-                            child: ElevatedButton.icon(
-                              onPressed: () {
-                                GoRouter.of(context).pop();
-                              },
-                              icon: Icon(Icons.refresh_rounded, size: 20),
-                              label: Text(
-                                'Rescan',
-                                style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 15,
-                                  letterSpacing: 0.2,
-                                ),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.orange.shade600,
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 14,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(14),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Color(0xFF2D7FD9).withOpacity(0.4),
-                                  blurRadius: 20,
-                                  spreadRadius: 3,
-                                  offset: const Offset(0, 8),
-                                ),
-                              ],
-                            ),
-                            child: ElevatedButton.icon(
-                              onPressed: () async {
-                                final data = RoundDataModel(
-                                  productType: record.productType,
-                                  size: record.size.toString(),
-                                  stretchWeigh: record.stretchWeight.toString(),
-                                  operation: record.operation.toString(),
-                                  unitName: '',
-                                  unitIndex: '',
-                                  // quantity: quantityController.text,
-                                  rKey: widget.orderKey.toString(),
-                                  baseID: record.baseID.toString(),
-                                  piecesPerCarton: record.piecesPerCarton
-                                      .toString(),
-                                  cutMMMeter: record.cutMMMeter.toString(),
-                                  micID: record.micID.toString(),
-                                  micLabel: record.micLabel.toString(),
-                                  showFor: record.showFor?.toString() ?? '',
-                                  tapeLength:
-                                      record.tapeLength?.toString() ?? '',
-                                  batchRemark:
-                                      record.batchRemark?.toString() ?? '',
-                                  baseLabel: record.baseLabel?.toString() ?? '',
-                                  displayMFG:
-                                      record.displayMFG?.toString() ?? '',
-                                  displayMFGLabel:
-                                      record.displayMFGLabel?.toString() ?? '',
-                                  tapeWeight:
-                                      record.tapeWeight?.toString() ?? '',
-                                  showForLabel: '',
-                                  batchID: addScannedBarcodeController.text,
-                                  batchCode: record.batchCode?.toString() ?? '',
-                                  quantity: '1',
-                                );
-
-                                // Save to Hive box
-                                final box = Hive.box<RoundDataModel>(
-                                  RoundDBHive.roundBox,
-                                );
-                                await box.add(data);
-
-                                updateScannedItemCount(_scannedItemCount! + 1);
-
-                                if (mounted) {
-                                  ToastService.instance.showSuccess(
-                                    context,
-                                    'Round details saved successfully!',
-                                  );
-                                  GoRouter.of(context).pop();
-                                  // setState(() {
-                                  //   _scannedItemCount =
-                                  //       (_scannedItemCount ?? 0) + 1;
-                                  // });
-                                }
-                              },
-                              icon: Icon(Icons.check_circle_rounded, size: 20),
-                              label: Text(
-                                'Submit',
-                                style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 15,
-                                  letterSpacing: 0.2,
-                                ),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Color(0xFF2D7FD9),
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 14,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('Close', style: TextStyle(color: Colors.grey)),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildInfoCard(String title, List<Widget> children) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 25,
-            spreadRadius: 2,
-            offset: const Offset(0, 8),
-          ),
-          BoxShadow(
-            color: Color(0xFF2D7FD9).withOpacity(0.1),
-            blurRadius: 15,
-            spreadRadius: 0,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withOpacity(0.95),
-              Colors.white.withOpacity(0.9),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.6), width: 1.2),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF2D7FD9),
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  ...children,
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDetailItem(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              fontSize: 13,
-              color: Colors.grey.shade600,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.2,
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF2D7FD9).withOpacity(0.12),
-                  Color(0xFF2D7FD9).withOpacity(0.06),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: Color(0xFF2D7FD9).withOpacity(0.2),
-                width: 1,
-              ),
-            ),
-            child: Text(
-              value,
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                color: Colors.grey.shade900,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.2,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

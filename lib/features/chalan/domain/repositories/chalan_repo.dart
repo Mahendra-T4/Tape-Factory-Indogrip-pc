@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
+import 'package:indogrip/core/config/env_config.dart';
 import 'package:indogrip/core/database/hive_service.dart';
 import 'package:indogrip/core/service/api%20service/dio_service.dart';
 import 'package:indogrip/features/chalan/data/model/chalanlist_model.dart';
@@ -321,6 +322,7 @@ abstract class ChallanRepository {
     List<String> batchQty,
     String unitIndex,
     String clientKey,
+    String rKey,
   ) async {
     SubmitBatchModel submitModel = SubmitBatchModel();
     final Dio dio = Dio();
@@ -337,11 +339,12 @@ abstract class ChallanRepository {
         'userKey': HiveService.getUserId(),
         'batchCode': batchCodes.join(','),
         'clientKey': clientKey,
+        'rKey': rKey,
         // 'batchQty': batchQty.join(','),
         // 'unitIndex': unitIndex,
       });
       final response = await dio.post(
-        'https://www.indogrip.com/mobile-APIs/index.php',
+        EnvConfig.indoGripMobileBaseUrl,
         data: formData,
       );
       if (response.statusCode == 200) {

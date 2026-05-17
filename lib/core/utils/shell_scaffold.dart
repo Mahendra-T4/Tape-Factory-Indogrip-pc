@@ -22,6 +22,7 @@ import 'package:indogrip/features/client/presentation/pages/view/view_client.dar
 import 'package:indogrip/features/core/presentation/pages/add/add_core.dart';
 import 'package:indogrip/features/core/presentation/pages/view/view_core.dart';
 import 'package:indogrip/features/dashboard/presentation/page/deshboard.dart';
+import 'package:indogrip/features/machine/machine_calculation.dart';
 import 'package:indogrip/features/jumbo%20roll/presentation/pages/add/add_jumbo_roll.dart';
 import 'package:indogrip/features/jumbo%20roll/presentation/pages/view/view_jumbo_roll.dart';
 import 'package:indogrip/features/notifications/model/notification_model.dart';
@@ -384,6 +385,32 @@ class _ShellScaffoldState extends ConsumerState<ShellScaffold>
                                     ),
                                   ),
                                 ),
+
+                              ListTile(
+                                onTap: () {
+                                  context.goNamed(MachineCalculation.routeName);
+                                },
+                                leading: Container(
+                                  padding: EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(
+                                    Icons.calculate, // Transfer/Exchange icon
+                                    size: 20,
+                                    color: Colors.white.withOpacity(0.9),
+                                  ),
+                                ),
+                                title: Text(
+                                  'Machine Calculation',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white.withOpacity(0.9),
+                                  ),
+                                ),
+                              ),
 
                               if (['1', '8', '2'].any(
                                     (p) => HiveService.getPanels()!.contains(p),

@@ -202,6 +202,7 @@ class HomeRepository implements HomeManagerRepository {
     required String baseID,
     required String filmSizeID,
     required String coreID,
+    required String micID,
   }) async {
     StretchStockModel model = StretchStockModel();
     try {
@@ -211,6 +212,7 @@ class HomeRepository implements HomeManagerRepository {
         'baseID': baseID,
         'filmSizeID': filmSizeID,
         'coreID': coreID,
+        'micID': micID,
       });
       final response = await retry(
         () => DioService.dioPostApiCall(data: formData).timeout(

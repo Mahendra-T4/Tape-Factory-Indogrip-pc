@@ -18,6 +18,7 @@ import 'package:indogrip/features/chalan/presentation/bloc/challan_bloc.dart';
 import 'package:indogrip/features/chalan/presentation/page/bill/bill_format_buiilder.dart';
 import 'package:indogrip/features/chalan/presentation/page/scanned-carton/scanned_carton.dart';
 import 'package:indogrip/features/global/presentation/bloc/global_bloc.dart';
+import 'package:indogrip/features/global/presentation/widget/refresh_button.dart';
 import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
@@ -613,6 +614,27 @@ class _BillFormateState extends BillFormatBuilder {
                             .orderInformation
                             ?.manualChallanDate ??
                         '';
+                    final newClientKey =
+                        state
+                            .model
+                            .record
+                            ?.first
+                            .clientInformation
+                            ?.clientKey ??
+                        '';
+                    final newClientUnitName =
+                        state.model.record?.first.clientInformation?.unitName ??
+                        '';
+
+                    // Update state variables with setState to trigger rebuild
+                    setState(() {
+                      if (selectedClientKey != newClientKey) {
+                        selectedClientKey = newClientKey;
+                      }
+                      if (clientUnitName != newClientUnitName) {
+                        clientUnitName = newClientUnitName;
+                      }
+                    });
 
                     // Only update if values actually changed to prevent rebuild loops
                     if (remarkController.text != newRemark) {
@@ -641,15 +663,10 @@ class _BillFormateState extends BillFormatBuilder {
                     final data = (state as ChallanDetailsLoadedSuccessState)
                         .model
                         .record;
-                    selectedClientKey = state
-                        .model
-                        .record
-                        ?.first
-                        .clientInformation
-                        ?.clientKey
-                        .toString();
-                    clientUnitName =
-                        state.model.record?.first.clientInformation?.unitName;
+                    final totalCartons = data?.first.orderProduct?.fold(
+                      0,
+                      (int sum, product) => sum + (product.quantity ?? 0),
+                    );
                     return state.model.status != 1
                         ? Center(
                             child: Text(
@@ -691,7 +708,10 @@ class _BillFormateState extends BillFormatBuilder {
                                           label: 'View Scanned Cartons',
                                           onPressed: () => context.pushNamed(
                                             ScannedCarton.routeName,
-                                            extra: widget.orderKey.toString(),
+                                            extra: ScannedData(
+                                              rKey: widget.orderKey,
+                                              clientKey: selectedClientKey!,
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -862,195 +882,72 @@ class _BillFormateState extends BillFormatBuilder {
                                                   ),
                                                 ],
                                               ),
+
+                                              dataTableWidget(
+                                                state.model.record,
+                                              ),
                                               Row(
                                                 children: [
-                                                  // Modern Input Field
+                                                  Expanded(child: SizedBox()),
+                                                  Expanded(child: SizedBox()),
+                                                  Expanded(child: SizedBox()),
                                                   Expanded(
-                                                    flex: 3,
                                                     child: Container(
+                                                      alignment:
+                                                          Alignment.centerLeft,
+                                                      margin:
+                                                          const EdgeInsets.symmetric(
+                                                            vertical: 12,
+                                                            // horizontal: 12,
+                                                          ),
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                            vertical: 12,
+                                                            horizontal: 20,
+                                                          ),
                                                       decoration: BoxDecoration(
                                                         color: Colors.white,
+                                                        border: Border.all(
+                                                          color: Colors
+                                                              .deepOrangeAccent,
+                                                        ),
                                                         borderRadius:
                                                             BorderRadius.circular(
-                                                              12,
+                                                              8,
                                                             ),
-                                                        border: Border.all(
-                                                          color:
-                                                              addScannedBarcodeController
-                                                                  .text
-                                                                  .isNotEmpty
-                                                              ? const Color(
-                                                                  0xFF2D8FCF,
-                                                                )
-                                                              : const Color(
-                                                                  0xFFE5E7EB,
-                                                                ),
-                                                          width: 1.5,
-                                                        ),
-                                                        boxShadow:
-                                                            addScannedBarcodeController
-                                                                .text
-                                                                .isNotEmpty
-                                                            ? [
-                                                                BoxShadow(
-                                                                  color:
-                                                                      const Color(
-                                                                        0xFF2D8FCF,
-                                                                      ).withOpacity(
-                                                                        0.1,
-                                                                      ),
-                                                                  blurRadius: 8,
-                                                                  offset:
-                                                                      const Offset(
-                                                                        0,
-                                                                        2,
-                                                                      ),
-                                                                ),
-                                                              ]
-                                                            : [],
                                                       ),
-                                                      child: TextFormField(
-                                                        controller:
-                                                            addScannedBarcodeController,
-                                                        focusNode:
-                                                            barcodeFocusNode,
-                                                        onChanged: (value) {
-                                                          // Auto-submit when hardware scanner sends newline character
-                                                          if (value.endsWith(
-                                                            '\n',
-                                                          )) {
-                                                            addScannedBarcodeController
-                                                                .text = value
-                                                                .replaceAll(
-                                                                  '\n',
-                                                                  '',
-                                                                )
-                                                                .trim();
-                                                            addScannedBarcodeController
-                                                                    .selection =
-                                                                TextSelection.fromPosition(
-                                                                  TextPosition(
-                                                                    offset: addScannedBarcodeController
-                                                                        .text
-                                                                        .length,
-                                                                  ),
-                                                                );
-                                                            // _addBarcodeWithIsolate();
-                                                          }
-                                                          // Don't rebuild on every character to preserve focus on table fields
-                                                        },
-                                                        onFieldSubmitted: (_) {
-                                                          // _addBarcodeWithIsolate();
-                                                          // Re-request focus immediately since onFieldSubmitted removes it
-                                                          barcodeFocusNode
-                                                              .requestFocus();
-                                                        },
-                                                        decoration: InputDecoration(
-                                                          hintText:
-                                                              'Scan or enter barcode...',
-                                                          hintStyle: TextStyle(
-                                                            color: const Color(
-                                                              0xFF9CA3AF,
-                                                            ),
-                                                            fontSize: 14,
-                                                          ),
-                                                          prefixIcon: Padding(
-                                                            padding:
-                                                                const EdgeInsets.all(
-                                                                  12,
-                                                                ),
-                                                            child: Icon(
-                                                              Icons
-                                                                  .barcode_reader,
-                                                              color:
-                                                                  addScannedBarcodeController
-                                                                      .text
-                                                                      .isNotEmpty
-                                                                  ? const Color(
-                                                                      0xFF2D8FCF,
-                                                                    )
-                                                                  : const Color(
-                                                                      0xFFD1D5DB,
-                                                                    ),
-                                                              size: 20,
+
+                                                      child: Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Text(
+                                                            'Total Cartons: ',
+                                                            style: TextStyle(
+                                                              fontSize: 16,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
                                                             ),
                                                           ),
-                                                          suffixIcon:
-                                                              addScannedBarcodeController
-                                                                  .text
-                                                                  .isNotEmpty
-                                                              ? GestureDetector(
-                                                                  onTap: () {
-                                                                    setState(() {
-                                                                      addScannedBarcodeController
-                                                                          .clear();
-                                                                    });
-                                                                    barcodeFocusNode
-                                                                        .requestFocus();
-                                                                  },
-                                                                  child: Padding(
-                                                                    padding:
-                                                                        const EdgeInsets.all(
-                                                                          12,
-                                                                        ),
-                                                                    child: Icon(
-                                                                      Icons
-                                                                          .close_outlined,
-                                                                      color: const Color(
-                                                                        0xFF2D8FCF,
-                                                                      ).withOpacity(0.5),
-                                                                      size: 20,
-                                                                    ),
-                                                                  ),
-                                                                )
-                                                              : null,
-                                                          border: OutlineInputBorder(
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                  12,
-                                                                ),
-                                                            borderSide:
-                                                                BorderSide.none,
+                                                          Text(
+                                                            totalCartons
+                                                                .toString(),
+                                                            style: TextStyle(
+                                                              fontSize: 18,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color: Colors
+                                                                  .deepOrangeAccent,
+                                                            ),
                                                           ),
-                                                          focusedBorder: OutlineInputBorder(
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                  12,
-                                                                ),
-                                                            borderSide:
-                                                                const BorderSide(
-                                                                  color: Color(
-                                                                    0xFF2D8FCF,
-                                                                  ),
-                                                                  width: 1.5,
-                                                                ),
-                                                          ),
-                                                          contentPadding:
-                                                              const EdgeInsets.symmetric(
-                                                                horizontal: 16,
-                                                                vertical: 14,
-                                                              ),
-                                                        ),
-                                                        style: const TextStyle(
-                                                          fontSize: 14,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          color: Color(
-                                                            0xFF1F2937,
-                                                          ),
-                                                        ),
+                                                        ],
                                                       ),
                                                     ),
                                                   ),
-                                                  const SizedBox(width: 16),
-                                                  Expanded(
-                                                    child:
-                                                        buildModernAddButton(),
-                                                  ),
                                                 ],
-                                              ),
-                                              dataTableWidget(
-                                                state.model.record,
                                               ),
                                               Column(
                                                 spacing: 10,
@@ -1171,6 +1068,17 @@ class _BillFormateState extends BillFormatBuilder {
                   default:
                     return const Center(child: Text('Unexpected state'));
                 }
+              },
+            ),
+          ),
+          floatingActionButton: SizedBox(
+            width: MediaQuery.sizeOf(context).width * .15,
+            height: 35,
+            child: RefreshButton(
+              onPressed: () {
+                challanBloc.add(
+                  FetchChallanDetailsInBillEvent(orderKey: widget.orderKey),
+                );
               },
             ),
           ),

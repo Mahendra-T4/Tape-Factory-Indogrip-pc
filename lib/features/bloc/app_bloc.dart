@@ -42,6 +42,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         baseID: event.baseID,
         filmSizeID: event.filmSizeID,
         coreID: event.coreID,
+        micID: event.micID
       );
       emit(LoadStretchStockDataSuccessAppState(model: model));
     } catch (e) {

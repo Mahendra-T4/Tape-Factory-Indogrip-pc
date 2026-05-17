@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:indogrip/core/responsive/responsive.dart';
 import 'package:indogrip/features/bloc/app_bloc.dart';
 import 'package:indogrip/features/global/presentation/widget/base_filter_field.dart';
+import 'package:indogrip/features/jumbo%20roll/presentation/pages/widgets/micron_dropdown_widget.dart';
 import 'package:indogrip/features/outsource/presentation/widget/master_stretch_film_widget.dart';
 import 'package:indogrip/features/outsource/presentation/widget/stretch_detail_box.dart';
 import 'package:indogrip/features/round/presentation/widgets/core_dropdown.dart';
@@ -21,6 +22,7 @@ class _StretchStockWidgetState extends State<StretchStockWidget>
   String? baseID;
   String? filmSizeID;
   String? coreID;
+  String? stretchMicID;
 
   @override
   void initState() {
@@ -33,9 +35,10 @@ class _StretchStockWidgetState extends State<StretchStockWidget>
     appBloc = AppBloc()
       ..add(
         LoadStretchStockDataEvent(
-          baseID: baseID.toString(),
-          filmSizeID: filmSizeID.toString(),
-          coreID: coreID.toString(),
+          baseID: baseID ?? '',
+          filmSizeID: filmSizeID ?? '',
+          coreID: coreID ?? '',
+          micID: stretchMicID ?? '',
         ),
       );
   }
@@ -186,9 +189,10 @@ class _StretchStockWidgetState extends State<StretchStockWidget>
                     });
                     appBloc.add(
                       LoadStretchStockDataEvent(
-                        baseID: baseID.toString(),
-                        filmSizeID: filmSizeID.toString(),
-                        coreID: coreID.toString(),
+                        baseID: baseID ?? '',
+                        filmSizeID: filmSizeID ?? '',
+                        coreID: coreID ?? '',
+                        micID: stretchMicID ?? '',
                       ),
                     );
                   },
@@ -204,9 +208,29 @@ class _StretchStockWidgetState extends State<StretchStockWidget>
                     });
                     appBloc.add(
                       LoadStretchStockDataEvent(
-                        baseID: baseID.toString(),
-                        filmSizeID: filmSizeID.toString(),
-                        coreID: coreID.toString(),
+                        baseID: baseID ?? '',
+                        filmSizeID: filmSizeID ?? '',
+                        coreID: coreID ?? '',
+                        micID: stretchMicID ?? '',
+                      ),
+                    );
+                  },
+                  isFilter: true,
+                  size: 37,
+                ),
+              ),
+              Expanded(
+                child: MicronDropdownWidget(
+                  onChanged: (value) {
+                    setState(() {
+                      stretchMicID = value;
+                    });
+                    appBloc.add(
+                      LoadStretchStockDataEvent(
+                        baseID: baseID ?? '',
+                        filmSizeID: filmSizeID ?? '',
+                        coreID: coreID ?? '',
+                        micID: stretchMicID ?? '',
                       ),
                     );
                   },
@@ -222,15 +246,16 @@ class _StretchStockWidgetState extends State<StretchStockWidget>
                     });
                     appBloc.add(
                       LoadStretchStockDataEvent(
-                        baseID: baseID.toString(),
-                        filmSizeID: filmSizeID.toString(),
-                        coreID: coreID.toString(),
+                        baseID: baseID ?? '',
+                        filmSizeID: filmSizeID ?? '',
+                        coreID: coreID ?? '',
+                        micID: stretchMicID ?? '',
                       ),
                     );
                   },
                 ),
               ),
-              Expanded(child: SizedBox()),
+
               Expanded(child: SizedBox()),
             ],
           ),

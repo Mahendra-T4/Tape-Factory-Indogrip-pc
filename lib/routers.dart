@@ -5,6 +5,7 @@ import 'package:indogrip/features/chalan/presentation/page/scanned-carton/miss_r
 import 'package:indogrip/features/chalan/presentation/page/scanned-carton/scanned_carton.dart';
 import 'package:indogrip/features/chalan/presentation/page/scanned-carton/submittion_success_msg.dart';
 import 'package:indogrip/features/client/data/model/upload_client_model.dart';
+import 'package:indogrip/features/machine/machine_calculation.dart';
 import 'package:indogrip/features/outsource/data/model/stretch_missrecord_model.dart';
 import 'package:indogrip/features/outsource/data/model/tap_miss_record_model.dart';
 import 'package:indogrip/core/utils/shell_scaffold.dart';
@@ -1156,10 +1157,10 @@ GoRouter routers = GoRouter(
           path: ScannedCarton.routeName,
           name: ScannedCarton.routeName,
           pageBuilder: (context, state) {
-            final rKey = state.extra as String;
+            final data = state.extra as ScannedData;
             return CustomTransitionPage(
               key: state.pageKey, // Required for unique page identification
-              child: ScannedCarton(rKey: rKey), // The screen to display
+              child: ScannedCarton(data: data), // The screen to display
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) {
                     // Define a fade transition to avoid bouncing
@@ -1296,6 +1297,25 @@ GoRouter routers = GoRouter(
               child: SubmittingSuccessMsg(
                 successMessage: successMsg,
               ), // The screen to display
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                    // Define a fade transition to avoid bouncing
+                    return FadeTransition(opacity: animation, child: child);
+                  },
+              transitionDuration: const Duration(
+                milliseconds: 300,
+              ), // Animation duration
+            );
+          },
+          // builder: (context, state) => Profile(),
+        ),
+        GoRoute(
+          path: MachineCalculation.routeName,
+          name: MachineCalculation.routeName,
+          pageBuilder: (context, state) {
+            return CustomTransitionPage(
+              key: state.pageKey, // Required for unique page identification
+              child: MachineCalculation(),
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) {
                     // Define a fade transition to avoid bouncing

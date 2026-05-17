@@ -254,6 +254,7 @@ abstract class OutsourceInBuilder extends State<OutSourceIN> {
               context,
               state.response.message.toString(),
             );
+            context.pop();
           } else {
             if (!context.mounted) return;
             ToastService.instance.showError(
@@ -406,7 +407,7 @@ abstract class OutsourceInBuilder extends State<OutSourceIN> {
             GeneralOptionalField(
               labelText: 'Bill Number',
               inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
+                // FilteringTextInputFormatter.digitsOnly,
                 // LengthLimitingTextInputFormatter(10),
               ],
               controller: billNoController,

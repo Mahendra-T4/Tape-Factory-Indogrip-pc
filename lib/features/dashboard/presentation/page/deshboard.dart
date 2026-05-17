@@ -8,6 +8,7 @@ import 'package:indogrip/core/utils/appbar/desktop_appbar.dart';
 import 'package:indogrip/core/utils/appbar/mobile_appbar.dart';
 import 'package:indogrip/features/dashboard/presentation/page/dashboard_builder.dart';
 import 'package:indogrip/features/dashboard/presentation/widget/default_setting_widget.dart';
+import 'package:indogrip/features/machine/machine_calculation.dart';
 import 'package:indogrip/features/dashboard/presentation/widget/profit_loss_analytics.dart';
 import 'package:indogrip/features/dashboard/presentation/widget/stretch_stock_widget.dart';
 import 'package:indogrip/features/dashboard/presentation/widget/tape_stock_widget.dart';
@@ -63,6 +64,7 @@ class _IndoGripDashboardState extends DashboardBuilder {
                 child: Column(
                   children: [
                     _buildWelcomeHeader,
+                    // MachineCalculation(),
                     ProfitandLossAnalyticsWidget(
                       fromDateController: fromDateController,
                       toDateController: toDateController,
@@ -148,7 +150,12 @@ class _IndoGripDashboardState extends DashboardBuilder {
                 shape: BoxShape.circle,
                 color: Colors.white.withOpacity(0.06),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.08),
+                  color: const Color.fromRGBO(
+                    255,
+                    255,
+                    255,
+                    1,
+                  ).withOpacity(0.08),
                   width: 2,
                 ),
               ),
@@ -162,6 +169,7 @@ class _IndoGripDashboardState extends DashboardBuilder {
                 Expanded(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
+
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(

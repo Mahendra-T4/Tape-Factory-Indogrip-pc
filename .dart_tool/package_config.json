@@ -14,6 +14,12 @@
       "languageVersion": "3.0"
     },
     {
+      "name": "animated_custom_dropdown",
+      "rootUri": "file:///C:/Users/codew/AppData/Local/Pub/Cache/hosted/pub.dev/animated_custom_dropdown-3.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
       "name": "archive",
       "rootUri": "file:///C:/Users/codew/AppData/Local/Pub/Cache/hosted/pub.dev/archive-3.6.1",
       "packageUri": "lib/",

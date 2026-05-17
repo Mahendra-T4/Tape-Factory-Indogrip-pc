@@ -20,12 +20,14 @@ final class LoadStretchStockDataEvent extends AppEvent {
   final String baseID;
   final String filmSizeID;
   final String coreID;
+  final String micID;
 
   LoadStretchStockDataEvent({
     required this.baseID,
     required this.filmSizeID,
     required this.coreID,
+    required this.micID,
   });
   @override
-  List<Object> get props => [baseID, filmSizeID, coreID];
+  List<Object> get props => [baseID, filmSizeID, coreID, micID];
 }

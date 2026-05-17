@@ -100,12 +100,14 @@ final class SubmitRoundScannedDataEvent extends GlobalEvent {
   final List<String> batchQty;
   final String unitIndex;
   final String clientKey;
+  final String rKey;
 
   SubmitRoundScannedDataEvent({
     required this.batchCodes,
     required this.batchQty,
     required this.unitIndex,
     required this.clientKey,
+    required this.rKey,
   });
 }
 

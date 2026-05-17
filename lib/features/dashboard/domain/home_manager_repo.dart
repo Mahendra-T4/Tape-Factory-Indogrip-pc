@@ -21,5 +21,6 @@ abstract class HomeManagerRepository {
     required String baseID,
     required String filmSizeID,
     required String coreID,
+      required String micID,
   });
 }

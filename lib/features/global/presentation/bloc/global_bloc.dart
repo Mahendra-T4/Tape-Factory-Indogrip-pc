@@ -298,6 +298,7 @@ class GlobalBloc extends Bloc<GlobalEvent, GlobalState> {
         event.batchQty,
         event.unitIndex,
         event.clientKey,
+        event.rKey,
       );
       emit(SubmitRoundScannedDataSuccessStatus(model: batchCodes));
     } catch (e) {

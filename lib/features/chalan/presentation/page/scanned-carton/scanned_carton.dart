@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:indogrip/core/database/init_box.dart';
+import 'package:indogrip/core/database/round_db_hive.dart';
 import 'package:indogrip/core/responsive/responsive.dart';
 import 'package:indogrip/core/service/connectivity/internate%20connectivity-checker.dart';
 import 'package:indogrip/core/service/connectivity/not_connected.dart';
@@ -16,22 +17,23 @@ import 'package:indogrip/core/utils/appbar/mobile_appbar.dart';
 import 'package:indogrip/core/utils/sidebar.dart';
 import 'package:indogrip/core/utils/widgets/toast_service.dart';
 import 'package:indogrip/features/chalan/data/model/round_data_model.dart';
+import 'package:indogrip/features/chalan/data/model/round_details_model.dart';
 import 'package:indogrip/features/chalan/presentation/page/scanned-carton/miss_record.dart';
 import 'package:indogrip/features/chalan/presentation/page/scanned-carton/submittion_success_msg.dart';
 import 'package:indogrip/features/global/data/repositories/global_manager_repo.dart';
 import 'package:indogrip/features/global/presentation/bloc/global_bloc.dart';
 
-// class ScannedData {
-//   final String rKey;
-//   final String unitIndex;
+class ScannedData {
+  final String rKey;
+  final String clientKey;
 
-//   ScannedData({required this.rKey, required this.unitIndex});
-// }
+  ScannedData({required this.rKey, required this.clientKey});
+}
 
 class ScannedCarton extends StatefulWidget {
-  const ScannedCarton({super.key, required this.rKey});
+  const ScannedCarton({super.key, required this.data});
   // final List<ScanData> scannedItems;
-  final String rKey;
+  final ScannedData data;
   static const String routeName = '/scanned-carton';
 
   @override
@@ -42,14 +44,22 @@ class _ScannedCartonState extends State<ScannedCarton> {
   final GlobalKey<ScaffoldState> statekey = GlobalKey<ScaffoldState>();
   List<String> batchCodes = [];
   List<String> batchQty = [];
+  bool _isProcessingBarcode = false; // Track barcode processing state
+
+  final TextEditingController addScannedBarcodeController =
+      TextEditingController();
+  final FocusNode barcodeFocusNode = FocusNode();
 
   late final GlobalBloc _globalBloc;
   bool isShowButton = false;
   @override
   void initState() {
     super.initState();
-    log('ScannerView initialized with rKey: ${widget.rKey}');
+    log('ScannerView initialized with rKey: ${widget.data.clientKey}');
     _globalBloc = GlobalBloc(globalRepository: GlobalManagerRepository());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      barcodeFocusNode.requestFocus();
+    });
     loader();
   }
 
@@ -59,6 +69,13 @@ class _ScannedCartonState extends State<ScannedCarton> {
         isLoading = false;
       });
     });
+  }
+
+  @override
+  void dispose() {
+    addScannedBarcodeController.dispose();
+    barcodeFocusNode.dispose();
+    super.dispose();
   }
 
   int _scannedItemCount = 0;
@@ -117,123 +134,147 @@ class _ScannedCartonState extends State<ScannedCarton> {
                     ),
                   )
                 : Center(
-                    child: ValueListenableBuilder<Box<RoundDataModel>>(
-                      valueListenable: Boxes.roundData().listenable(),
-                      builder: (context, box, child) {
-                        final scannedData = box.values
-                            .toList()
-                            .cast<RoundDataModel>();
-                        final scannedDataByKey = scannedData
-                            .where((element) => element.rKey == widget.rKey)
-                            .toList()
-                            .reversed
-                            .toList();
-                        final scannedQntByKey = scannedData
-                            .where(
-                              (element) =>
-                                  element.quantity.toString() ==
-                                  element.quantity,
-                            )
-                            .toList()
-                            .reversed
-                            .toList();
-                        // final unitIndexList = scannedData
-                        //     .where(
-                        //       (element) =>
-                        //           element.unitIndex.toString() == element.unitIndex,
-                        //     )
-                        //     .toList()
-                        //     .reversed
-                        //     .toList();
+                    child: Column(
+                      children: [
+                        buildBarcodeField,
+                        Expanded(
+                          child: ValueListenableBuilder<Box<RoundDataModel>>(
+                            valueListenable: Boxes.roundData().listenable(),
+                            builder: (context, box, child) {
+                              final scannedData = box.values
+                                  .toList()
+                                  .cast<RoundDataModel>();
+                              final scannedDataByKey = scannedData
+                                  .where(
+                                    (element) =>
+                                        element.rKey == widget.data.rKey,
+                                  )
+                                  .toList()
+                                  .reversed
+                                  .toList();
+                              final scannedQntByKey = scannedData
+                                  .where(
+                                    (element) =>
+                                        element.quantity.toString() ==
+                                        element.quantity,
+                                  )
+                                  .toList()
+                                  .reversed
+                                  .toList();
+                              // final unitIndexList = scannedData
+                              //     .where(
+                              //       (element) =>
+                              //           element.unitIndex.toString() == element.unitIndex,
+                              //     )
+                              //     .toList()
+                              //     .reversed
+                              //     .toList();
 
-                        _scannedItemCount = scannedDataByKey.length;
+                              _scannedItemCount = scannedDataByKey.length;
 
-                        // Update state variables without calling setState during build
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          if (mounted &&
-                              scannedDataByKey.isNotEmpty &&
-                              !isShowButton) {
-                            setState(() {
-                              isShowButton = true;
-                            });
-                          }
-                        });
+                              // Update state variables without calling setState during build
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (mounted &&
+                                    scannedDataByKey.isNotEmpty &&
+                                    !isShowButton) {
+                                  setState(() {
+                                    isShowButton = true;
+                                  });
+                                }
+                              });
 
-                        batchCodes = scannedDataByKey
-                            .map(
-                              (element) =>
-                                  element.batchID?.split(',').join(',') ?? '',
-                            )
-                            .toList();
-                        batchQty = scannedQntByKey
-                            .map(
-                              (element) =>
-                                  element.quantity?.split(',').join(',') ?? '',
-                            )
-                            .toList();
+                              batchCodes = scannedDataByKey
+                                  .map(
+                                    (element) =>
+                                        element.batchID?.split(',').join(',') ??
+                                        '',
+                                  )
+                                  .toList();
+                              batchQty = scannedQntByKey
+                                  .map(
+                                    (element) =>
+                                        element.quantity
+                                            ?.split(',')
+                                            .join(',') ??
+                                        '',
+                                  )
+                                  .toList();
 
-                        // unitIndex = unitIndexList
-                        //     .map(
-                        //       (element) =>
-                        //           element.unitIndex?.split(',').join(',') ?? '',
-                        //     )
-                        //     .toList();
-                        return scannedDataByKey.isEmpty
-                            ? Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(24),
-                                      decoration: BoxDecoration(
-                                        color: primaryColor.withOpacity(0.1),
-                                        shape: BoxShape.circle,
+                              // unitIndex = unitIndexList
+                              //     .map(
+                              //       (element) =>
+                              //           element.unitIndex?.split(',').join(',') ?? '',
+                              //     )
+                              //     .toList();
+                              return scannedDataByKey.isEmpty
+                                  ? Center(
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(24),
+                                            decoration: BoxDecoration(
+                                              color: primaryColor.withOpacity(
+                                                0.1,
+                                              ),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Icon(
+                                              Icons.inbox_rounded,
+                                              size: 64,
+                                              color: primaryColor.withOpacity(
+                                                0.5,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 20),
+                                          Text(
+                                            'No Scanned Items',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w700,
+                                              color: Colors.black87,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            'Start scanning cartons to see them here',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 14,
+                                              color: Colors.grey.shade600,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      child: Icon(
-                                        Icons.inbox_rounded,
-                                        size: 64,
-                                        color: primaryColor.withOpacity(0.5),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 20),
-                                    Text(
-                                      'No Scanned Items',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'Start scanning cartons to see them here',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 14,
-                                        color: Colors.grey.shade600,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : Stack(
-                                children: [
-                                  SizedBox(
-                                    width:
-                                        MediaQuery.sizeOf(context).width * 0.5,
-                                    child: ListView.builder(
-                                      padding: const EdgeInsets.all(16),
-                                      itemCount: scannedDataByKey.length,
-                                      itemBuilder: (context, index) {
-                                        final item = scannedDataByKey[index];
+                                    )
+                                  : Stack(
+                                      children: [
+                                        SizedBox(
+                                          width:
+                                              MediaQuery.sizeOf(context).width *
+                                              0.5,
+                                          child: ListView.builder(
+                                            padding: const EdgeInsets.all(16),
+                                            itemCount: scannedDataByKey.length,
+                                            itemBuilder: (context, index) {
+                                              final item =
+                                                  scannedDataByKey[index];
 
-                                        return _buildCartonCard(item, index);
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              );
-                      },
+                                              return _buildCartonCard(
+                                                item,
+                                                index,
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                   ),
             bottomNavigationBar: _buildBottomSubmitBar(),
@@ -871,9 +912,10 @@ class _ScannedCartonState extends State<ScannedCarton> {
             _globalBloc.add(
               SubmitRoundScannedDataEvent(
                 batchCodes: batchCodes,
-                clientKey: widget.rKey,
+                clientKey: widget.data.clientKey,
                 unitIndex: '',
                 batchQty: batchQty,
+                rKey: widget.data.rKey,
               ),
             );
           },
@@ -901,16 +943,591 @@ class _ScannedCartonState extends State<ScannedCarton> {
     },
   );
 
-  // Color _getRemarkColor(String remark) {
-  //   switch (remark.toLowerCase()) {
-  //     case 'good':
-  //       return Colors.green;
-  //     case 'damaged':
-  //       return Colors.red;
-  //     case 'pending':
-  //       return Colors.orange;
-  //     default:
-  //       return Colors.blue;
-  //   }
-  // }
+  Widget get buildBarcodeField => Container(
+    padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.1),
+          blurRadius: 25,
+          spreadRadius: 2,
+          offset: const Offset(0, -8),
+        ),
+        BoxShadow(
+          color: const Color(0xFF2D7FD9).withOpacity(0.15),
+          blurRadius: 20,
+          spreadRadius: 0,
+          offset: const Offset(0, -4),
+        ),
+      ],
+    ),
+    child: Row(
+      children: [
+        // Expanded(child: SizedBox()),
+        Expanded(child: SizedBox()),
+        Expanded(
+          flex: 4,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: addScannedBarcodeController.text.isNotEmpty
+                    ? const Color(0xFF2D8FCF)
+                    : const Color(0xFFE5E7EB),
+                width: 1.5,
+              ),
+              boxShadow: addScannedBarcodeController.text.isNotEmpty
+                  ? [
+                      BoxShadow(
+                        color: const Color(0xFF2D8FCF).withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : [],
+            ),
+            child: TextFormField(
+              controller: addScannedBarcodeController,
+              focusNode: barcodeFocusNode,
+              onChanged: (value) {
+                // Auto-submit when hardware scanner sends newline character
+                if (value.endsWith('\n')) {
+                  addScannedBarcodeController.text = value
+                      .replaceAll('\n', '')
+                      .trim();
+                  addScannedBarcodeController.selection =
+                      TextSelection.fromPosition(
+                        TextPosition(
+                          offset: addScannedBarcodeController.text.length,
+                        ),
+                      );
+                  // _addBarcodeWithIsolate();
+                }
+                // Don't rebuild on every character to preserve focus on table fields
+              },
+              onFieldSubmitted: (_) {
+                // _addBarcodeWithIsolate();
+                // Re-request focus immediately since onFieldSubmitted removes it
+                barcodeFocusNode.requestFocus();
+              },
+              decoration: InputDecoration(
+                hintText: 'Scan or enter barcode...',
+                hintStyle: TextStyle(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 14,
+                ),
+                prefixIcon: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Icon(
+                    Icons.barcode_reader,
+                    color: addScannedBarcodeController.text.isNotEmpty
+                        ? const Color(0xFF2D8FCF)
+                        : const Color(0xFFD1D5DB),
+                    size: 20,
+                  ),
+                ),
+                suffixIcon: addScannedBarcodeController.text.isNotEmpty
+                    ? GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            addScannedBarcodeController.clear();
+                          });
+                          barcodeFocusNode.requestFocus();
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Icon(
+                            Icons.close_outlined,
+                            color: const Color(0xFF2D8FCF).withOpacity(0.5),
+                            size: 20,
+                          ),
+                        ),
+                      )
+                    : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(
+                    color: Color(0xFF2D8FCF),
+                    width: 1.5,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+              ),
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF1F2937),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(child: buildModernAddButton()),
+        Expanded(child: SizedBox()),
+        // Expanded(child: SizedBox()),
+      ],
+    ),
+  );
+
+  String _safeValue(dynamic value, {String defaultValue = 'N/A'}) {
+    if (value == null) return defaultValue;
+    if (value is String) return value.isEmpty ? defaultValue : value;
+    if (value is int || value is double) return value.toString();
+    return value.toString();
+  }
+
+  Widget buildModernAddButton() {
+    return BlocConsumer<GlobalBloc, GlobalState>(
+      bloc: _globalBloc,
+      listenWhen: (previous, current) =>
+          current is ChallanRoundDetailsLoadedSuccessStatus ||
+          current is ChallanRoundDetailsLoadedFailureStatus,
+      listener: (context, state) {
+        if (state is ChallanRoundDetailsLoadedSuccessStatus) {
+          final roundDetails = state.dataModel;
+          if (roundDetails.status == 1) {
+            ToastService.instance.showSuccess(
+              context,
+              roundDetails.message.toString(),
+            );
+            showRoundDetailsPopDialogBox(roundDetails.record!);
+          } else {
+            ToastService.instance.showError(
+              context,
+              roundDetails.message?.toString() ??
+                  'Failed to fetch round details',
+            );
+          }
+        } else if (state is ChallanRoundDetailsLoadedFailureStatus) {
+          ToastService.instance.showError(context, state.errorMessage);
+        }
+      },
+      builder: (BuildContext context, GlobalState state) {
+        final isLoading = state is GlobalLoadingStatus;
+
+        return SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: ElevatedButton(
+            onPressed: isLoading || addScannedBarcodeController.text.isEmpty
+                ? null
+                : () {
+                    if (addScannedBarcodeController.text.isNotEmpty) {
+                      _globalBloc.add(
+                        FetchRoundDetailsEvent(
+                          batchCode: addScannedBarcodeController.text,
+                        ),
+                      );
+                    }
+                  },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: kButtonColor,
+              disabledBackgroundColor: const Color(0xFFBFDBFE),
+              foregroundColor: Colors.white,
+              disabledForegroundColor: Colors.white,
+              elevation: isLoading ? 2 : 4,
+              shadowColor: const Color(0xFF2D8FCF).withOpacity(0.4),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: isLoading
+                ? SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : Text(
+                    'Submit Code',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+          ),
+        );
+      },
+    );
+  }
+
+  updateScannedItemCount(int count) {
+    setState(() {
+      _scannedItemCount = count;
+    });
+  }
+
+  void showRoundDetailsPopDialogBox(RoundDetailsRecord record) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          title: Text(
+            'Round Details',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.blue.shade600,
+            ),
+          ),
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.6,
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // _buildQtyField,
+                    // Tape Information Card
+                    _buildInfoCard('Tape Information', [
+                      if (record.productType == 1) ...[
+                        _buildDetailItem(
+                          'Cut MM Meter',
+                          _safeValue(record.cutMMMeter),
+                        ),
+                        _buildDetailItem(
+                          'Pieces Per Carton',
+                          _safeValue(record.piecesPerCarton),
+                        ),
+                        _buildDetailItem(
+                          'Tape Length',
+                          _safeValue(record.tapeLength),
+                        ),
+                      ],
+                      if (record.productType == 2) ...[
+                        _buildDetailItem('Size', _safeValue(record.size)),
+                        _buildDetailItem(
+                          'Stretch Weight',
+                          _safeValue(record.stretchWeight),
+                        ),
+                        _buildDetailItem(
+                          'Operation',
+                          _safeValue(record.operation),
+                        ),
+                      ],
+                      _buildDetailItem('Base', _safeValue(record.baseLabel)),
+                      _buildDetailItem('Mic', _safeValue(record.micLabel)),
+                    ]),
+                    const SizedBox(height: 16),
+
+                    // Base Information Card
+                    // _buildInfoCard('Base Information', [
+                    //   _buildDetailItem('Unit', widget.submitData.unitName),
+
+                    // ]),
+                    const SizedBox(height: 16),
+
+                    // Mic Information Card
+                    // _buildInfoCard('Mic Information', [
+                    //   _buildDetailItem('Mic ID', _safeValue(record?.micID)),
+
+                    // ]),
+                    // const SizedBox(height: 16),
+
+                    // Display Information Card
+                    _buildInfoCard('Information', [
+                      // _buildDetailItem(
+                      //   'Show For',
+                      //   _safeValue(record?.showFor),
+                      // ),
+                      // _buildDetailItem(
+                      //   'Show Label',
+                      //   _safeValue(record?.showLabel),
+                      // ),
+                      _buildDetailItem(
+                        'Batch Code',
+                        _safeValue(record.batchCode),
+                      ),
+                      _buildDetailItem('MFG', _safeValue(record.displayMFG)),
+
+                      _buildDetailItem(
+                        'Batch Remark',
+                        _safeValue(record.batchRemark),
+                      ),
+                    ]),
+
+                    // const SizedBox(height: 16),
+
+                    // // Remarks Card
+                    // _buildInfoCard('Remarks', []),
+                    const SizedBox(height: 24),
+
+                    // Action Buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.orange.withOpacity(0.3),
+                                  blurRadius: 15,
+                                  spreadRadius: 2,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                GoRouter.of(context).pop();
+                              },
+                              icon: Icon(Icons.refresh_rounded, size: 20),
+                              label: Text(
+                                'Rescan',
+                                style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 15,
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.orange.shade600,
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Color(0xFF2D7FD9).withOpacity(0.4),
+                                  blurRadius: 20,
+                                  spreadRadius: 3,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
+                            ),
+                            child: ElevatedButton.icon(
+                              onPressed: () async {
+                                final data = RoundDataModel(
+                                  productType: record.productType,
+                                  size: record.size.toString(),
+                                  stretchWeigh: record.stretchWeight.toString(),
+                                  operation: record.operation.toString(),
+                                  unitName: '',
+                                  unitIndex: '',
+                                  // quantity: quantityController.text,
+                                  rKey: widget.data.rKey.toString(),
+                                  baseID: record.baseID.toString(),
+                                  piecesPerCarton: record.piecesPerCarton
+                                      .toString(),
+                                  cutMMMeter: record.cutMMMeter.toString(),
+                                  micID: record.micID.toString(),
+                                  micLabel: record.micLabel.toString(),
+                                  showFor: record.showFor?.toString() ?? '',
+                                  tapeLength:
+                                      record.tapeLength?.toString() ?? '',
+                                  batchRemark:
+                                      record.batchRemark?.toString() ?? '',
+                                  baseLabel: record.baseLabel?.toString() ?? '',
+                                  displayMFG:
+                                      record.displayMFG?.toString() ?? '',
+                                  displayMFGLabel:
+                                      record.displayMFGLabel?.toString() ?? '',
+                                  tapeWeight:
+                                      record.tapeWeight?.toString() ?? '',
+                                  showForLabel: '',
+                                  batchID: addScannedBarcodeController.text,
+                                  batchCode: record.batchCode?.toString() ?? '',
+                                  quantity: '1',
+                                );
+
+                                // Save to Hive box
+                                final box = Hive.box<RoundDataModel>(
+                                  RoundDBHive.roundBox,
+                                );
+                                await box.add(data);
+
+                                updateScannedItemCount(_scannedItemCount + 1);
+
+                                if (mounted) {
+                                  ToastService.instance.showSuccess(
+                                    context,
+                                    'Round details saved successfully!',
+                                  );
+                                  GoRouter.of(context).pop();
+                                  // setState(() {
+                                  //   _scannedItemCount =
+                                  //       (_scannedItemCount ?? 0) + 1;
+                                  // });
+                                }
+                              },
+                              icon: Icon(Icons.check_circle_rounded, size: 20),
+                              label: Text(
+                                'Submit',
+                                style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 15,
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Color(0xFF2D7FD9),
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('Close', style: TextStyle(color: Colors.grey)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildInfoCard(String title, List<Widget> children) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 25,
+            spreadRadius: 2,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Color(0xFF2D7FD9).withOpacity(0.1),
+            blurRadius: 15,
+            spreadRadius: 0,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withOpacity(0.95),
+              Colors.white.withOpacity(0.9),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withOpacity(0.6), width: 1.2),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF2D7FD9),
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  ...children,
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailItem(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.2,
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF2D7FD9).withOpacity(0.12),
+                  Color(0xFF2D7FD9).withOpacity(0.06),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: Color(0xFF2D7FD9).withOpacity(0.2),
+                width: 1,
+              ),
+            ),
+            child: Text(
+              value,
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                color: Colors.grey.shade900,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.2,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

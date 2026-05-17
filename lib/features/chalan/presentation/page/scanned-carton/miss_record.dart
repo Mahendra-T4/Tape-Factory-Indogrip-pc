@@ -661,12 +661,12 @@ class _MissRecordPanelState extends State<MissRecordPanel>
                     ),
                     child: Column(
                       children: [
-                        if (record.query != null)
-                          _buildDetailRow(
-                            'Query / SKU',
-                            record.query!,
-                            Color(0xFF4E7FE0),
-                          ),
+                        // if (record.query != null)
+                        //   _buildDetailRow(
+                        //     'Query / SKU',
+                        //     record.query!,
+                        //     Color(0xFF4E7FE0),
+                        //   ),
                         if (record.query != null) const SizedBox(height: 12),
                         _buildDetailRow(
                           'Requested Qty',
